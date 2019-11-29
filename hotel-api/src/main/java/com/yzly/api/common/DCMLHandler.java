@@ -120,7 +120,7 @@ public class DCMLHandler {
     public JSONObject searchHotelPriceByID(List<String> list, String fromDate, String toDate) {
         JSONObject result = null;
         Document doc = generateBaseRequest();
-        Element returnEl = generateSearchHotelHead(doc, fromDate, toDate);
+        Element returnEl = generateSearchHotelHead(doc, fromDate, toDate, true);
         Element filters = returnEl.addElement("filters");
         filters.addAttribute("xmlns:a", "http://us.dotwconnect.com/xsd/atomicCondition").
                 addAttribute("xmlns:c", "http://us.dotwconnect.com/xsd/complexCondition").
@@ -147,7 +147,15 @@ public class DCMLHandler {
         return result;
     }
 
-    public Element generateSearchHotelHead(Document doc, String fromDate, String toDate) {
+    /**
+     * 创建酒店搜索报文的通用xml头
+     * @param doc
+     * @param fromDate
+     * @param toDate
+     * @param hasPassenger
+     * @return
+     */
+    public Element generateSearchHotelHead(Document doc, String fromDate, String toDate, boolean hasPassenger) {
         Element customer = doc.getRootElement();
         customer.addElement("product").setText("hotel");
         Element request = customer.addElement("request");
@@ -161,14 +169,26 @@ public class DCMLHandler {
         room.addElement("adultsCode").setText("2");
         room.addElement("children").addAttribute("no", "0");
         room.addElement("rateBasis").setText("-1");
+        if (hasPassenger) {
+            room.addElement("passengerNationality").setText("168");
+            room.addElement("passengerCountryOfResidence").setText("168");
+        }
         Element returnEl = request.addElement("return");
         return returnEl;
     }
 
+    /**
+     * 通过酒店id列表获取酒店详细信息，包含图片等
+     * @param list
+     * @param fromDate
+     * @param toDate
+     * @return
+     */
     public JSONObject searchHotelInfoById(List<String> list, String fromDate, String toDate) {
         JSONObject result = null;
         Document doc = generateBaseRequest();
-        Element returnEl = generateSearchHotelHead(doc, fromDate, toDate);
+        Element returnEl = generateSearchHotelHead(doc, fromDate, toDate, false);
+        returnEl.addElement("getRooms").setText("true");
         Element filters = returnEl.addElement("filters");
         filters.addAttribute("xmlns:a", "http://us.dotwconnect.com/xsd/atomicCondition").
                 addAttribute("xmlns:c", "http://us.dotwconnect.com/xsd/complexCondition").
@@ -201,6 +221,37 @@ public class DCMLHandler {
         String resutStr = xmlSerializer.read(xmlResp).toString();
         result = JSON.parseObject(resutStr);
         return result;
+    }
+
+    /**
+     * 根据酒店id获得房态
+     * @param hotelId
+     * @param fromDate
+     * @param toDate
+     * @return
+     */
+    public JSONObject getRoomsByHotelId(String hotelId, String fromDate, String toDate) {
+        Document doc = generateBaseRequest();
+        Element customer = doc.getRootElement();
+        customer.addElement("product").setText("hotel");
+        Element request = customer.addElement("request");
+        request.addAttribute("command", "getrooms");
+        Element bookingDetails = request.addElement("bookingDetails");
+        bookingDetails.addElement("fromDate").setText(fromDate);
+        bookingDetails.addElement("toDate").setText(toDate);
+        bookingDetails.addElement("currency").setText("2524");
+        Element rooms = bookingDetails.addElement("rooms").addAttribute("no", "1");
+        Element room = rooms.addElement("room").addAttribute("runno", "0");
+        room.addElement("adultsCode").setText("2");
+        room.addElement("children").addAttribute("no", "0");
+        room.addElement("rateBasis").setText("-1");
+        room.addElement("passengerNationality").setText("168");
+        room.addElement("passengerCountryOfResidence").setText("168");
+        bookingDetails.addElement("productId").setText(hotelId);
+        String xmlResp = this.sendDotwString(doc);
+        XMLSerializer xmlSerializer = new XMLSerializer();
+        String resutStr = xmlSerializer.read(xmlResp).toString();
+        return JSON.parseObject(resutStr);
     }
 
 }

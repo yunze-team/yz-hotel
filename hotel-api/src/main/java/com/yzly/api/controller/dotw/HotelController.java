@@ -31,8 +31,13 @@ public class HotelController {
     }
 
     @GetMapping("/info")
-    public Object allHotelInfo(String country, String city, int page) {
-        return hotelInfoApiService.searchHotelInfo(country, city, page);
+    public Object allHotelInfo(String country, String city, int page, int size) {
+        return hotelInfoApiService.searchHotelInfo(country, city, page, size);
+    }
+
+    @GetMapping("/rooms")
+    public Object getRooms(String hid) {
+        return hotelInfoApiService.getRoomsByHid(hid);
     }
 
 }

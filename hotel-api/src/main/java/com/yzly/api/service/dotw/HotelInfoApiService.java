@@ -67,11 +67,11 @@ public class HotelInfoApiService {
         return dcmlHandler.searchHotelPriceByID(ids, fromDate, toDate);
     }
 
-    public JSONObject searchHotelInfo(String country, String city, int page) {
+    public JSONObject searchHotelInfo(String country, String city, int page, int size) {
         HotelQuery query = new HotelQuery();
         query.setCountry(country);
         query.setCity(city);
-        Page<HotelInfo> hp = hotelInfoService.findAllByPageQuery(page, 50, query);
+        Page<HotelInfo> hp = hotelInfoService.findAllByPageQuery(page, size, query);
         List<HotelInfo> hlist = hp.getContent();
         List<String> ids = new ArrayList<>();
         for (HotelInfo h : hlist) {
@@ -80,6 +80,12 @@ public class HotelInfoApiService {
         String fromDate = DateTime.now().toString("yyyy-MM-dd");
         String toDate = DateTime.now().plusDays(1).toString("yyyy-MM-dd");
         return dcmlHandler.searchHotelInfoById(ids, fromDate, toDate);
+    }
+
+    public JSONObject getRoomsByHid(String hotelId) {
+        String fromDate = DateTime.now().plusDays(1).toString("yyyy-MM-dd");
+        String toDate = DateTime.now().plusDays(30).toString("yyyy-MM-dd");
+        return dcmlHandler.getRoomsByHotelId(hotelId, fromDate, toDate);
     }
 
 }
