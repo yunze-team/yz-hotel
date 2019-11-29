@@ -14,4 +14,6 @@ public interface HotelInfoRepository extends JpaRepository<HotelInfo, Long> {
     HotelInfo findByDotwHotelCode(String dotwHotelCode);
 
     Page<HotelInfo> findAll(Specification<HotelInfo> country, Pageable pageable);
+
+    Long countByDotwHotelCodeAndIsUpdate(String dotwHotelCode, String isUpdate);
 }

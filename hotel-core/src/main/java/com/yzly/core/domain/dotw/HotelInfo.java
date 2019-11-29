@@ -79,6 +79,9 @@ public class HotelInfo {
     @Column(length = 10)
     private String newProperty;
 
+    @Column(length = 10)
+    private String isUpdate;
+
     @Column(nullable = false, updatable = false, name = "created_at")
     @Temporal(TemporalType.TIMESTAMP)
     @CreatedDate
