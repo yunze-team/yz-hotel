@@ -1,4 +1,4 @@
-package com.yzly.core.domain.dotw;
+package com.yzly.core.domain.jltour;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -12,7 +12,7 @@ import java.util.Date;
 
 /**
  * @author lazyb
- * @create 2019/11/29
+ * @create 2019/12/1
  * @desc
  **/
 @Data
@@ -20,38 +20,30 @@ import java.util.Date;
 @NoArgsConstructor
 @Entity
 @EntityListeners(AuditingEntityListener.class)
-@Table(name = "dotw_room_type")
-public class RoomType {
+@Table(name = "jl_hotel")
+public class JLHotel {
 
     @Id
     @GeneratedValue
     private Long id;
 
     @Column(length = 50)
-    private String hotelId;// 对应dotw_hotel_code
-
-    @Column(length = 50)
-    private String roomTypeCode;
-
-    @Column(length = 10)
-    private String twin;// 表示是否双床
+    private String hid;
 
     @Column(length = 200)
     private String name;
 
-    @Lob
-    @Column
-    private String roomAmenities;// 房间设施列表
+    @Column(length = 500)
+    private String address;
 
-    @Lob
-    @Column
-    private String roomInfo;// 房间基本信息列表
+    @Column(length = 200)
+    private String tel;
 
-    @Lob
-    @Column
-    private String roomCapacityInfo;// 房间容量信息列表
+    @Column(length = 100)
+    private String longitude;
 
-    private String vendor;
+    @Column(length = 100)
+    private String latitude;
 
     @Column(nullable = false, updatable = false, name = "created_at")
     @Temporal(TemporalType.TIMESTAMP)

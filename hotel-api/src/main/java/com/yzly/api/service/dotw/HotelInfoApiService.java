@@ -1,5 +1,6 @@
 package com.yzly.api.service.dotw;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.yzly.api.common.DCMLHandler;
 import com.yzly.core.domain.dotw.HotelInfo;
@@ -86,6 +87,31 @@ public class HotelInfoApiService {
         String fromDate = DateTime.now().plusDays(1).toString("yyyy-MM-dd");
         String toDate = DateTime.now().plusDays(30).toString("yyyy-MM-dd");
         return dcmlHandler.getRoomsByHotelId(hotelId, fromDate, toDate);
+    }
+
+    /**
+     * 查询酒店详细信息，并更新酒店更新状态和入库附加信息及房型信息
+     * @param country
+     * @param city
+     * @param page
+     * @param size
+     */
+    public void updateHotelRoomsAndInfo(String country, String city, int page, int size) {
+        JSONObject jsonObject = searchHotelInfo(country, city, page, size);
+        //根据hotel的类属性进行处理，判断如果不等于空并且count条目等于1则转换为jsonobjectcount>1则转换为jsonarray
+        if (jsonObject != null && !jsonObject.getJSONObject("hotels").getString("@count").equals("0")) {
+            JSONObject hotelJSON = null;
+            if (jsonObject.getJSONObject("hotels").getString("@count").equals("1")) {
+                hotelJSON = jsonObject.getJSONObject("hotels").getJSONObject("hotel");
+                hotelInfoService.addRoomsAndHotelAdditionalInfoByHotelJson(hotelJSON);
+            } else {
+                JSONArray hotelArray = jsonObject.getJSONObject("hotels").getJSONArray("hotel");
+                for (int arrIndex = 0; arrIndex < hotelArray.size(); arrIndex++) {
+                    hotelJSON = hotelArray.getJSONObject(arrIndex);
+                    hotelInfoService.addRoomsAndHotelAdditionalInfoByHotelJson(hotelJSON);
+                }
+            }
+        }
     }
 
 }

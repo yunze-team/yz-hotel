@@ -8,6 +8,7 @@ import com.yzly.core.domain.dotw.RoomType;
 import com.yzly.core.domain.dotw.query.HotelQuery;
 import com.yzly.core.enums.VendorEnum;
 import com.yzly.core.redis.IRedisService;
+import com.yzly.core.repository.dotw.HotelAdditionalInfoRepository;
 import com.yzly.core.repository.dotw.HotelInfoRepository;
 import com.yzly.core.repository.dotw.RoomTypeRepository;
 import com.yzly.core.util.CommonUtil;
@@ -36,6 +37,8 @@ public class HotelInfoService {
 
     @Autowired
     private HotelInfoRepository hotelInfoRepository;
+    @Autowired
+    private HotelAdditionalInfoRepository hotelAdditionalInfoRepository;
     @Autowired
     private RoomTypeRepository roomTypeRepository;
     @Autowired
@@ -110,6 +113,7 @@ public class HotelInfoService {
         }, pageable);
     }
 
+    @Transactional
     public void addRoomsAndHotelAdditionalInfoByHotelJson(JSONObject hotelJson) {
         String hid = hotelJson.getString("@hotelid");
         // 根据isUpdate来判断是否已经更新了房型和附加信息，如已更新，跳过此流程
@@ -135,7 +139,16 @@ public class HotelInfoService {
                 }
             }
         }
-
+        HotelAdditionalInfo hotelAdditionalInfo = null;
+        hotelAdditionalInfo = hotelAdditionalInfoRepository.findOneByHotelId(hid);
+        if (hotelAdditionalInfo == null) {
+            hotelAdditionalInfo = getHotelAdditionalByHotelJSON(hotelJson);
+            hotelAdditionalInfoRepository.save(hotelAdditionalInfo);
+        }
+        // 更新酒店实体
+        HotelInfo hotelInfo = hotelInfoRepository.findByDotwHotelCode(hid);
+        hotelInfo.setIsUpdate("1");
+        hotelInfoRepository.save(hotelInfo);
     }
 
     public RoomType getRoomTypeByRoomJSON(JSONObject roomJson, String hid) {
@@ -145,9 +158,9 @@ public class HotelInfoService {
         roomType.setRoomTypeCode(roomJson.getString("@roomtypecode"));
         roomType.setTwin(roomJson.getString("twin"));
         roomType.setName(roomJson.getString("name"));
-        roomType.setRoomCapacityInfo(roomJson.getJSONObject("roomCapacityInfo").toJSONString());
-        roomType.setRoomInfo(roomJson.getJSONObject("roomInfo").toJSONString());
-        roomType.setRoomAmenities(roomJson.getJSONObject("roomAmenities").toJSONString());
+        roomType.setRoomCapacityInfo(roomJson.getString("roomCapacityInfo"));
+        roomType.setRoomInfo(roomJson.getString("roomInfo"));
+        roomType.setRoomAmenities(roomJson.getString("roomAmenities"));
         return roomType;
     }
 
@@ -155,16 +168,16 @@ public class HotelInfoService {
         HotelAdditionalInfo hotelAdditionalInfo = new HotelAdditionalInfo();
         hotelAdditionalInfo.setHotelId(hotelJson.getString("@hotelid"));
         hotelAdditionalInfo.setZipCode(hotelJson.getString("zipCode"));
-        hotelAdditionalInfo.setRooms(hotelJson.getJSONObject("rooms").toJSONString());
+        hotelAdditionalInfo.setRooms(hotelJson.getString("rooms"));
         hotelAdditionalInfo.setRenovationYear(hotelJson.getString("renovationYear"));
         hotelAdditionalInfo.setCityCode(hotelJson.getString("cityCode"));
         hotelAdditionalInfo.setRegionName(hotelJson.getString("regionName"));
         hotelAdditionalInfo.setRating(hotelJson.getString("rating"));
         hotelAdditionalInfo.setDirect(hotelJson.getString("direct"));
         hotelAdditionalInfo.setHotelCheckOut(hotelJson.getString("hotelCheckOut"));
-        hotelAdditionalInfo.setDescription2(hotelJson.getJSONObject("description2").toJSONString());
-        hotelAdditionalInfo.setGeoPoint(hotelJson.getJSONObject("geoPoint").toJSONString());
-        hotelAdditionalInfo.setDescription1(hotelJson.getJSONObject("description1").toJSONString());
+        hotelAdditionalInfo.setDescription2(hotelJson.getString("description2"));
+        hotelAdditionalInfo.setGeoPoint(hotelJson.getString("geoPoint"));
+        hotelAdditionalInfo.setDescription1(hotelJson.getString("description1"));
         hotelAdditionalInfo.setLastUpdated(hotelJson.getString("lastUpdated"));
         hotelAdditionalInfo.setRegionCode(hotelJson.getString("regionCode"));
         hotelAdditionalInfo.setFloors(hotelJson.getString("floors"));
@@ -173,24 +186,24 @@ public class HotelInfoService {
         hotelAdditionalInfo.setLocationId(hotelJson.getString("locationId"));
         hotelAdditionalInfo.setCountryCode(hotelJson.getString("countryCode"));
         hotelAdditionalInfo.setHotelPhone(hotelJson.getString("hotelPhone"));
-        hotelAdditionalInfo.setLeisure(hotelJson.getJSONObject("leisure").toJSONString());
+        hotelAdditionalInfo.setLeisure(hotelJson.getString("leisure"));
         hotelAdditionalInfo.setPreferred(hotelJson.getString("preferred"));
-        hotelAdditionalInfo.setImages(hotelJson.getJSONObject("images").toJSONString());
+        hotelAdditionalInfo.setImages(hotelJson.getString("images"));
         hotelAdditionalInfo.setChain(hotelJson.getString("chain"));
         hotelAdditionalInfo.setAddress(hotelJson.getString("address"));
-        hotelAdditionalInfo.setHotelPreference(hotelJson.getJSONObject("hotelPreference").toJSONString());
-        hotelAdditionalInfo.setBusiness(hotelJson.getJSONObject("business").toJSONString());
+        hotelAdditionalInfo.setHotelPreference(hotelJson.getString("hotelPreference"));
+        hotelAdditionalInfo.setBusiness(hotelJson.getString("business"));
         hotelAdditionalInfo.setHotelCheckIn(hotelJson.getString("hotelCheckIn"));
         hotelAdditionalInfo.setHotelName(hotelJson.getString("hotelName"));
-        hotelAdditionalInfo.setAmenitie(hotelJson.getJSONObject("amenitie").toJSONString());
-        hotelAdditionalInfo.setTransportation(hotelJson.getJSONObject("transportation").toJSONString());
-        hotelAdditionalInfo.setRails(hotelJson.getJSONObject("rails").toJSONString());
-        hotelAdditionalInfo.setCruises(hotelJson.getJSONObject("cruises").toJSONString());
-        hotelAdditionalInfo.setAirports(hotelJson.getJSONObject("airports").toJSONString());
+        hotelAdditionalInfo.setAmenitie(hotelJson.getString("amenitie"));
+        hotelAdditionalInfo.setTransportation(hotelJson.getString("transportation"));
+        hotelAdditionalInfo.setRails(hotelJson.getString("rails"));
+        hotelAdditionalInfo.setCruises(hotelJson.getString("cruises"));
+        hotelAdditionalInfo.setAirports(hotelJson.getString("airports"));
         hotelAdditionalInfo.setFireSafety(hotelJson.getString("fireSafety"));
         hotelAdditionalInfo.setAttraction(hotelJson.getString("attraction"));
         hotelAdditionalInfo.setMinAge(hotelJson.getString("minAge"));
-        hotelAdditionalInfo.setFullAddress(hotelJson.getJSONObject("fullAddress").toJSONString());
+        hotelAdditionalInfo.setFullAddress(hotelJson.getString("fullAddress"));
         hotelAdditionalInfo.setBuiltYear(hotelJson.getString("builtYear"));
         hotelAdditionalInfo.setLuxury(hotelJson.getString("luxury"));
         hotelAdditionalInfo.setLocation(hotelJson.getString("location"));

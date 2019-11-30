@@ -1,7 +1,13 @@
 package com.yzly.core.util;
 
 import com.yzly.core.domain.dotw.HotelInfo;
+import com.yzly.core.domain.jltour.JLHotel;
 import lombok.extern.apachecommons.CommonsLog;
+import org.apache.commons.lang.StringUtils;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -83,6 +89,65 @@ public class CommonUtil {
             }
         }
         return list;
+    }
+
+    public List<JLHotel> excelToJLBean(String path) throws Exception {
+        // 注意，此处是2003excel格式
+        InputStream is = new FileInputStream(path);
+        // XSSFWorkbook excel = new XSSFWorkbook(is);
+        Workbook workbook = WorkbookFactory.create(is);
+        JLHotel jlHotel = null;
+        List<JLHotel> hlist = new ArrayList<>();
+        // 循环工作表Sheet
+        for (int numSheet = 0; numSheet < workbook.getNumberOfSheets(); numSheet++) {
+            Sheet sheet = workbook.getSheetAt(numSheet);
+            if (sheet == null) {
+                continue;
+            }
+            // 循环行Row
+            for (int rowNum = 1; rowNum <= sheet.getLastRowNum(); rowNum++) {
+                Row row = sheet.getRow(rowNum);
+                if (row == null) {
+                    continue;
+                }
+                jlHotel = new JLHotel();
+                try {
+                    jlHotel.setHid(row.getCell(0).getStringCellValue());
+                } catch (Exception e) {
+                    jlHotel.setHid(null);
+                }
+                try {
+                    jlHotel.setName(row.getCell(1).getStringCellValue());
+                } catch (Exception e) {
+                    jlHotel.setName(null);
+                }
+                try {
+                    jlHotel.setAddress(row.getCell(2).getStringCellValue());
+                } catch (Exception e) {
+                    jlHotel.setAddress(null);
+                }
+                try {
+                    jlHotel.setTel(row.getCell(3).getStringCellValue());
+                } catch (Exception e) {
+                    jlHotel.setTel(null);
+                }
+                try {
+                    jlHotel.setLongitude(row.getCell(4).getStringCellValue());
+                } catch (Exception e) {
+                    jlHotel.setLongitude(null);
+                }
+                try {
+                    jlHotel.setLatitude(row.getCell(5).getStringCellValue());
+                } catch (Exception e) {
+                    jlHotel.setLatitude(null);
+                }
+                if (StringUtils.isNotEmpty(jlHotel.getHid())) {
+                    hlist.add(jlHotel);
+                }
+            }
+        }
+        log.info("jl excel list size:" + hlist.size());
+        return hlist;
     }
 
 }
