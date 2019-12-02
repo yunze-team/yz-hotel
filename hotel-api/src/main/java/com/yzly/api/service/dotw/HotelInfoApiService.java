@@ -4,9 +4,12 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.yzly.api.common.DCMLHandler;
 import com.yzly.core.domain.dotw.HotelInfo;
+import com.yzly.core.domain.dotw.RoomBookingInfo;
 import com.yzly.core.domain.dotw.query.HotelQuery;
+import com.yzly.core.service.dotw.BookingService;
 import com.yzly.core.service.dotw.HotelInfoService;
 import lombok.extern.apachecommons.CommonsLog;
+import org.apache.commons.lang.StringUtils;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -27,6 +30,8 @@ public class HotelInfoApiService {
     private HotelInfoService hotelInfoService;
     @Autowired
     private DCMLHandler dcmlHandler;
+    @Autowired
+    private BookingService bookingService;
 
     public void syncBasicData() {
         try {
@@ -47,8 +52,8 @@ public class HotelInfoApiService {
     }
 
     public JSONObject searchHotel(String ids) {
-        String fromDate = DateTime.now().plusDays(1).toString("yyyy-MM-dd");
-        String toDate = DateTime.now().plusDays(30).toString("yyyy-MM-dd");
+        String fromDate = DateTime.now().toString("yyyy-MM-dd");
+        String toDate = DateTime.now().plusDays(1).toString("yyyy-MM-dd");
         List<String> idArray = Arrays.asList(ids.split(","));
         return dcmlHandler.searchHotelPriceByID(idArray, fromDate, toDate);
     }
@@ -63,8 +68,8 @@ public class HotelInfoApiService {
         for (HotelInfo h : hlist) {
             ids.add(h.getDotwHotelCode());
         }
-        String fromDate = DateTime.now().plusDays(1).toString("yyyy-MM-dd");
-        String toDate = DateTime.now().plusDays(30).toString("yyyy-MM-dd");
+        String fromDate = DateTime.now().toString("yyyy-MM-dd");
+        String toDate = DateTime.now().plusDays(1).toString("yyyy-MM-dd");
         return dcmlHandler.searchHotelPriceByID(ids, fromDate, toDate);
     }
 
@@ -83,10 +88,41 @@ public class HotelInfoApiService {
         return dcmlHandler.searchHotelInfoById(ids, fromDate, toDate);
     }
 
-    public JSONObject getRoomsByHid(String hotelId) {
-        String fromDate = DateTime.now().plusDays(1).toString("yyyy-MM-dd");
-        String toDate = DateTime.now().plusDays(30).toString("yyyy-MM-dd");
-        return dcmlHandler.getRoomsByHotelId(hotelId, fromDate, toDate);
+    public JSONObject getRoomsByHid(String hotelId, String rateId) {
+        String fromDate = DateTime.now().toString("yyyy-MM-dd");
+        String toDate = DateTime.now().plusDays(1).toString("yyyy-MM-dd");
+        return dcmlHandler.getRoomsByHotelId(hotelId, rateId, fromDate, toDate);
+    }
+
+    /**
+     * 根据城市获取可用的房型和价格
+     * @param city
+     * @param page
+     * @param size
+     * @return
+     */
+    public List<RoomBookingInfo> searchRoomsForCity(String city, int page, int size) {
+        List<RoomBookingInfo> rlist = new ArrayList<>();
+        HotelQuery query = new HotelQuery();
+        query.setCountry("CHINA");
+        query.setCity(city);
+        Page<HotelInfo> hp = hotelInfoService.findAllByPageQuery(page, size, query);
+        String fromDate = DateTime.now().toString("yyyy-MM-dd");
+        String toDate = DateTime.now().plusDays(1).toString("yyyy-MM-dd");
+        for (HotelInfo h : hp.getContent()) {
+            JSONObject result = dcmlHandler.getRoomsByHotelId(h.getDotwHotelCode(), "-1", fromDate, toDate);
+            JSONObject request = result.getJSONObject("request");
+            if (request != null) {
+                String successful = request.getString("successful");
+                if (StringUtils.isNotEmpty(successful) && "FALSE".equals(successful)) {
+                    continue;
+                }
+            } else {
+                log.info("hotelId:" + h.getDotwHotelCode());
+                rlist = bookingService.addRoomBookingByGetRoomsJson(result, h.getDotwHotelCode(), fromDate, toDate);
+            }
+        }
+        return rlist;
     }
 
     /**

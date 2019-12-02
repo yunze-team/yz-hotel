@@ -230,7 +230,7 @@ public class DCMLHandler {
      * @param toDate
      * @return
      */
-    public JSONObject getRoomsByHotelId(String hotelId, String fromDate, String toDate) {
+    public JSONObject getRoomsByHotelId(String hotelId, String rateBasis, String fromDate, String toDate) {
         Document doc = generateBaseRequest();
         Element customer = doc.getRootElement();
         customer.addElement("product").setText("hotel");
@@ -244,10 +244,53 @@ public class DCMLHandler {
         Element room = rooms.addElement("room").addAttribute("runno", "0");
         room.addElement("adultsCode").setText("2");
         room.addElement("children").addAttribute("no", "0");
-        room.addElement("rateBasis").setText("-1");
+        room.addElement("rateBasis").setText(rateBasis);
         room.addElement("passengerNationality").setText("168");
         room.addElement("passengerCountryOfResidence").setText("168");
         bookingDetails.addElement("productId").setText(hotelId);
+        String xmlResp = this.sendDotwString(doc);
+        XMLSerializer xmlSerializer = new XMLSerializer();
+        String resutStr = xmlSerializer.read(xmlResp).toString();
+        return JSON.parseObject(resutStr);
+    }
+
+    /**
+     * 去dotw发起预订单信息
+     *
+     * @param hotelId dotw_hotel_code
+     * @param roomId room_type_code
+     * @param fromDate
+     * @param toDate
+     * @return
+     */
+    public JSONObject saveBooking(String hotelId, String roomId, String fromDate, String toDate) {
+        Document doc = generateBaseRequest();
+        Element customer = doc.getRootElement();
+        customer.addElement("product").setText("hotel");
+        Element request = customer.addElement("request");
+        request.addAttribute("command", "savebooking");
+        Element bookingDetails = request.addElement("bookingDetails");
+        bookingDetails.addElement("fromDate").setText(fromDate);
+        bookingDetails.addElement("toDate").setText(toDate);
+        bookingDetails.addElement("currency").setText("2524");
+        bookingDetails.addElement("productid").setText(hotelId);
+        Element rooms = bookingDetails.addElement("rooms").addAttribute("no", "1");
+        Element room = rooms.addElement("room").addAttribute("runno", "0");
+        room.addElement("roomtypecode").setText(roomId);
+        String xmlResp = this.sendDotwString(doc);
+        XMLSerializer xmlSerializer = new XMLSerializer();
+        String resutStr = xmlSerializer.read(xmlResp).toString();
+        return JSON.parseObject(resutStr);
+    }
+
+    /**
+     * 获取dotw_ratebasis
+     * @return
+     */
+    public JSONObject getRateBasis() {
+        Document doc = generateBaseRequest();
+        Element customer = doc.getRootElement();
+        customer.addElement("request").addAttribute("command", "getratebasisids");
         String xmlResp = this.sendDotwString(doc);
         XMLSerializer xmlSerializer = new XMLSerializer();
         String resutStr = xmlSerializer.read(xmlResp).toString();

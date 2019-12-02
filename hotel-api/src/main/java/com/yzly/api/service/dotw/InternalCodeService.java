@@ -1,10 +1,12 @@
 package com.yzly.api.service.dotw;
 
+import com.alibaba.fastjson.JSONObject;
 import com.yzly.api.common.DCMLHandler;
 import com.yzly.core.domain.dotw.City;
 import com.yzly.core.domain.dotw.Country;
 import com.yzly.core.domain.dotw.Currency;
 import com.yzly.core.service.dotw.CityService;
+import com.yzly.core.service.dotw.CodeService;
 import com.yzly.core.service.dotw.CountryService;
 import lombok.extern.apachecommons.CommonsLog;
 import org.dom4j.Document;
@@ -28,6 +30,8 @@ public class InternalCodeService {
     private CountryService countryService;
     @Autowired
     private CityService cityService;
+    @Autowired
+    private CodeService codeService;
 
     public List<Country> getAllCountries() {
         log.info("getAllCountries start.");
@@ -63,6 +67,15 @@ public class InternalCodeService {
         Document doc = dcmlHandler.getAllCurrencies();
         String json = dcmlHandler.sendDotw(doc);
         countryService.syncCurrencyByJson(json);
+    }
+
+    public JSONObject getrate() {
+        return dcmlHandler.getRateBasis();
+    }
+
+    public void syncRate() {
+        JSONObject jsonObject = dcmlHandler.getRateBasis();
+        codeService.syncRateBasis(jsonObject);
     }
 
 }

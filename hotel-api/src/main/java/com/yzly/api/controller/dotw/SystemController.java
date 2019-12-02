@@ -65,4 +65,15 @@ public class SystemController {
         hotelInfoApiService.syncBatchData();
         return "SUCCESS";
     }
+
+    @GetMapping("/rate")
+    public Object allRate() {
+        return internalCodeService.getrate();
+    }
+
+    @GetMapping("/syncrate")
+    public String syncRate() {
+        internalCodeService.syncRate();
+        return "SUCCESS";
+    }
 }
