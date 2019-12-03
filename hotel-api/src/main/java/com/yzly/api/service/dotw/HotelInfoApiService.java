@@ -51,9 +51,7 @@ public class HotelInfoApiService {
         }
     }
 
-    public JSONObject searchHotel(String ids) {
-        String fromDate = DateTime.now().toString("yyyy-MM-dd");
-        String toDate = DateTime.now().plusDays(1).toString("yyyy-MM-dd");
+    public JSONObject searchHotel(String ids, String fromDate, String toDate) {
         List<String> idArray = Arrays.asList(ids.split(","));
         return dcmlHandler.searchHotelPriceByID(idArray, fromDate, toDate);
     }

@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 /**
  * @author lazyb
  * @create 2019/11/27
- * @desc
+ * @descw
  **/
 @RestController
 @RequestMapping(value = "/hotel")
@@ -25,8 +25,8 @@ public class HotelController {
     private JLHotelService jlHotelService;
 
     @GetMapping("/search")
-    public Object searchHotel(String ids) {
-        return hotelInfoApiService.searchHotel(ids);
+    public Object searchHotel(String ids, String fromDate, String toDate) {
+        return hotelInfoApiService.searchHotel(ids, fromDate, toDate);
     }
 
     @GetMapping("/all")

@@ -70,6 +70,7 @@ public class BookingService {
         roomBookingInfo.setLeftToSell(rateJson.getString("leftToSell"));
         roomBookingInfo.setAllocationDetails(rateJson.getString("allocationDetails"));
         roomBookingInfo.setStatus(rateJson.getString("status"));
+        roomBookingInfo.setRateBasisId(rateJson.getString("@id"));
         return roomBookingInfo;
     }
 

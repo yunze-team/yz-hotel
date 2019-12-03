@@ -78,4 +78,9 @@ public class InternalCodeService {
         codeService.syncRateBasis(jsonObject);
     }
 
+    public void syncSalu() {
+        JSONObject jsonObject = dcmlHandler.getSalutationsIds();
+        codeService.syncSalutations(jsonObject);
+    }
+
 }

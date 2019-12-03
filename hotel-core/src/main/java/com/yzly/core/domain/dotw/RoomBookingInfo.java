@@ -38,6 +38,7 @@ public class RoomBookingInfo {
     private String allowsExtraMeals;
     private String tariffNotes;
     private String rateType;
+    private String rateBasisId;
     private String passengerNamesRequiredForBooking;
     private String total;
     private String isBookable;

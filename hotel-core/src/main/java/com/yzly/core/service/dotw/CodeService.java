@@ -3,7 +3,9 @@ package com.yzly.core.service.dotw;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.yzly.core.domain.dotw.RateBasis;
+import com.yzly.core.domain.dotw.SalutationsIds;
 import com.yzly.core.repository.dotw.RateBasisRepository;
+import com.yzly.core.repository.dotw.SalutationsIdsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -19,6 +21,8 @@ public class CodeService {
 
     @Autowired
     private RateBasisRepository rateBasisRepository;
+    @Autowired
+    private SalutationsIdsRepository salutationsIdsRepository;
 
     @Transactional
     public void syncRateBasis(JSONObject jsonObject) {
@@ -41,6 +45,20 @@ public class CodeService {
             return null;
         }
         return rateBasis.getName();
+    }
+
+    @Transactional
+    public void syncSalutations(JSONObject jsonObject) {
+        JSONArray rateArray = jsonObject.getJSONObject("salutations").getJSONArray("option");
+        for (int i = 0; i < rateArray.size(); i++) {
+            JSONObject rateJson = rateArray.getJSONObject(i);
+            String code = rateJson.getString("@value");
+            if (salutationsIdsRepository.findByCode(code) != null) {
+                return;
+            }
+            SalutationsIds salutationsIds = new SalutationsIds(code, rateJson.getString("#text"));
+            salutationsIdsRepository.save(salutationsIds);
+        }
     }
 
 }

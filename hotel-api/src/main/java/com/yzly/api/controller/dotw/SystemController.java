@@ -76,4 +76,10 @@ public class SystemController {
         internalCodeService.syncRate();
         return "SUCCESS";
     }
+
+    @GetMapping("/syncsalu")
+    public Object syncSalu() {
+        internalCodeService.syncSalu();
+        return "SUCCESS";
+    }
 }
