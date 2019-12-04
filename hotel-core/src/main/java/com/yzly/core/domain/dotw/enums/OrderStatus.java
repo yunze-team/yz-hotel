@@ -7,6 +7,7 @@ package com.yzly.core.domain.dotw.enums;
  **/
 public enum OrderStatus {
 
+    FAILED,
     SAVED,
     CONFIRMED,
     CANCELED

@@ -1,6 +1,7 @@
 package com.yzly.core.domain.dotw;
 
 import com.yzly.core.domain.dotw.enums.OrderStatus;
+import com.yzly.core.domain.dotw.vo.Passenger;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
@@ -10,6 +11,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
 import java.util.Date;
+import java.util.List;
 
 /**
  * 订单明细表，保存预定单的基本信息及住客的基本信息
@@ -51,15 +53,17 @@ public class BookingOrderInfo {
     private String passengerNationality;
 
     @Column(length = 10)
-    private String passengerSalutation;
-
-    @Column(length = 50)
-    private String passengerFirstName;
-
-    @Column(length = 50)
-    private String passengerLastName;
+    private String fromDate;
 
     @Column(length = 10)
+    private String toDate;
+
+    @Lob
+    @Column
+    private String passengerInfos;
+
+    @Lob
+    @Column
     private String specialRequests;
 
     @Column(length = 50)
@@ -71,25 +75,34 @@ public class BookingOrderInfo {
     @Column(length = 50)
     private String bookingReferenceNumber;
 
+    @Column(length = 100)
     private String servicePrice;
 
+    @Column(length = 100)
     private String mealsPrice;
 
+    @Column(length = 100)
     private String price;
 
+    @Column(length = 10)
     private String currency;
 
+    @Column(length = 10)
     private String type;
 
+    @Lob
+    @Column
     private String voucher;
 
+    @Column(length = 100)
     private String paymentGuaranteedBy;
 
-    private String emergencySalutation;
+    @Column(length = 200)
+    private String emergencyContacts;
 
-    private String emergencyFullName;
-
-    private String emergencyPhone;
+    @Lob
+    @Column
+    private String confirmationText;
 
     @Enumerated(EnumType.ORDINAL)
     @Column(length = 10)
@@ -106,5 +119,8 @@ public class BookingOrderInfo {
     @Column(nullable = false, name = "updated_at")
     @LastModifiedDate
     private Date updatedAt;
+
+    @Transient
+    private List<Passenger> passengerList;
 
 }
