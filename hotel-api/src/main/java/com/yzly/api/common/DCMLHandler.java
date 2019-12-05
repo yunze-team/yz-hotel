@@ -9,6 +9,7 @@ import com.yzly.core.domain.dotw.vo.Passenger;
 import com.yzly.core.util.PasswordEncryption;
 import lombok.extern.apachecommons.CommonsLog;
 import net.sf.json.xml.XMLSerializer;
+import org.apache.commons.lang.StringUtils;
 import org.dom4j.Document;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
@@ -394,8 +395,46 @@ public class DCMLHandler {
         if (isConfirm.equals("yes")) {
             Element testPricesAndAllocation = bookingDetails.addElement("testPricesAndAllocation");
             Element service = testPricesAndAllocation.addElement("service").addAttribute("referencenumber", orderInfo.getBookingCode());
-            service.addElement("penaltyApplied").setText(orderInfo.getCancelCharge());
+            service.addElement("penaltyApplied").setText(orderInfo.getPenaltyApplied());
         }
+        String xmlResp = this.sendDotwString(doc);
+        XMLSerializer xmlSerializer = new XMLSerializer();
+        String resutStr = xmlSerializer.read(xmlResp).toString();
+        return JSON.parseObject(resutStr);
+    }
+
+    /**
+     * 判断返回结果是否正确
+     * @param result
+     * @return
+     */
+    public boolean judgeResult(JSONObject result) {
+        JSONObject request = result.getJSONObject("request");
+        if (request != null) {
+            String successful = request.getString("successful");
+            if (StringUtils.isNotEmpty(successful) && "FALSE".equals(successful)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * 搜索订单
+     * @param passenger
+     * @param city
+     * @return
+     */
+    public JSONObject searchBooking(Passenger passenger, String city) {
+        Document doc = generateBaseRequest();
+        Element customer = doc.getRootElement();
+        customer.addElement("product").setText("hotel");
+        Element request = customer.addElement("request").addAttribute("command", "searchbookings");
+        Element bookingDetails = request.addElement("bookingDetails");
+        bookingDetails.addElement("passengerFirstName").setText(passenger.getFirstName());
+        bookingDetails.addElement("passengerLastName").setText(passenger.getLastName());
+        bookingDetails.addElement("bookedCity").setText(city);
+        bookingDetails.addElement("bookingType").setText("1");
         String xmlResp = this.sendDotwString(doc);
         XMLSerializer xmlSerializer = new XMLSerializer();
         String resutStr = xmlSerializer.read(xmlResp).toString();

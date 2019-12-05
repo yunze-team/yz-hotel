@@ -132,18 +132,6 @@ public class BookingService {
         bookingOrderInfo.setToDate(roomBookingInfo.getToDate());
         bookingOrderInfo.setPassengerInfos(JSONObject.toJSONString(plist));
         bookingOrderInfo.setCurrency(JSON.parseObject(roomBookingInfo.getRateType()).getString("@currencyid"));
-        // 拿到roomtype中的cancellationRules，并判断集合大小及转变规则
-        JSONObject cancelJson = JSON.parseObject(roomBookingInfo.getCancellationRules());
-        String cancelCharge = null;
-        if (cancelJson.getString("@count").equals("1")) {
-            JSONObject rule = cancelJson.getJSONObject("rule");
-            cancelCharge = rule.getJSONObject("cancelCharge").getString("#text");
-        } else {
-            JSONArray ruleArray = cancelJson.getJSONArray("rule");
-            JSONObject rule = ruleArray.getJSONObject(0);
-            cancelCharge = rule.getJSONObject("cancelCharge").getString("#text");
-        }
-        bookingOrderInfo.setCancelCharge(cancelCharge);
         bookingOrderInfo.setOrderStatus(OrderStatus.SAVED);
         return bookingOrderInfoRepository.save(bookingOrderInfo);
     }
@@ -164,17 +152,39 @@ public class BookingService {
         JSONObject bookingJson = jsonObject.getJSONObject("bookings").getJSONObject("booking");
         orderInfo.setPaymentGuaranteedBy(bookingJson.getString("paymentGuaranteedBy"));
         orderInfo.setServicePrice(bookingJson.getString("servicePrice"));
+        orderInfo.setServicePriceValue(bookingJson.getJSONObject("servicePrice").getString("#text"));
         orderInfo.setBookingReferenceNumber(bookingJson.getString("bookingReferenceNumber"));
         orderInfo.setPrice(bookingJson.getString("price"));
+        orderInfo.setPriceValue(bookingJson.getJSONObject("price").getString("#text"));
         orderInfo.setVoucher(bookingJson.getString("voucher"));
         orderInfo.setBookingStatus(bookingJson.getString("bookingStatus"));
         orderInfo.setEmergencyContacts(bookingJson.getString("emergencyContacts"));
         orderInfo.setBookingCode(bookingJson.getString("bookingCode"));
         orderInfo.setMealsPrice(bookingJson.getString("mealsPrice"));
+        orderInfo.setMealsPriceValue(bookingJson.getJSONObject("mealsPrice").getString("#text"));
         orderInfo.setType(bookingJson.getString("type"));
         orderInfo.setReturnedCode(jsonObject.getString("returnedCode"));
         orderInfo.setOrderStatus(OrderStatus.CONFIRMED);
         return bookingOrderInfoRepository.save(orderInfo);
+    }
+
+    /**
+     * 预取消订单方法
+     * @param orderInfo
+     * @param jsonObject
+     * @return
+     * @throws Exception
+     */
+    public BookingOrderInfo preCancelOrder(BookingOrderInfo orderInfo, JSONObject jsonObject) throws Exception {
+        JSONObject penaltyApplied = jsonObject.getJSONObject("services").
+                getJSONObject("service").getJSONObject("cancellationPenalty").getJSONObject("penaltyApplied");
+        orderInfo.setPenaltyApplied(penaltyApplied.getString("#text"));
+        orderInfo.setOrderStatus(OrderStatus.PRECANCLED);
+        return bookingOrderInfoRepository.save(orderInfo);
+    }
+
+    public BookingOrderInfo getOneByAllocation(String allocation) {
+        return bookingOrderInfoRepository.findByAllocationDetails(allocation);
     }
 
 }

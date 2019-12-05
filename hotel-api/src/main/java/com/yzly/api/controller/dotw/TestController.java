@@ -44,4 +44,9 @@ public class TestController {
         return jsonObject;
     }
 
+    @PostMapping("/search")
+    public Object searchBooking(String firstName, String lastName, String city) {
+        return dcmlHandler.searchBooking(new Passenger("147", firstName, lastName), city);
+    }
+
 }

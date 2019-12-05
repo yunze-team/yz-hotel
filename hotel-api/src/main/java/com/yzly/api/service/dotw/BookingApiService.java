@@ -38,17 +38,53 @@ public class BookingApiService {
         BookingOrderInfo orderInfo = bookingService.saveBookingByAllocation(allocationDetails, plist);
         // 发往dotw确认
         JSONObject result = dcmlHandler.confirmBookingByOrder(orderInfo, plist);
-        JSONObject request = result.getJSONObject("request");
-        if (request != null) {
-            String successful = request.getString("successful");
-            if (StringUtils.isNotEmpty(successful) && "FALSE".equals(successful)) {
-                bookingService.updateBookingOrderStatus(orderInfo, OrderStatus.FAILED);
-                return request;
-            }
+        if (!dcmlHandler.judgeResult(result)) {
+            bookingService.updateBookingOrderStatus(orderInfo, OrderStatus.FAILED);
+            return result;
         }
         // 获得结果，更新order
         BookingOrderInfo finalOrder = bookingService.updateBookingByJSON(result, orderInfo);
         return finalOrder;
+    }
+
+    /**
+     * 预取消订单
+     * @param allocationDetails
+     * @return
+     * @throws Exception
+     */
+    public Object preCancelBooking(String allocationDetails) throws Exception {
+        BookingOrderInfo orderInfo = bookingService.getOneByAllocation(allocationDetails);
+        if (orderInfo == null || !orderInfo.getOrderStatus().equals(OrderStatus.CONFIRMED)) {
+            throw new Exception("order is null or order status is not confirmed");
+        }
+        // 发往dotw进行预取消订单
+        JSONObject preCancel = dcmlHandler.cancelBooking(orderInfo, "no");
+        if (!dcmlHandler.judgeResult(preCancel)) {
+            return preCancel;
+        }
+        orderInfo = bookingService.preCancelOrder(orderInfo, preCancel);
+        return orderInfo.getPenaltyApplied();
+    }
+
+    /**
+     * 取消订单
+     * @param allocationDetails
+     * @return
+     * @throws Exception
+     */
+    public Object cancelBooking(String allocationDetails) throws Exception {
+        BookingOrderInfo orderInfo = bookingService.getOneByAllocation(allocationDetails);
+        if (orderInfo == null || !orderInfo.getOrderStatus().equals(OrderStatus.PRECANCLED)) {
+            throw new Exception("order is null or order status is not precancled");
+        }
+        // 发往dotw进行取消订单
+        JSONObject cancel = dcmlHandler.cancelBooking(orderInfo, "yes");
+        if (!dcmlHandler.judgeResult(cancel)) {
+            return cancel;
+        }
+        bookingService.updateBookingOrderStatus(orderInfo, OrderStatus.CANCELED);
+        return cancel;
     }
 
 }

@@ -32,4 +32,24 @@ public class BookingController {
         }
     }
 
+    @PostMapping("/precancel")
+    public Object preCancel(String allocation) {
+        try {
+            return bookingApiService.preCancelBooking(allocation);
+        } catch (Exception e) {
+            log.info(e.getMessage());
+            return "FAIL";
+        }
+    }
+
+    @PostMapping("/cancel")
+    public Object cancel(String allocation) {
+        try {
+            return bookingApiService.cancelBooking(allocation);
+        } catch (Exception e) {
+            log.info(e.getMessage());
+            return "FAIL";
+        }
+    }
+
 }
