@@ -75,14 +75,26 @@ public class BookingOrderInfo {
     @Column(length = 50)
     private String bookingReferenceNumber;
 
-    @Column(length = 100)
+    @Column(length = 20)
     private String servicePrice;
 
-    @Column(length = 100)
+    @Column(length = 20)
+    private String servicePriceFormatted;
+
+    @Column(length = 20)
     private String mealsPrice;
 
-    @Column(length = 100)
+    @Column(length = 20)
+    private String mealsPriceFormatted;
+
+    @Column(length = 20)
     private String price;
+
+    @Column(length = 20)
+    private String priceFormatted;
+
+    @Column(length = 20)
+    private String cancelCharge;
 
     @Column(length = 10)
     private String currency;

@@ -113,7 +113,10 @@ public class BookingService {
      * @throws Exception
      */
     public BookingOrderInfo saveBookingByAllocation(String allocationDetails, List<Passenger> plist) throws Exception {
-        BookingOrderInfo bookingOrderInfo = new BookingOrderInfo();
+        BookingOrderInfo bookingOrderInfo = bookingOrderInfoRepository.findByAllocationDetails(allocationDetails);
+        if (bookingOrderInfo == null) {
+            bookingOrderInfo = new BookingOrderInfo();
+        }
         RoomBookingInfo roomBookingInfo = roomBookingInfoRepository.findByAllocationDetails(allocationDetails);
         if (roomBookingInfo == null) {
             throw new Exception("room is null");
@@ -129,6 +132,18 @@ public class BookingService {
         bookingOrderInfo.setToDate(roomBookingInfo.getToDate());
         bookingOrderInfo.setPassengerInfos(JSONObject.toJSONString(plist));
         bookingOrderInfo.setCurrency(JSON.parseObject(roomBookingInfo.getRateType()).getString("@currencyid"));
+        // 拿到roomtype中的cancellationRules，并判断集合大小及转变规则
+        JSONObject cancelJson = JSON.parseObject(roomBookingInfo.getCancellationRules());
+        String cancelCharge = null;
+        if (cancelJson.getString("@count").equals("1")) {
+            JSONObject rule = cancelJson.getJSONObject("rule");
+            cancelCharge = rule.getJSONObject("cancelCharge").getString("#text");
+        } else {
+            JSONArray ruleArray = cancelJson.getJSONArray("rule");
+            JSONObject rule = ruleArray.getJSONObject(0);
+            cancelCharge = rule.getJSONObject("cancelCharge").getString("#text");
+        }
+        bookingOrderInfo.setCancelCharge(cancelCharge);
         bookingOrderInfo.setOrderStatus(OrderStatus.SAVED);
         return bookingOrderInfoRepository.save(bookingOrderInfo);
     }

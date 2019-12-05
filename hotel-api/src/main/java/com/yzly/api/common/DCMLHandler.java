@@ -377,4 +377,29 @@ public class DCMLHandler {
         return JSON.parseObject(resutStr);
     }
 
+    /**
+     * 去dotw取消订单，分两步，第一步confirm送no，第二步confirm送yes，才能完成取消
+     * @param orderInfo
+     * @param isConfirm
+     * @return
+     */
+    public JSONObject cancelBooking(BookingOrderInfo orderInfo, String isConfirm) {
+        Document doc = generateBaseRequest();
+        Element customer = doc.getRootElement();
+        Element request = customer.addElement("request").addAttribute("command", "cancelbooking");
+        Element bookingDetails = request.addElement("bookingDetails");
+        bookingDetails.addElement("bookingType").setText("1");
+        bookingDetails.addElement("bookingCode").setText(orderInfo.getBookingCode());
+        bookingDetails.addElement("confirm").setText(isConfirm);
+        if (isConfirm.equals("yes")) {
+            Element testPricesAndAllocation = bookingDetails.addElement("testPricesAndAllocation");
+            Element service = testPricesAndAllocation.addElement("service").addAttribute("referencenumber", orderInfo.getBookingCode());
+            service.addElement("penaltyApplied").setText(orderInfo.getCancelCharge());
+        }
+        String xmlResp = this.sendDotwString(doc);
+        XMLSerializer xmlSerializer = new XMLSerializer();
+        String resutStr = xmlSerializer.read(xmlResp).toString();
+        return JSON.parseObject(resutStr);
+    }
+
 }

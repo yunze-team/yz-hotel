@@ -33,7 +33,7 @@ public class BookingApiService {
      * @param plist
      * @throws Exception
      */
-    public BookingOrderInfo confirmBooking(String allocationDetails, List<Passenger> plist) throws Exception {
+    public Object confirmBooking(String allocationDetails, List<Passenger> plist) throws Exception {
         // 保存订单初始信息
         BookingOrderInfo orderInfo = bookingService.saveBookingByAllocation(allocationDetails, plist);
         // 发往dotw确认
@@ -43,7 +43,7 @@ public class BookingApiService {
             String successful = request.getString("successful");
             if (StringUtils.isNotEmpty(successful) && "FALSE".equals(successful)) {
                 bookingService.updateBookingOrderStatus(orderInfo, OrderStatus.FAILED);
-                throw new Exception("booking not successful");
+                return request;
             }
         }
         // 获得结果，更新order

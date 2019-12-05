@@ -10,6 +10,7 @@ public enum OrderStatus {
     FAILED,
     SAVED,
     CONFIRMED,
+    PRECANCLED,
     CANCELED
 
 }

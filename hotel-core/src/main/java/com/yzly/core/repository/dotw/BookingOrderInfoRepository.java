@@ -11,4 +11,7 @@ import org.springframework.stereotype.Repository;
  **/
 @Repository
 public interface BookingOrderInfoRepository extends JpaRepository<BookingOrderInfo, Long> {
+
+    BookingOrderInfo findByAllocationDetails(String allocationDetails);
+
 }
