@@ -97,6 +97,23 @@
             <version>1.13</version>
         </dependency>
 
+        <!--美团sdk-->
+        <dependency>
+            <groupId>com.mt</groupId>
+            <artifactId>mthotelsdk</artifactId>
+            <version>1.0</version>
+            <scope>system</scope>
+            <systemPath>${basedir}/src/main/resources/lib/mthotel-openplatform-sdk-1.0.1-JDK1.6-sources.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>com.mt</groupId>
+            <artifactId>mthotelsdk</artifactId>
+            <version>1.0</version>
+            <scope>system</scope>
+            <systemPath>${basedir}/src/main/resources/lib/mthotel-openplatform-sdk-1.0.1-JDK1.6.jar</systemPath>
+        </dependency>
+
+
 
     </dependencies>
 
@@ -106,6 +123,9 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <version>${spring-boot.version}</version>
+                <configuration>
+                    <includeSystemScope>true</includeSystemScope>
+                </configuration>
                 <executions>
                     <execution>
                         <goals>
