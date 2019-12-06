@@ -44,9 +44,9 @@ public class HotelController {
         return hotelInfoApiService.getRoomsByHid(hid, rid);
     }
 
-    @GetMapping("/allrooms")
-    public Object allRooms(String city, int page, int size) {
-        return hotelInfoApiService.searchRoomsForCity(city, page, size);
+    @PostMapping("/allrooms")
+    public Object allRoomsByDate(String city, int page, int size, String fromDate, String toDate) {
+        return hotelInfoApiService.searchRoomsForCity(city, page, size, fromDate, toDate);
     }
 
     @PostMapping("/pull")

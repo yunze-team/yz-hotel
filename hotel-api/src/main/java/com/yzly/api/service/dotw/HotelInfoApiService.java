@@ -99,14 +99,12 @@ public class HotelInfoApiService {
      * @param size
      * @return
      */
-    public List<RoomBookingInfo> searchRoomsForCity(String city, int page, int size) {
+    public List<RoomBookingInfo> searchRoomsForCity(String city, int page, int size, String fromDate, String toDate) {
         List<RoomBookingInfo> rlist = new ArrayList<>();
         HotelQuery query = new HotelQuery();
         query.setCountry("CHINA");
         query.setCity(city);
         Page<HotelInfo> hp = hotelInfoService.findAllByPageQuery(page, size, query);
-        String fromDate = DateTime.now().toString("yyyy-MM-dd");
-        String toDate = DateTime.now().plusDays(1).toString("yyyy-MM-dd");
         for (HotelInfo h : hp.getContent()) {
             JSONObject result = dcmlHandler.getRoomsByHotelId(h.getDotwHotelCode(), "-1", fromDate, toDate);
             JSONObject request = result.getJSONObject("request");
