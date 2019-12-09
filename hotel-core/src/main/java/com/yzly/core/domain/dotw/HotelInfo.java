@@ -55,6 +55,12 @@ public class HotelInfo {
     @Column(length = 100)
     private String hotelName;
 
+    @Column(length = 255)
+    private String hotelNameCn;
+
+    @Column(length = 500)
+    private String hotelAddressCn;
+
     @Column(length = 50)
     private String starRating;
 
