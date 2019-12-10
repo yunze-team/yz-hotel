@@ -14,6 +14,7 @@
         <module>hotel-core</module>
         <module>hotel-job-admin</module>
         <module>hotel-job-core</module>
+        <module>hotel-job-executor</module>
     </modules>
 
     <properties>
@@ -37,6 +38,8 @@
         <groovy.version>2.5.7</groovy.version>
 
         <xxl-rpc.version>1.4.1</xxl-rpc.version>
+
+        <spring-cloud.version>Dalston.SR1</spring-cloud.version>
     </properties>
 
 
