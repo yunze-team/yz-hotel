@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 @FeignClient("yz-hotel-api")
 public interface HotelController {
 
-    @GetMapping("/hotel/info")
+    @GetMapping("/api/hotel/info")
     Object allHotelInfo(@RequestParam("country") String country, @RequestParam("city") String city, @RequestParam("page") int page, @RequestParam("size") int size);
 
 }

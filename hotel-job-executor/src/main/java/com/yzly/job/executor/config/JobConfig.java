@@ -3,16 +3,16 @@ package com.yzly.job.executor.config;
 import com.yzly.job.core.executor.impl.XxlJobSpringExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
 /**
  * @author lazyb
  * @create 2019/12/10
  * @desc
  **/
-@Configurable
+@Configuration
 public class JobConfig {
 
     private Logger logger = LoggerFactory.getLogger(JobConfig.class);
