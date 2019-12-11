@@ -17,5 +17,6 @@ public class HotelQuery {
     private String brandName;
     private String region;
     private String dotwHotelCode;
+    private String isUpdate;
 
 }

@@ -115,6 +115,10 @@ public class HotelInfoService {
             if (StringUtils.isNotEmpty(hotelQuery.getRegion())) {
                 list.add(criteriaBuilder.equal(root.get("region").as(String.class), hotelQuery.getRegion()));
             }
+            if (StringUtils.isNotEmpty(hotelQuery.getIsUpdate())) {
+                list.add(criteriaBuilder.or(criteriaBuilder.notEqual(root.get("isUpdate").as(String.class), hotelQuery.getIsUpdate()),
+                        criteriaBuilder.isNull(root.get("isUpdate").as(String.class))));
+            }
             Predicate[] p = new Predicate[list.size()];
             return criteriaBuilder.and(list.toArray(p));
         }, pageable);
@@ -230,6 +234,7 @@ public class HotelInfoService {
         int size = Integer.valueOf(eventAttrRepository.findByEventType(DOTW_HOTEL_PULL_SIZE).getEventValue());
         HotelQuery hotelQuery = new HotelQuery();
         hotelQuery.setCountry(country);
+        hotelQuery.setIsUpdate("1");
         Page<HotelInfo> hpage = this.findAllByPageQuery(1, size, hotelQuery);
         return hpage.getContent();
     }
