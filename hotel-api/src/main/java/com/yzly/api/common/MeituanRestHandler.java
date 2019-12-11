@@ -3,18 +3,19 @@ package com.yzly.api.common;
 import com.meituan.hotel.openplatform.DefaultMtHotelClient;
 import com.meituan.hotel.openplatform.MtHotelApiException;
 import com.meituan.hotel.openplatform.MtHotelConfiguration;
+import com.meituan.hotel.openplatform.domain.InventoryPriceParam;
 import com.meituan.hotel.openplatform.domain.PoiParam;
+import com.meituan.hotel.openplatform.domain.RoomStatusAllParam;
+import com.meituan.hotel.openplatform.domain.RoomStatusAllParams;
 import com.meituan.hotel.openplatform.internal.domain.Environment;
 import com.meituan.hotel.openplatform.request.MtHotelPoiPushRequest;
 import com.meituan.hotel.openplatform.request.MtHotelPoiQueryRequest;
+import com.meituan.hotel.openplatform.request.MtHotelRoomStatusAllPushRequest;
 import com.meituan.hotel.openplatform.response.MtHotelResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class MeituanRestHandler {
 
@@ -92,12 +93,16 @@ public class MeituanRestHandler {
      */
     public MtHotelResponse mtHotelRoomStatusAllPushRequest(){
         // get MtHotelResponse
-        String poiId="";//酒店地址
-        Set<String> poiIds = new HashSet<>();
-        poiIds.add(poiId);
-        // put queryIds into MtHotelPoiQueryRequest
-        MtHotelPoiQueryRequest request = new MtHotelPoiQueryRequest();
-        request.setPoiSet(poiIds);
+        RoomStatusAllParams roomStatusAllParams =new RoomStatusAllParams();
+        InventoryPriceParam inventoryPriceParam= new InventoryPriceParam();
+        //房态map
+        Map<String,List<RoomStatusAllParam>> map= new HashMap<>();
+        List<InventoryPriceParam> inventoryPriceParamList =new ArrayList<>();
+        inventoryPriceParamList.add(inventoryPriceParam);
+        roomStatusAllParams.setDetail(map);
+        // put roomStatusAllParam into MtHotelRoomStatusAllPushRequest
+        MtHotelRoomStatusAllPushRequest request = new MtHotelRoomStatusAllPushRequest();
+        request.setRoomStatusAllParams(roomStatusAllParams);
         // initialization configure
         MtHotelConfiguration conf;
         conf = new MtHotelConfiguration("partnerId", "encryptKey");
