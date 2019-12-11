@@ -15,4 +15,7 @@ public interface HotelController {
     @GetMapping("/api/hotel/info")
     Object allHotelInfo(@RequestParam("country") String country, @RequestParam("city") String city, @RequestParam("page") int page, @RequestParam("size") int size);
 
+    @GetMapping("/api/hotel/pulljob")
+    String pullJob();
+
 }

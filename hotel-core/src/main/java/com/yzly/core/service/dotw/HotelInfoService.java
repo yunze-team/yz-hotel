@@ -6,11 +6,13 @@ import com.yzly.core.domain.dotw.HotelAdditionalInfo;
 import com.yzly.core.domain.dotw.HotelInfo;
 import com.yzly.core.domain.dotw.RoomType;
 import com.yzly.core.domain.dotw.query.HotelQuery;
+import com.yzly.core.domain.event.EventAttr;
 import com.yzly.core.enums.VendorEnum;
 import com.yzly.core.redis.IRedisService;
 import com.yzly.core.repository.dotw.HotelAdditionalInfoRepository;
 import com.yzly.core.repository.dotw.HotelInfoRepository;
 import com.yzly.core.repository.dotw.RoomTypeRepository;
+import com.yzly.core.repository.event.EventAttrRepository;
 import com.yzly.core.util.CommonUtil;
 import lombok.extern.apachecommons.CommonsLog;
 import org.apache.commons.lang.StringUtils;
@@ -45,11 +47,16 @@ public class HotelInfoService {
     private CommonUtil commonUtil;
     @Autowired
     private IRedisService redisService;
+    @Autowired
+    private EventAttrRepository eventAttrRepository;
 
     @Value("${dotw.hotel.excel}")
     private String dataPath;
     @Value("${dotw.redis.list.key}")
     private String hotelListKey;
+
+    private static final String DOTW_HOTEL_PULL_COUNTRY = "DOTW_HOTEL_PULL_COUNTRY";
+    private static final String DOTW_HOTEL_PULL_SIZE = "DOTW_HOTEL_PULL_SIZE";
 
     /**
      * 通过dotw给的excel数据更新酒店基础数据
@@ -211,6 +218,20 @@ public class HotelInfoService {
         hotelAdditionalInfo.setCountryName(hotelJson.getString("countryName"));
         hotelAdditionalInfo.setNoOfRooms(hotelJson.getString("noOfRooms"));
         return hotelAdditionalInfo;
+    }
+
+    /**
+     * 给job定时拉取同步dotw酒店的定时任务的方法，
+     * 依据参数表配置的国家和每次拉取的条数去表查询出未同步的酒店列表信息
+     * @return
+     */
+    public List<HotelInfo> findHotelListByEventAttr() {
+        String country = eventAttrRepository.findByEventType(DOTW_HOTEL_PULL_COUNTRY).getEventValue();
+        int size = Integer.valueOf(eventAttrRepository.findByEventType(DOTW_HOTEL_PULL_SIZE).getEventValue());
+        HotelQuery hotelQuery = new HotelQuery();
+        hotelQuery.setCountry(country);
+        Page<HotelInfo> hpage = this.findAllByPageQuery(1, size, hotelQuery);
+        return hpage.getContent();
     }
 
 }

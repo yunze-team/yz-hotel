@@ -146,4 +146,38 @@ public class HotelInfoApiService {
         }
     }
 
+    /**
+     * 用来定时任务拉取同步酒店信息的方法
+     * 更新完成后，会更新hotel_info表的is_updated为1
+     * 会插入room_type数据
+     * 同时会插入mongodb的相应酒店明细数据，包含图片信息
+     * @throws Exception
+     */
+    public void pullHotelAndRoomsInfo() throws Exception {
+        List<HotelInfo> hlist = hotelInfoService.findHotelListByEventAttr();
+        if (hlist == null || hlist.size() == 0) {
+            throw new Exception("hotel info list is null, please confirm all hotel is updated.");
+        }
+        List<String> ids = new ArrayList<>();
+        for (HotelInfo h : hlist) {
+            ids.add(h.getDotwHotelCode());
+        }
+        String fromDate = DateTime.now().toString("yyyy-MM-dd");
+        String toDate = DateTime.now().plusDays(1).toString("yyyy-MM-dd");
+        JSONObject jsonObject = dcmlHandler.searchHotelInfoById(ids, fromDate, toDate);
+        if (jsonObject != null && !jsonObject.getJSONObject("hotels").getString("@count").equals("0")) {
+            JSONObject hotelJSON = null;
+            if (jsonObject.getJSONObject("hotels").getString("@count").equals("1")) {
+                hotelJSON = jsonObject.getJSONObject("hotels").getJSONObject("hotel");
+                hotelInfoService.addRoomsAndHotelAdditionalInfoByHotelJson(hotelJSON);
+            } else {
+                JSONArray hotelArray = jsonObject.getJSONObject("hotels").getJSONArray("hotel");
+                for (int arrIndex = 0; arrIndex < hotelArray.size(); arrIndex++) {
+                    hotelJSON = hotelArray.getJSONObject(arrIndex);
+                    hotelInfoService.addRoomsAndHotelAdditionalInfoByHotelJson(hotelJSON);
+                }
+            }
+        }
+    }
+
 }

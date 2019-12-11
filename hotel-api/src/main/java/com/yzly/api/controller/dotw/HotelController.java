@@ -65,4 +65,14 @@ public class HotelController {
         return "SUCCESS";
     }
 
+    @GetMapping("/pulljob")
+    public Object pullJob() {
+        try {
+            hotelInfoApiService.pullHotelAndRoomsInfo();
+        } catch (Exception e) {
+            return e.getMessage();
+        }
+        return "SUCCESS";
+    }
+
 }
