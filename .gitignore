@@ -18,3 +18,5 @@ logs/
 *.imp
 *.ipr
 *.iml
+
+data/

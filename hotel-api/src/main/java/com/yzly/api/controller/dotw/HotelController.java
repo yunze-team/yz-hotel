@@ -67,11 +67,15 @@ public class HotelController {
 
     @GetMapping("/pulljob")
     public Object pullJob() {
-        try {
-            hotelInfoApiService.pullHotelAndRoomsInfo();
-        } catch (Exception e) {
-            return e.getMessage();
-        }
+        Runnable runnable = () -> {
+            try {
+                hotelInfoApiService.pullHotelAndRoomsInfo();
+            } catch (Exception e) {
+                log.error(e.getMessage());
+            }
+        };
+        Thread thread = new Thread(runnable);
+        thread.start();
         return "SUCCESS";
     }
 
