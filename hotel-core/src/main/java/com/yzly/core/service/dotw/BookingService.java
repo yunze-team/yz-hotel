@@ -87,6 +87,7 @@ public class BookingService {
         if (rateBaseJson.getString("@count").equals("1")) {
             JSONObject rateJson = rateBaseJson.getJSONObject("rateBasis");
             RoomBookingInfo room = getRoomBookingByJson(rateJson, roomTypeJson, hid, fromDate, toDate);
+            // 需要改造判断方法，根据roomtype和fromdate和todate判断唯一，如果有值，更新此值
             if (roomBookingInfoRepository.findByAllocationDetails(room.getAllocationDetails()) == null) {
                 roomBookingInfoRepository.save(room);
                 rlist.add(room);

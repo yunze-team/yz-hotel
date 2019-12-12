@@ -12,12 +12,31 @@ import com.meituan.hotel.openplatform.request.MtHotelPoiPushRequest;
 import com.meituan.hotel.openplatform.request.MtHotelPoiQueryRequest;
 import com.meituan.hotel.openplatform.request.MtHotelRoomStatusAllPushRequest;
 import com.meituan.hotel.openplatform.response.MtHotelResponse;
+import lombok.extern.apachecommons.CommonsLog;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.*;
 
+@Component
+@CommonsLog
 public class MeituanRestHandler {
+
+    @Value("${meituan.partnerId}")
+    private String mtPartnerId;
+    @Value("${meituan.clientSecret}")
+    private String mtEncryptKey;
+
+    private DefaultMtHotelClient generateClient() {
+        MtHotelConfiguration conf = new MtHotelConfiguration(mtPartnerId, mtEncryptKey);
+        conf.setEnv(Environment.DEV); // Environment.DEV for developing or testing
+        // go to configure. e.g. conf.setXxx ……
+        // create client for send request
+        DefaultMtHotelClient client = new DefaultMtHotelClient(conf);
+        return client;
+    }
 
     /**
      * POI同步
@@ -34,12 +53,7 @@ public class MeituanRestHandler {
         MtHotelPoiPushRequest request = new MtHotelPoiPushRequest();
         request.setPoiParamList(poiParamList);
         // initialization configure
-        MtHotelConfiguration conf;
-        conf = new MtHotelConfiguration("partnerId", "encryptKey");
-        conf.setEnv(Environment.DEV); // Environment.DEV for developing or testing
-        // go to configure. e.g. conf.setXxx ……
-        // create client for send request
-        DefaultMtHotelClient client = new DefaultMtHotelClient(conf);
+        DefaultMtHotelClient client = this.generateClient();
         MtHotelResponse response = null;
         try {
             response = client.execute(request);
@@ -67,12 +81,7 @@ public class MeituanRestHandler {
         MtHotelPoiQueryRequest request = new MtHotelPoiQueryRequest();
         request.setPoiSet(poiIds);
         // initialization configure
-        MtHotelConfiguration conf;
-        conf = new MtHotelConfiguration("partnerId", "encryptKey");
-        conf.setEnv(Environment.DEV); // Environment.DEV for developing or testing
-        // go to configure. e.g. conf.setXxx ……
-        // create client for send request
-        DefaultMtHotelClient client = new DefaultMtHotelClient(conf);
+        DefaultMtHotelClient client = this.generateClient();
         MtHotelResponse response = null;
         try {
             response = client.execute(request);
@@ -104,12 +113,7 @@ public class MeituanRestHandler {
         MtHotelRoomStatusAllPushRequest request = new MtHotelRoomStatusAllPushRequest();
         request.setRoomStatusAllParams(roomStatusAllParams);
         // initialization configure
-        MtHotelConfiguration conf;
-        conf = new MtHotelConfiguration("partnerId", "encryptKey");
-        conf.setEnv(Environment.DEV); // Environment.DEV for developing or testing
-        // go to configure. e.g. conf.setXxx ……
-        // create client for send request
-        DefaultMtHotelClient client = new DefaultMtHotelClient(conf);
+        DefaultMtHotelClient client = this.generateClient();
         MtHotelResponse response = null;
         try {
             response = client.execute(request);

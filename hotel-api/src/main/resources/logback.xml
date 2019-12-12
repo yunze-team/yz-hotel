@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <configuration>
 
-    <property name="LOG_HOME" value="logs/msg" />
+    <property name="LOG_HOME" value="logs/api" />
 
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
@@ -26,7 +26,7 @@
         </layout>
     </appender>
 
-    <root level="debug">
+    <root level="info">
         <appender-ref ref="STDOUT" />
         <appender-ref ref="appLog" />
     </root>
