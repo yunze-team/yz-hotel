@@ -239,4 +239,11 @@ public class HotelInfoService {
         return hpage.getContent();
     }
 
+    public void updateBatchHotel(List<HotelInfo> hlist) {
+        for (HotelInfo h : hlist) {
+            h.setIsUpdate("1");
+            hotelInfoRepository.save(h);
+        }
+    }
+
 }

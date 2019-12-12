@@ -177,6 +177,8 @@ public class HotelInfoApiService {
                     hotelInfoService.addRoomsAndHotelAdditionalInfoByHotelJson(hotelJSON);
                 }
             }
+        } else {
+            hotelInfoService.updateBatchHotel(hlist);
         }
     }
 
