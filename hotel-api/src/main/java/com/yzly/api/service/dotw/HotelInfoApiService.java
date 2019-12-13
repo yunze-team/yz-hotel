@@ -182,4 +182,32 @@ public class HotelInfoApiService {
         }
     }
 
+    /**
+     * 用来定时任务拉取酒店当天房型价格数据
+     * @throws Exception
+     */
+    public void pullHotelRoomPrice() throws Exception {
+        List<HotelInfo> hlist = hotelInfoService.findUpdatedHotelList();
+        if (hlist == null || hlist.size() == 0) {
+            throw new Exception("hotel info list is null, please confirm all hotel is updated.");
+        }
+        String fromDate = DateTime.now().plusDays(1).toString("yyyy-MM-dd");
+        String toDate = DateTime.now().plusDays(2).toString("yyyy-MM-dd");
+        for (HotelInfo h : hlist) {
+            JSONObject result = dcmlHandler.getRoomsByHotelId(h.getDotwHotelCode(), "-1", fromDate, toDate);
+            JSONObject request = result.getJSONObject("request");
+            if (request != null) {
+                String successful = request.getString("successful");
+                if (StringUtils.isNotEmpty(successful) && "FALSE".equals(successful)) {
+                    continue;
+                }
+            } else {
+                log.info("hotelId:" + h.getDotwHotelCode());
+                List<RoomBookingInfo> rlist = bookingService.addRoomBookingByGetRoomsJson(result, h.getDotwHotelCode(), fromDate, toDate);
+                log.info("pull room price list:" + JSONObject.toJSONString(rlist));
+            }
+            hotelInfoService.updateHotelSyncDate(h, fromDate);
+        }
+    }
+
 }

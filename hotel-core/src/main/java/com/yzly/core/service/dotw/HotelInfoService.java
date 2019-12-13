@@ -16,6 +16,7 @@ import com.yzly.core.repository.event.EventAttrRepository;
 import com.yzly.core.util.CommonUtil;
 import lombok.extern.apachecommons.CommonsLog;
 import org.apache.commons.lang.StringUtils;
+import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -57,6 +58,7 @@ public class HotelInfoService {
 
     private static final String DOTW_HOTEL_PULL_COUNTRY = "DOTW_HOTEL_PULL_COUNTRY";
     private static final String DOTW_HOTEL_PULL_SIZE = "DOTW_HOTEL_PULL_SIZE";
+    private static final String DOTW_ROOM_PULL_SIZE = "DOTW_ROOM_PULL_SIZE";
 
     /**
      * 通过dotw给的excel数据更新酒店基础数据
@@ -115,9 +117,19 @@ public class HotelInfoService {
             if (StringUtils.isNotEmpty(hotelQuery.getRegion())) {
                 list.add(criteriaBuilder.equal(root.get("region").as(String.class), hotelQuery.getRegion()));
             }
-            if (StringUtils.isNotEmpty(hotelQuery.getIsUpdate())) {
-                list.add(criteriaBuilder.or(criteriaBuilder.notEqual(root.get("isUpdate").as(String.class), hotelQuery.getIsUpdate()),
-                        criteriaBuilder.isNull(root.get("isUpdate").as(String.class))));
+            if (!hotelQuery.getIsUpdateFlag()) {
+                if (StringUtils.isNotEmpty(hotelQuery.getIsUpdate())) {
+                    list.add(criteriaBuilder.or(criteriaBuilder.notEqual(root.get("isUpdate").as(String.class), hotelQuery.getIsUpdate()),
+                            criteriaBuilder.isNull(root.get("isUpdate").as(String.class))));
+                }
+            } else {
+                if (StringUtils.isNotEmpty(hotelQuery.getIsUpdate())) {
+                    list.add(criteriaBuilder.equal(root.get("isUpdate").as(String.class), hotelQuery.getIsUpdate()));
+                }
+            }
+            if (StringUtils.isNotEmpty(hotelQuery.getSyncRoomPriceDate())) {
+                list.add(criteriaBuilder.or(criteriaBuilder.notEqual(root.get("syncRoomPriceDate").as(String.class), hotelQuery.getSyncRoomPriceDate()),
+                        criteriaBuilder.isNull(root.get("syncRoomPriceDate").as(String.class))));
             }
             Predicate[] p = new Predicate[list.size()];
             return criteriaBuilder.and(list.toArray(p));
@@ -239,11 +251,31 @@ public class HotelInfoService {
         return hpage.getContent();
     }
 
+    public List<HotelInfo> findUpdatedHotelList() {
+        int size = Integer.valueOf(eventAttrRepository.findByEventType(DOTW_ROOM_PULL_SIZE).getEventValue());
+        HotelQuery hotelQuery = new HotelQuery();
+        hotelQuery.setIsUpdate("1");
+        hotelQuery.setIsUpdateFlag(true);
+        hotelQuery.setSyncRoomPriceDate(DateTime.now().plusDays(1).toString("yyyy-MM-dd"));
+        Page<HotelInfo> hpage = this.findAllByPageQuery(1, size, hotelQuery);
+        return hpage.getContent();
+    }
+
     public void updateBatchHotel(List<HotelInfo> hlist) {
         for (HotelInfo h : hlist) {
             h.setIsUpdate("1");
             hotelInfoRepository.save(h);
         }
+    }
+
+    /**
+     * 更新房型价格更新日期
+     * @param hotelInfo
+     * @param fromDate
+     */
+    public void updateHotelSyncDate(HotelInfo hotelInfo, String fromDate) {
+        hotelInfo.setSyncRoomPriceDate(fromDate);
+        hotelInfoRepository.save(hotelInfo);
     }
 
 }

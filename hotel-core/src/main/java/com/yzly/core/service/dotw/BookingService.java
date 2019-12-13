@@ -88,19 +88,23 @@ public class BookingService {
             JSONObject rateJson = rateBaseJson.getJSONObject("rateBasis");
             RoomBookingInfo room = getRoomBookingByJson(rateJson, roomTypeJson, hid, fromDate, toDate);
             // 需要改造判断方法，根据roomtype和fromdate和todate判断唯一，如果有值，更新此值
-            if (roomBookingInfoRepository.findByAllocationDetails(room.getAllocationDetails()) == null) {
-                roomBookingInfoRepository.save(room);
-                rlist.add(room);
+            RoomBookingInfo sroom = roomBookingInfoRepository.findByRoomTypeCodeAndFromDateAndToDate(room.getRoomTypeCode(), fromDate, toDate);
+            if (sroom != null) {
+                room.setId(sroom.getId());
             }
+            roomBookingInfoRepository.save(room);
+            rlist.add(room);
         } else {
             JSONArray rateArrayJson = rateBaseJson.getJSONArray("rateBasis");
             for (int i = 0; i < rateArrayJson.size(); i++) {
                 JSONObject rateJson = rateArrayJson.getJSONObject(i);
                 RoomBookingInfo room = getRoomBookingByJson(rateJson, roomTypeJson, hid, fromDate, toDate);
-                if (roomBookingInfoRepository.findByAllocationDetails(room.getAllocationDetails()) == null) {
-                    roomBookingInfoRepository.save(room);
-                    rlist.add(room);
+                RoomBookingInfo sroom = roomBookingInfoRepository.findByRoomTypeCodeAndFromDateAndToDate(room.getRoomTypeCode(), fromDate, toDate);
+                if (sroom != null) {
+                    room.setId(sroom.getId());
                 }
+                roomBookingInfoRepository.save(room);
+                rlist.add(room);
             }
         }
         return rlist;

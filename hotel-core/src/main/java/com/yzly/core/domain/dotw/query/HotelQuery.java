@@ -18,5 +18,7 @@ public class HotelQuery {
     private String region;
     private String dotwHotelCode;
     private String isUpdate;
+    private String syncRoomPriceDate;
+    private Boolean isUpdateFlag = false;
 
 }

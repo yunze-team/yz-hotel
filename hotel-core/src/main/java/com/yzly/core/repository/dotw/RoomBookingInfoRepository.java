@@ -15,4 +15,8 @@ public interface RoomBookingInfoRepository extends MongoRepository<RoomBookingIn
 
     RoomBookingInfo findByAllocationDetails(String allocationDetails);
 
+    RoomBookingInfo findByAllocationDetailsAndFromDateAndToDate(String allocationDetails, String fromDate, String toDate);
+
+    RoomBookingInfo findByRoomTypeCodeAndFromDateAndToDate(String roomTypeCode, String fromDate, String toDate);
+
 }
