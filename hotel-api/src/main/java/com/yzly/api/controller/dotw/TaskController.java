@@ -57,4 +57,10 @@ public class TaskController {
         return "SUCCESS";
     }
 
+    @GetMapping("/update_date")
+    public Object updatePullDate() {
+        hotelInfoApiService.plusDaysWithPullDate();
+        return "SUCCESS";
+    }
+
 }

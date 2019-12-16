@@ -196,6 +196,7 @@ public class HotelInfoApiService {
         String fromDate = date.toString("yyyy-MM-dd");
         String toDate = date.plusDays(1).toString("yyyy-MM-dd");
         for (HotelInfo h : hlist) {
+            hotelInfoService.updateHotelSyncDate(h, fromDate);
             JSONObject result = dcmlHandler.getRoomsByHotelId(h.getDotwHotelCode(), "-1", fromDate, toDate);
             JSONObject request = result.getJSONObject("request");
             if (request != null) {
@@ -208,7 +209,6 @@ public class HotelInfoApiService {
                 List<RoomBookingInfo> rlist = bookingService.addRoomBookingByGetRoomsJson(result, h.getDotwHotelCode(), fromDate, toDate);
                 log.info("pull room price list:" + JSONObject.toJSONString(rlist));
             }
-            hotelInfoService.updateHotelSyncDate(h, fromDate);
         }
     }
 

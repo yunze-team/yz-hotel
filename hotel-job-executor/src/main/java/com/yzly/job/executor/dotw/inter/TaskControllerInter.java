@@ -17,4 +17,7 @@ public interface TaskControllerInter {
     @GetMapping("/api/task/pull_price")
     String pullPrice();
 
+    @GetMapping("/api/task/update_date")
+    String updatePullDate();
+
 }
