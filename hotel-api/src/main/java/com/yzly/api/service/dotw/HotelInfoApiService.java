@@ -11,6 +11,7 @@ import com.yzly.core.service.dotw.HotelInfoService;
 import lombok.extern.apachecommons.CommonsLog;
 import org.apache.commons.lang.StringUtils;
 import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
@@ -191,8 +192,9 @@ public class HotelInfoApiService {
         if (hlist == null || hlist.size() == 0) {
             throw new Exception("hotel info list is null, please confirm all hotel is updated.");
         }
-        String fromDate = DateTime.now().plusDays(1).toString("yyyy-MM-dd");
-        String toDate = DateTime.now().plusDays(2).toString("yyyy-MM-dd");
+        DateTime date = DateTime.parse(hotelInfoService.getDotwRoomDate(), DateTimeFormat.forPattern("yyyy-MM-dd"));
+        String fromDate = date.toString("yyyy-MM-dd");
+        String toDate = date.plusDays(1).toString("yyyy-MM-dd");
         for (HotelInfo h : hlist) {
             JSONObject result = dcmlHandler.getRoomsByHotelId(h.getDotwHotelCode(), "-1", fromDate, toDate);
             JSONObject request = result.getJSONObject("request");
@@ -208,6 +210,10 @@ public class HotelInfoApiService {
             }
             hotelInfoService.updateHotelSyncDate(h, fromDate);
         }
+    }
+
+    public void plusDaysWithPullDate() {
+        hotelInfoService.updatePullDateAttr();
     }
 
 }

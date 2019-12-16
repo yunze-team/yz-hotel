@@ -11,21 +11,22 @@ import org.springframework.stereotype.Component;
 
 /**
  * @author lazyb
- * @create 2019/12/11
+ * @create 2019/12/16
  * @desc
  **/
-@JobHandler(value = "pullHotelJobHandler")
+@JobHandler(value = "pullPriceJobHandler")
 @Component
-public class PullHotelJobHandler extends IJobHandler {
+public class PullPriceJobHandler extends IJobHandler {
 
     @Autowired
     private TaskControllerInter taskControllerInter;
 
     @Override
     public ReturnT<String> execute(String param) throws Exception {
-        XxlJobLogger.log("pull hotel job execute start.");
-        String result = taskControllerInter.pullHotel();
-        XxlJobLogger.log("pull hotel job result: " + JSONObject.toJSONString(result));
+        XxlJobLogger.log("pull price job execute start.");
+        String result = taskControllerInter.pullPrice();
+        XxlJobLogger.log("pull price job result: " + JSONObject.toJSONString(result));
         return ReturnT.SUCCESS;
     }
+
 }

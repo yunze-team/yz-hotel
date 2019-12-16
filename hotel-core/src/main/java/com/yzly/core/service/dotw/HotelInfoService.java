@@ -17,6 +17,8 @@ import com.yzly.core.util.CommonUtil;
 import lombok.extern.apachecommons.CommonsLog;
 import org.apache.commons.lang.StringUtils;
 import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -59,6 +61,8 @@ public class HotelInfoService {
     private static final String DOTW_HOTEL_PULL_COUNTRY = "DOTW_HOTEL_PULL_COUNTRY";
     private static final String DOTW_HOTEL_PULL_SIZE = "DOTW_HOTEL_PULL_SIZE";
     private static final String DOTW_ROOM_PULL_SIZE = "DOTW_ROOM_PULL_SIZE";
+    private static final String DOTW_ROOM_PULL_DATE = "DOTW_ROOM_PULL_DATE";
+    private static final String DOTW_ROOM_PULL_CITY = "DOTW_ROOM_PULL_CITY";
 
     /**
      * 通过dotw给的excel数据更新酒店基础数据
@@ -253,10 +257,13 @@ public class HotelInfoService {
 
     public List<HotelInfo> findUpdatedHotelList() {
         int size = Integer.valueOf(eventAttrRepository.findByEventType(DOTW_ROOM_PULL_SIZE).getEventValue());
+        String date = eventAttrRepository.findByEventType(DOTW_ROOM_PULL_DATE).getEventValue();
+        String city = eventAttrRepository.findByEventType(DOTW_ROOM_PULL_CITY).getEventValue();
         HotelQuery hotelQuery = new HotelQuery();
+        hotelQuery.setCity(city);
         hotelQuery.setIsUpdate("1");
         hotelQuery.setIsUpdateFlag(true);
-        hotelQuery.setSyncRoomPriceDate(DateTime.now().plusDays(1).toString("yyyy-MM-dd"));
+        hotelQuery.setSyncRoomPriceDate(date);
         Page<HotelInfo> hpage = this.findAllByPageQuery(1, size, hotelQuery);
         return hpage.getContent();
     }
@@ -276,6 +283,21 @@ public class HotelInfoService {
     public void updateHotelSyncDate(HotelInfo hotelInfo, String fromDate) {
         hotelInfo.setSyncRoomPriceDate(fromDate);
         hotelInfoRepository.save(hotelInfo);
+    }
+
+    public String getDotwRoomDate() {
+        String date = eventAttrRepository.findByEventType(DOTW_ROOM_PULL_DATE).getEventValue();
+        return date;
+    }
+
+    /**
+     * 更新房型价格同步日期配置，自动加一天
+     */
+    public void updatePullDateAttr() {
+        EventAttr attr = eventAttrRepository.findByEventType(DOTW_ROOM_PULL_DATE);
+        DateTime date = DateTime.parse(attr.getEventValue(), DateTimeFormat.forPattern("yyyy-MM-dd"));
+        attr.setEventValue(date.plusDays(1).toString("yyyy-MM-dd"));
+        eventAttrRepository.save(attr);
     }
 
 }
