@@ -190,6 +190,7 @@ public class HotelInfoApiService {
     public void pullHotelRoomPrice() throws Exception {
         List<HotelInfo> hlist = hotelInfoService.findUpdatedHotelList();
         if (hlist == null || hlist.size() == 0) {
+            hotelInfoService.updatePullDateAttr();
             throw new Exception("hotel info list is null, please confirm all hotel is updated.");
         }
         DateTime date = DateTime.parse(hotelInfoService.getDotwRoomDate(), DateTimeFormat.forPattern("yyyy-MM-dd"));
