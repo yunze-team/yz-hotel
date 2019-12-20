@@ -1,11 +1,9 @@
 package com.yzly.api.util.meit;
 
-import sun.misc.BASE64Decoder;
-import sun.misc.BASE64Encoder;
-
 import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
 import java.security.Key;
+import java.util.Base64;
 
 public class AESUtil {
 
@@ -21,7 +19,7 @@ public class AESUtil {
         Cipher c = Cipher.getInstance(KEY_ALGORITHM);// 创建密码器
         c.init(Cipher.ENCRYPT_MODE, key);// 初始化
         byte[] encVal = c.doFinal(data.getBytes());
-        return new BASE64Encoder().encode(encVal);
+        return Base64.getEncoder().encodeToString(encVal);
     }
 
     /**
@@ -35,7 +33,7 @@ public class AESUtil {
         Key key = new SecretKeySpec(keyValue, KEY_ALGORITHM);
         Cipher c = Cipher.getInstance(KEY_ALGORITHM);
         c.init(Cipher.DECRYPT_MODE, key);
-        byte[] decordedValue = new BASE64Decoder().decodeBuffer(encryptedData);
+        byte[] decordedValue = Base64.getDecoder().decode(encryptedData);
         byte[] decValue = c.doFinal(decordedValue);
         return new String(decValue);
     }

@@ -1,8 +1,5 @@
-package com.yzly.core.domain;
+package com.yzly.core.domain.meit;
 
-import com.yzly.core.enums.DistributorEnum;
-import com.yzly.core.enums.SupplierEnum;
-import com.yzly.core.enums.SyncStatus;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
@@ -15,7 +12,7 @@ import java.util.Date;
 
 /**
  * @author lazyb
- * @create 2019/12/17
+ * @create 2019/12/20
  * @desc
  **/
 @Data
@@ -23,27 +20,19 @@ import java.util.Date;
 @NoArgsConstructor
 @Entity
 @EntityListeners(AuditingEntityListener.class)
-@Table(name = "hotel_sync_list")
-public class HotelSyncList {
+@Table(name = "meit_trace_log")
+public class MeitTraceLog {
 
     @Id
     @GeneratedValue
     private Long id;
 
     @Column(length = 50)
-    private String hotelId;
+    private String traceId;
 
-    @Column(length = 50)
-    @Enumerated(EnumType.STRING)
-    private SupplierEnum supplier;
-
-    @Column(length = 50)
-    @Enumerated(EnumType.STRING)
-    private DistributorEnum distributor;
-
-    @Column(length = 10)
-    @Enumerated(EnumType.ORDINAL)
-    private SyncStatus syncStatus;
+    @Lob
+    @Column
+    private String reqData;
 
     @Column(nullable = false, updatable = false, name = "created_at")
     @Temporal(TemporalType.TIMESTAMP)
