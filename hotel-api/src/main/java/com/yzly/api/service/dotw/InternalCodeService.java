@@ -83,4 +83,8 @@ public class InternalCodeService {
         codeService.syncSalutations(jsonObject);
     }
 
+    public JSONObject getLeisureids() {
+        return dcmlHandler.getLeisureids();
+    }
+
 }

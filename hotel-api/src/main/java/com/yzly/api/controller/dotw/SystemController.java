@@ -1,5 +1,6 @@
 package com.yzly.api.controller.dotw;
 
+import com.yzly.api.common.DCMLHandler;
 import com.yzly.api.service.dotw.HotelInfoApiService;
 import com.yzly.api.service.dotw.InternalCodeService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -81,5 +82,10 @@ public class SystemController {
     public Object syncSalu() {
         internalCodeService.syncSalu();
         return "SUCCESS";
+    }
+
+    @GetMapping("/leisureids")
+    public Object allLeisureIds() {
+        return internalCodeService.getLeisureids();
     }
 }

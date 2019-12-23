@@ -441,4 +441,18 @@ public class DCMLHandler {
         return JSON.parseObject(resutStr);
     }
 
+    /**
+     * 拉取leisureids列表
+     * @return
+     */
+    public JSONObject getLeisureids() {
+        Document doc = generateBaseRequest();
+        Element customer = doc.getRootElement();
+        customer.addElement("request").addAttribute("command", "getleisureids");
+        String xmlResp = this.sendDotwString(doc);
+        XMLSerializer xmlSerializer = new XMLSerializer();
+        String resutStr = xmlSerializer.read(xmlResp).toString();
+        return JSON.parseObject(resutStr);
+    }
+
 }

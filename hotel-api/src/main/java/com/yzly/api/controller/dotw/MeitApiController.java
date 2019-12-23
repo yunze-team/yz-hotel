@@ -68,7 +68,7 @@ public class MeitApiController {
             request = baseRequestTrans(servletRequest);
         } catch (Exception e) {
             log.error(e.getMessage());
-            return ResultEnum.FAIL;
+            return generateFailResult(ResultEnum.FAIL);
         }
         int skip = request.getInteger("skip");
         int limit = request.getInteger("limit");
@@ -78,12 +78,28 @@ public class MeitApiController {
             return AESUtilUsingCommonDecodec.encrypt(data);
         } catch (Exception e) {
             log.error(e.getMessage());
-            result = new MeitResult();
-            result.setCode(ResultEnum.FAIL.getResultCode());
-            result.setMessage(ResultEnum.FAIL.getResultMsg());
-            result.setSuccess(ResultEnum.FAIL.getResult());
-            return result;
+            return generateFailResult(ResultEnum.FAIL);
         }
+    }
+
+    // TODO: will finish meit hotel_extend api method
+    public Object hotelExtend(ServletRequest servletRequest) {
+        JSONObject request;
+        try {
+            request = baseRequestTrans(servletRequest);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            return generateFailResult(ResultEnum.FAIL);
+        }
+        return request;
+    }
+
+    private MeitResult generateFailResult(ResultEnum resultEnum) {
+        MeitResult result = new MeitResult();
+        result.setCode(resultEnum.getResultCode());
+        result.setMessage(resultEnum.getResultMsg());
+        result.setSuccess(resultEnum.getResult());
+        return result;
     }
 
 }
