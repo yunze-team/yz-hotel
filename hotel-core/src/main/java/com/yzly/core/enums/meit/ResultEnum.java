@@ -10,7 +10,9 @@ public enum ResultEnum {
     PARAM_ERROR_BA(false, 12, "美团认证校验失败"),
     PARAM_ERROR_BA_AUTH(false, 121, "美团认证校验失败,Authorization错误"),
     PARAM_ERROR_BA_PARTNER_ID(false, 123, "美团认证校验失败,partnerId错误"),
-    PARAM_ERROR_BA_DATE(false, 122, "美团认证校验失败,Date 错误");
+    PARAM_ERROR_BA_DATE(false, 122, "美团认证校验失败,Date 错误"),
+    FAIL(false, 2, "系统异常"),
+    NONE(false, 1, "无数据");
 
     private boolean result;
     private int resultCode;
@@ -28,6 +30,10 @@ public enum ResultEnum {
 
     public String getResultMsg() {
         return resultMsg;
+    }
+
+    public boolean getResult() {
+        return result;
     }
 
 }

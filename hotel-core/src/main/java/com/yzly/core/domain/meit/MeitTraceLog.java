@@ -32,6 +32,10 @@ public class MeitTraceLog {
 
     @Lob
     @Column
+    private String encryptData;// 加密数据
+
+    @Lob
+    @Column
     private String reqData;
 
     @Column(nullable = false, updatable = false, name = "created_at")
