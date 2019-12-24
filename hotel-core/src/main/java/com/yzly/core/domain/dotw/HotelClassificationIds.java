@@ -38,6 +38,9 @@ public class HotelClassificationIds {
     @Column(length = 100)
     private String meitDesc;
 
+    @Column(length = 50)
+    private String meitValue;
+
     @Column(nullable = false, updatable = false, name = "created_at")
     @Temporal(TemporalType.TIMESTAMP)
     @CreatedDate

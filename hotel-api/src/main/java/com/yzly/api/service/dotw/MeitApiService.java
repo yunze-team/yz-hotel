@@ -1,5 +1,6 @@
 package com.yzly.api.service.dotw;
 
+import com.yzly.api.util.meit.MeitResultUtil;
 import com.yzly.core.domain.meit.MeitTraceLog;
 import com.yzly.core.domain.meit.dto.MeitHotel;
 import com.yzly.core.domain.meit.dto.MeitResult;
@@ -45,22 +46,14 @@ public class MeitApiService {
      * @return
      */
     public MeitResult syncHotelBasic(int skip, int limit) {
-        MeitResult result = new MeitResult();
         int page = skip / limit + 1;
         List<MeitHotel> mlist = meitService.getHotelBasicList(page, limit, DistributorEnum.MEIT);
         if (mlist == null) {
-            result.setCode(ResultEnum.NONE.getResultCode());
-            result.setMessage(ResultEnum.NONE.getResultMsg());
-            result.setSuccess(ResultEnum.NONE.getResult());
-            return result;
+            return MeitResultUtil.generateResult(ResultEnum.NONE, null);
         }
-        result.setCode(ResultEnum.SUCCESS.getResultCode());
-        result.setMessage(ResultEnum.SUCCESS.getResultMsg());
-        result.setSuccess(ResultEnum.SUCCESS.getResult());
         Map<String, List> data = new HashMap<>();
         data.put("hotels", mlist);
-        result.setData(data);
-        return result;
+        return MeitResultUtil.generateResult(ResultEnum.SUCCESS, data);
     }
 
 }
