@@ -2,10 +2,8 @@ package com.yzly.core.service.dotw;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.yzly.core.domain.dotw.RateBasis;
-import com.yzly.core.domain.dotw.SalutationsIds;
-import com.yzly.core.repository.dotw.RateBasisRepository;
-import com.yzly.core.repository.dotw.SalutationsIdsRepository;
+import com.yzly.core.domain.dotw.*;
+import com.yzly.core.repository.dotw.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -23,6 +21,16 @@ public class CodeService {
     private RateBasisRepository rateBasisRepository;
     @Autowired
     private SalutationsIdsRepository salutationsIdsRepository;
+    @Autowired
+    private LeisureIdsRepository leisureIdsRepository;
+    @Autowired
+    private BusinessIdsRepository businessIdsRepository;
+    @Autowired
+    private AmenitieIdsRepository amenitieIdsRepository;
+    @Autowired
+    private RoomAmenitieIdsRepository roomAmenitieIdsRepository;
+    @Autowired
+    private HotelClassificationIdsRepository hotelClassificationIdsRepository;
 
     @Transactional
     public void syncRateBasis(JSONObject jsonObject) {
@@ -54,10 +62,80 @@ public class CodeService {
             JSONObject rateJson = rateArray.getJSONObject(i);
             String code = rateJson.getString("@value");
             if (salutationsIdsRepository.findByCode(code) != null) {
-                return;
+                continue;
             }
             SalutationsIds salutationsIds = new SalutationsIds(code, rateJson.getString("#text"));
             salutationsIdsRepository.save(salutationsIds);
+        }
+    }
+
+    @Transactional
+    public void syncLeisureIds(JSONObject jsonObject) {
+        JSONArray idsArray = jsonObject.getJSONObject("leisures").getJSONArray("option");
+        for (int i = 0; i < idsArray.size(); i++) {
+            JSONObject idJson = idsArray.getJSONObject(i);
+            String code = idJson.getString("@value");
+            if (leisureIdsRepository.findByCode(code) != null) {
+                continue;
+            }
+            LeisureIds leisureIds = new LeisureIds(code, idJson.getString("#text"));
+            leisureIdsRepository.save(leisureIds);
+        }
+    }
+
+    @Transactional
+    public void syncBusinessIds(JSONObject jsonObject) {
+        JSONArray idsArray = jsonObject.getJSONObject("business").getJSONArray("option");
+        for (int i = 0; i < idsArray.size(); i++) {
+            JSONObject idJson = idsArray.getJSONObject(i);
+            String code = idJson.getString("@value");
+            if (businessIdsRepository.findByCode(code) != null) {
+                continue;
+            }
+            BusinessIds businessIds = new BusinessIds(code, idJson.getString("#text"));
+            businessIdsRepository.save(businessIds);
+        }
+    }
+
+    @Transactional
+    public void syncAmenitieIds(JSONObject jsonObject) {
+        JSONArray idsArray = jsonObject.getJSONObject("amenities").getJSONArray("option");
+        for (int i = 0; i < idsArray.size(); i++) {
+            JSONObject idJson = idsArray.getJSONObject(i);
+            String code = idJson.getString("@value");
+            if (amenitieIdsRepository.findByCode(code) != null) {
+                continue;
+            }
+            AmenitieIds amenitieIds = new AmenitieIds(code, idJson.getString("#text"));
+            amenitieIdsRepository.save(amenitieIds);
+        }
+    }
+
+    @Transactional
+    public void syncRoomAmenitieIds(JSONObject jsonObject) {
+        JSONArray idsArray = jsonObject.getJSONObject("amenities").getJSONArray("option");
+        for (int i = 0; i < idsArray.size(); i++) {
+            JSONObject idJson = idsArray.getJSONObject(i);
+            String code = idJson.getString("@value");
+            if (roomAmenitieIdsRepository.findByCode(code) != null) {
+                continue;
+            }
+            RoomAmenitieIds roomAmenitieIds = new RoomAmenitieIds(code, idJson.getString("#text"));
+            roomAmenitieIdsRepository.save(roomAmenitieIds);
+        }
+    }
+
+    @Transactional
+    public void syncHotelClassification(JSONObject jsonObject) {
+        JSONArray idsArray = jsonObject.getJSONObject("classification").getJSONArray("option");
+        for (int i = 0; i < idsArray.size(); i++) {
+            JSONObject idJson = idsArray.getJSONObject(i);
+            String code = idJson.getString("@value");
+            if (hotelClassificationIdsRepository.findByCode(code) != null) {
+                continue;
+            }
+            HotelClassificationIds hotelClassificationIds = new HotelClassificationIds(code, idJson.getString("#text"));
+            hotelClassificationIdsRepository.save(hotelClassificationIds);
         }
     }
 

@@ -86,6 +86,27 @@ public class SystemController {
 
     @GetMapping("/leisureids")
     public Object allLeisureIds() {
-        return internalCodeService.getLeisureids();
+        return internalCodeService.syncLeisureids();
     }
+
+    @GetMapping("/business")
+    public Object businessIds() {
+        return internalCodeService.syncBusiness();
+    }
+
+    @GetMapping("/amenitie")
+    public Object amenitieIds() {
+        return internalCodeService.syncAmenitie();
+    }
+
+    @GetMapping("/room_amenitie")
+    public Object roomAmenitieIds() {
+        return internalCodeService.syncRoomAmenitie();
+    }
+
+    @GetMapping("/classification")
+    public Object hotelClassification() {
+        return internalCodeService.syncHotelClassification();
+    }
+
 }

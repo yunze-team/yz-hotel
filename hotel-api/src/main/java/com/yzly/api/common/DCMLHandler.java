@@ -455,4 +455,44 @@ public class DCMLHandler {
         return JSON.parseObject(resutStr);
     }
 
+    public JSONObject getBusinessIds() {
+        Document doc = generateBaseRequest();
+        Element customer = doc.getRootElement();
+        customer.addElement("request").addAttribute("command", "getbusinessids");
+        String xmlResp = this.sendDotwString(doc);
+        XMLSerializer xmlSerializer = new XMLSerializer();
+        String resutStr = xmlSerializer.read(xmlResp).toString();
+        return JSON.parseObject(resutStr);
+    }
+
+    public JSONObject getAmenitieIds() {
+        Document doc = generateBaseRequest();
+        Element customer = doc.getRootElement();
+        customer.addElement("request").addAttribute("command", "getamenitieids");
+        String xmlResp = this.sendDotwString(doc);
+        XMLSerializer xmlSerializer = new XMLSerializer();
+        String resutStr = xmlSerializer.read(xmlResp).toString();
+        return JSON.parseObject(resutStr);
+    }
+
+    public JSONObject getRoomAmenitieIds() {
+        Document doc = generateBaseRequest();
+        Element customer = doc.getRootElement();
+        customer.addElement("request").addAttribute("command", "getroomamenitieids");
+        String xmlResp = this.sendDotwString(doc);
+        XMLSerializer xmlSerializer = new XMLSerializer();
+        String resutStr = xmlSerializer.read(xmlResp).toString();
+        return JSON.parseObject(resutStr);
+    }
+
+    public JSONObject getHotelClassification() {
+        Document doc = generateBaseRequest();
+        Element customer = doc.getRootElement();
+        customer.addElement("request").addAttribute("command", "gethotelclassificationids");
+        String xmlResp = this.sendDotwString(doc);
+        XMLSerializer xmlSerializer = new XMLSerializer();
+        String resutStr = xmlSerializer.read(xmlResp).toString();
+        return JSON.parseObject(resutStr);
+    }
+
 }

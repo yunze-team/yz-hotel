@@ -83,8 +83,34 @@ public class InternalCodeService {
         codeService.syncSalutations(jsonObject);
     }
 
-    public JSONObject getLeisureids() {
-        return dcmlHandler.getLeisureids();
+    public JSONObject syncLeisureids() {
+        JSONObject jsonObject = dcmlHandler.getLeisureids();
+        codeService.syncLeisureIds(jsonObject);
+        return jsonObject;
+    }
+
+    public JSONObject syncBusiness() {
+        JSONObject jsonObject = dcmlHandler.getBusinessIds();
+        codeService.syncBusinessIds(jsonObject);
+        return jsonObject;
+    }
+
+    public JSONObject syncAmenitie() {
+        JSONObject jsonObject = dcmlHandler.getAmenitieIds();
+        codeService.syncAmenitieIds(jsonObject);
+        return jsonObject;
+    }
+
+    public JSONObject syncRoomAmenitie() {
+        JSONObject jsonObject = dcmlHandler.getRoomAmenitieIds();
+        codeService.syncRoomAmenitieIds(jsonObject);
+        return jsonObject;
+    }
+
+    public JSONObject syncHotelClassification() {
+        JSONObject jsonObject = dcmlHandler.getHotelClassification();
+        codeService.syncHotelClassification(jsonObject);
+        return jsonObject;
     }
 
 }
