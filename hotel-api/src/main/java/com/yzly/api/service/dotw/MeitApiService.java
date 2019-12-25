@@ -45,15 +45,15 @@ public class MeitApiService {
      * @param limit
      * @return
      */
-    public MeitResult syncHotelBasic(int skip, int limit) {
+    public Object syncHotelBasic(int skip, int limit) {
         int page = skip / limit + 1;
         List<MeitHotel> mlist = meitService.getHotelBasicList(page, limit, DistributorEnum.MEIT);
         if (mlist == null) {
-            return MeitResultUtil.generateResult(ResultEnum.NONE, null);
+            return null;
         }
         Map<String, List> data = new HashMap<>();
         data.put("hotels", mlist);
-        return MeitResultUtil.generateResult(ResultEnum.SUCCESS, data);
+        return data;
     }
 
 }

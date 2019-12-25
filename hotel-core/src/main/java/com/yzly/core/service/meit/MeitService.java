@@ -1,13 +1,17 @@
 package com.yzly.core.service.meit;
 
+import com.alibaba.fastjson.JSONObject;
 import com.yzly.core.domain.HotelSyncList;
+import com.yzly.core.domain.dotw.HotelAdditionalInfo;
 import com.yzly.core.domain.dotw.HotelInfo;
 import com.yzly.core.domain.meit.MeitCity;
 import com.yzly.core.domain.meit.MeitTraceLog;
 import com.yzly.core.domain.meit.dto.MeitHotel;
+import com.yzly.core.domain.meit.dto.MeitHotelExt;
 import com.yzly.core.enums.DistributorEnum;
 import com.yzly.core.enums.SyncStatus;
 import com.yzly.core.repository.HotelSyncListRepository;
+import com.yzly.core.repository.dotw.HotelAdditionalInfoRepository;
 import com.yzly.core.repository.dotw.HotelInfoRepository;
 import com.yzly.core.repository.meit.MeitCityRepository;
 import com.yzly.core.repository.meit.MeitTraceLogRepository;
@@ -22,6 +26,7 @@ import org.springframework.stereotype.Service;
 import javax.persistence.criteria.Predicate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author lazyb
@@ -40,6 +45,8 @@ public class MeitService {
     private MeitCityRepository meitCityRepository;
     @Autowired
     private HotelInfoRepository hotelInfoRepository;
+    @Autowired
+    private HotelAdditionalInfoRepository hotelAdditionalInfoRepository;
 
     /**
      * 增加或修改美团调用日志
@@ -100,6 +107,19 @@ public class MeitService {
             mlist.add(mh);
             hs.setSyncStatus(SyncStatus.SYNCED);
             hotelSyncListRepository.save(hs);
+        }
+        return mlist;
+    }
+
+    public List<MeitHotelExt> getHotelExtListByIds(String hotelIds) {
+        String[] ids = hotelIds.split(",");
+        List<MeitHotelExt> mlist = new ArrayList<>();
+        for (String id : ids) {
+            HotelAdditionalInfo info = hotelAdditionalInfoRepository.findOneByHotelId(id);
+            MeitHotelExt hotelExt = new MeitHotelExt();
+            List<Map<String, String>> imgs = new ArrayList<>();
+            JSONObject images = JSONObject.parseObject(info.getImages()).getJSONObject("hotelImages");
+
         }
         return mlist;
     }

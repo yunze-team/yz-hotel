@@ -40,19 +40,36 @@ public class MeitApiController {
      * @return
      * @throws Exception
      */
-    private JSONObject baseRequestTrans(HttpServletRequest request) throws Exception {
+    private MeitResult baseRequestTrans(HttpServletRequest request) {
         String encyptData = request.getParameter("param");
         String traceId = request.getHeader("Request-Trace");
         MeitTraceLog traceLog = meitApiService.addTraceLog(traceId, encyptData, null, null);
         log.info("traceLog: " + JSONObject.toJSONString(traceLog));
         ResultEnum resultEnum = new AuthValidatorUtil().validate(request, secret);
         if (!resultEnum.equals(ResultEnum.SUCCESS)) {
-            throw new Exception(resultEnum.toString());
+            return MeitResultUtil.generateResult(resultEnum, null);
         }
-        String reqData = AESUtilUsingCommonDecodec.decrypt(encyptData);
-        // 更新美团调用日志的解密数据
-        meitApiService.addTraceLog(traceId, encyptData, reqData, traceLog);
-        return JSON.parseObject(reqData);
+        try {
+            String reqData = AESUtilUsingCommonDecodec.decrypt(encyptData);
+            // 更新美团调用日志的解密数据
+            meitApiService.addTraceLog(traceId, encyptData, reqData, traceLog);
+            JSONObject req = JSON.parseObject(reqData);
+            MeitResult res = MeitResultUtil.generateResult(ResultEnum.SUCCESS, null);
+            res.setReqData(req);
+            return res;
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            return MeitResultUtil.generateResult(ResultEnum.FAIL, null);
+        }
+    }
+
+    private String baseResponseTrans(MeitResult meitResult) {
+        try {
+            return AESUtilUsingCommonDecodec.decrypt(JSONObject.toJSONString(meitResult));
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            return null;
+        }
     }
 
     /**
@@ -62,35 +79,26 @@ public class MeitApiController {
      */
     @GetMapping("/hotel_basic")
     public Object hotelBasic(HttpServletRequest request) {
-        JSONObject req;
-        try {
-            req = baseRequestTrans(request);
-        } catch (Exception e) {
-            log.error(e.getMessage());
-            return MeitResultUtil.generateResult(ResultEnum.FAIL, null);
+        MeitResult result = baseRequestTrans(request);
+        if (!result.getSuccess()) {
+            return baseResponseTrans(result);
         }
-        int skip = Integer.valueOf(request.getParameter("skip"));
-        int limit = Integer.valueOf(request.getParameter("limit"));
-        MeitResult result = meitApiService.syncHotelBasic(skip, limit);
-        String data = JSONObject.toJSONString(result);
-        try {
-            return AESUtilUsingCommonDecodec.encrypt(data);
-        } catch (Exception e) {
-            log.error(e.getMessage());
-            return MeitResultUtil.generateResult(ResultEnum.FAIL, null);
-        }
+        JSONObject reqData = result.getReqData();
+        int skip = reqData.getInteger("skip");
+        int limit = reqData.getInteger("limit");
+        Object data = meitApiService.syncHotelBasic(skip, limit);
+        result.setData(data);
+        return baseResponseTrans(result);
     }
 
     @GetMapping("/hotel_extend")
     public Object hotelExtend(HttpServletRequest request) {
-        JSONObject req;
-        try {
-            req = baseRequestTrans(request);
-        } catch (Exception e) {
-            log.error(e.getMessage());
-            return MeitResultUtil.generateResult(ResultEnum.FAIL, null);
+        MeitResult result = baseRequestTrans(request);
+        if (!result.getSuccess()) {
+            return baseResponseTrans(result);
         }
-        String hotelIds = request.getParameter("hotelId");
+        JSONObject reqData = result.getReqData();
+        String hotelIds = reqData.getString("hotelId");
 
         return request;
     }

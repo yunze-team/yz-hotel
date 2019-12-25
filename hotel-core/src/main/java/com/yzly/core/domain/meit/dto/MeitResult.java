@@ -1,5 +1,7 @@
 package com.yzly.core.domain.meit.dto;
 
+import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.annotation.JSONField;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -17,5 +19,8 @@ public class MeitResult {
     private String message;
     private Boolean success;
     private Object data;
+
+    @JSONField(serialize = false)
+    private JSONObject reqData;
 
 }
