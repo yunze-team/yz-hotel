@@ -1,99 +1,58 @@
 package com.yzly.api.common;
 
+import com.alibaba.fastjson.JSON;
 import com.meituan.hotel.openplatform.DefaultMtHotelClient;
 import com.meituan.hotel.openplatform.MtHotelApiException;
 import com.meituan.hotel.openplatform.MtHotelConfiguration;
-import com.meituan.hotel.openplatform.domain.InventoryPriceParam;
-import com.meituan.hotel.openplatform.domain.PoiParam;
-import com.meituan.hotel.openplatform.domain.RoomStatusAllParam;
-import com.meituan.hotel.openplatform.domain.RoomStatusAllParams;
-import com.meituan.hotel.openplatform.internal.domain.Environment;
-import com.meituan.hotel.openplatform.request.MtHotelPoiPushRequest;
-import com.meituan.hotel.openplatform.request.MtHotelPoiQueryRequest;
-import com.meituan.hotel.openplatform.request.MtHotelRoomStatusAllPushRequest;
+import com.meituan.hotel.openplatform.domain.*;
+import com.meituan.hotel.openplatform.request.*;
 import com.meituan.hotel.openplatform.response.MtHotelResponse;
-import lombok.extern.apachecommons.CommonsLog;
+import com.yzly.api.vo.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestTemplate;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Component
-@CommonsLog
 public class MeituanRestHandler {
 
-    @Value("${meituan.partnerId}")
-    private String mtPartnerId;
-    @Value("${meituan.clientSecret}")
-    private String mtEncryptKey;
 
-    private DefaultMtHotelClient generateClient() {
-        MtHotelConfiguration conf = new MtHotelConfiguration(mtPartnerId, mtEncryptKey);
-        conf.setEnv(Environment.DEV); // Environment.DEV for developing or testing
-        // go to configure. e.g. conf.setXxx ……
-        // create client for send request
-        DefaultMtHotelClient client = new DefaultMtHotelClient(conf);
-        return client;
-    }
+    @Autowired
+    private MtHotelConfiguration mtHotelConfiguration;
 
     /**
      * POI同步
      *
      * @return
      */
-    public MtHotelResponse mtHotelPoiPushRequest() {
-        // get MtHotelResponse
-        PoiParam params = new PoiParam();
-        params.setAddress("");//酒店地址
-        List<PoiParam> poiParamList = new ArrayList<>();
-        poiParamList.add(params);
-        // put PoiParam into MtHotelPoiPushRequest
-        MtHotelPoiPushRequest request = new MtHotelPoiPushRequest();
-        request.setPoiParamList(poiParamList);
-        // initialization configure
-        DefaultMtHotelClient client = this.generateClient();
-        MtHotelResponse response = null;
-        try {
-            response = client.execute(request);
-        } catch (MtHotelApiException e) {
-            // there will throw MtHotelApiException when request parameter error
-            System.out.println(e.getErrCode() + " -- " + e.getErrMsg());
+    public List<MtHotelResponse> mtHotelPoiPushRequest(List<HotelInfoVo> hotelInfoVos) {
+        List<MtHotelResponse> mtHotelResponses = new ArrayList<>();
+        if (hotelInfoVos.size() > 0){
+            int count = (hotelInfoVos.size()/100)+1;
+            for (int i=0;i<count;i++){
+                List<PoiParam> poiParams = hotelInfoVos.stream().map(u->JSON.parseObject(JSON.toJSONString(u), PoiParam.class))
+                        .collect(Collectors.toList());
+                MtHotelPoiPushRequest request = new MtHotelPoiPushRequest();
+                request.setPoiParamList(poiParams);
+                mtHotelResponses.add(send(request));
+            }
         }
-        // get request body from respnose
-        System.out.println("RequestBody: " + response.getReqBody());
-        // get configuration from response
-        System.out.println("Configuration: " + response.getConfiguration());
-        return response;
+        return mtHotelResponses;
     }
 
     /**
      * POI查询
      * @return
      */
-    public MtHotelResponse mtHotelPoiQueryRequest(){
+    public MtHotelResponse mtHotelPoiQueryRequest(String poiId){
         // get MtHotelResponse
-       String poiId="";//酒店地址
         Set<String> poiIds = new HashSet<>();
         poiIds.add(poiId);
         // put queryIds into MtHotelPoiQueryRequest
         MtHotelPoiQueryRequest request = new MtHotelPoiQueryRequest();
         request.setPoiSet(poiIds);
-        // initialization configure
-        DefaultMtHotelClient client = this.generateClient();
-        MtHotelResponse response = null;
-        try {
-            response = client.execute(request);
-        } catch (MtHotelApiException e) {
-            // there will throw MtHotelApiException when request parameter error
-            System.out.println(e.getErrCode() + " -- " + e.getErrMsg());
-        }
-        // get request body from respnose
-        System.out.println("RequestBody: " + response.getReqBody());
-        // get configuration from response
-        System.out.println("Configuration: " + response.getConfiguration());
-        return response;
+        return send(request);
     }
 
     /**
@@ -112,8 +71,73 @@ public class MeituanRestHandler {
         // put roomStatusAllParam into MtHotelRoomStatusAllPushRequest
         MtHotelRoomStatusAllPushRequest request = new MtHotelRoomStatusAllPushRequest();
         request.setRoomStatusAllParams(roomStatusAllParams);
-        // initialization configure
-        DefaultMtHotelClient client = this.generateClient();
+        return send(request);
+    }
+
+    /**
+     * 房态同步查询
+     * @param roomQueryVo
+     * @return
+     */
+    public MtHotelResponse MtHotelRoomStatusQueryRequest(RoomQueryVo roomQueryVo){
+        MtHotelRoomStatusQueryRequest request =   new MtHotelRoomStatusQueryRequest();
+        RoomStatusQueryParam queryParam = JSON.parseObject(JSON.toJSONString(roomQueryVo),RoomStatusQueryParam.class);
+        request.setRoomStatusQueryParam(queryParam);
+        return send(request);
+    }
+
+    /**
+     * 房态更新价格
+     * @param roomPriceVo
+     * @return
+     */
+    public MtHotelResponse MtHotelRoomStatusPricePushRequest(RoomPriceVo roomPriceVo){
+        MtHotelRoomStatusPricePushRequest request =   new MtHotelRoomStatusPricePushRequest();
+        RoomStatusPriceParams queryParam = JSON.parseObject(JSON.toJSONString(roomPriceVo),RoomStatusPriceParams.class);
+        request.setRoomStatusPriceParams(queryParam);
+        return send(request);
+    }
+
+    /**
+     * 产品库存同步
+     * @param roomPriceVo
+     * @return
+     */
+    public MtHotelResponse MtHotelRoomStatusStockPushRequest(RoomStockVo roomPriceVo){
+        MtHotelRoomStatusStockPushRequest request =   new MtHotelRoomStatusStockPushRequest();
+        RoomStatusQuotaParams queryParam = JSON.parseObject(JSON.toJSONString(roomPriceVo),RoomStatusQuotaParams.class);
+        request.setRoomStatusQuotaParams(queryParam);
+        return send(request);
+    }
+
+    /**
+     * 房态产品上下线
+     * @param roomStatesOnOff
+     * @return
+     */
+    public MtHotelResponse MtHotelRoomStatusOnOffPushRequest(RoomStatesOnOff roomStatesOnOff){
+        MtHotelRoomStatusOnOffPushRequest request =   new MtHotelRoomStatusOnOffPushRequest();
+        RoomStatusOnOffParams roomStatusOnOffParams = JSON.parseObject(JSON.toJSONString(roomStatesOnOff),RoomStatusOnOffParams.class);
+        request.setRoomStatusOnOffParams(roomStatusOnOffParams);
+        return send(request);
+    }
+
+
+    /**
+     * 房态创建新产品
+     * @param roomInfoVo
+     * @return
+     */
+    public MtHotelResponse MtHotelRoomStatusNewProdPushRequest(RoomInfoVo roomInfoVo){
+        MtHotelRoomStatusNewProdPushRequest request =   new MtHotelRoomStatusNewProdPushRequest();
+        RoomStatusNewParams roomStatusNewParams = JSON.parseObject(JSON.toJSONString(roomInfoVo),RoomStatusNewParams.class);
+        request.setRoomStatusNewParams(roomStatusNewParams);
+        return send(request);
+    }
+
+
+    private MtHotelResponse send(MtHotelRequest request){
+        DefaultMtHotelClient client = new DefaultMtHotelClient(mtHotelConfiguration);
         MtHotelResponse response = null;
         try {
             response = client.execute(request);
