@@ -3,6 +3,7 @@ package com.yzly.api.service.dotw;
 import com.yzly.api.util.meit.MeitResultUtil;
 import com.yzly.core.domain.meit.MeitTraceLog;
 import com.yzly.core.domain.meit.dto.MeitHotel;
+import com.yzly.core.domain.meit.dto.MeitHotelExt;
 import com.yzly.core.domain.meit.dto.MeitResult;
 import com.yzly.core.enums.DistributorEnum;
 import com.yzly.core.enums.meit.ResultEnum;
@@ -53,6 +54,21 @@ public class MeitApiService {
         }
         Map<String, List> data = new HashMap<>();
         data.put("hotels", mlist);
+        return data;
+    }
+
+    /**
+     * 美团酒店扩展信息同步
+     * @param hotelId
+     * @return
+     */
+    public Object syncHotelExtend(String hotelId) {
+        List<MeitHotelExt> mlist = meitService.getHotelExtListByIds(hotelId);
+        if (mlist == null) {
+            return null;
+        }
+        Map<String, List> data = new HashMap<>();
+        data.put("hotelExt", mlist);
         return data;
     }
 

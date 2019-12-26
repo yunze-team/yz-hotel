@@ -1,11 +1,13 @@
 package com.yzly.core.service.meit;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.yzly.core.domain.HotelSyncList;
 import com.yzly.core.domain.dotw.HotelAdditionalInfo;
 import com.yzly.core.domain.dotw.HotelInfo;
 import com.yzly.core.domain.meit.MeitCity;
 import com.yzly.core.domain.meit.MeitTraceLog;
+import com.yzly.core.domain.meit.dto.Img;
 import com.yzly.core.domain.meit.dto.MeitHotel;
 import com.yzly.core.domain.meit.dto.MeitHotelExt;
 import com.yzly.core.enums.DistributorEnum;
@@ -25,6 +27,7 @@ import org.springframework.stereotype.Service;
 
 import javax.persistence.criteria.Predicate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -117,11 +120,50 @@ public class MeitService {
         for (String id : ids) {
             HotelAdditionalInfo info = hotelAdditionalInfoRepository.findOneByHotelId(id);
             MeitHotelExt hotelExt = new MeitHotelExt();
-            List<Map<String, String>> imgs = new ArrayList<>();
+            if (StringUtils.isEmpty(info.getImages())) {
+                continue;
+            }
             JSONObject images = JSONObject.parseObject(info.getImages()).getJSONObject("hotelImages");
-
+            List<Img> imgs = new ArrayList<>();
+            if (images.getString("@count").equals("1")) {
+                JSONObject image = images.getJSONObject("image");
+                imgs.add(generateMeitImg(image));
+            } else {
+                JSONArray image = images.getJSONArray("image");
+                for (int i = 0; i < image.size(); i++) {
+                    JSONObject io = image.getJSONObject(i);
+                    imgs.add(generateMeitImg(io));
+                }
+            }
+            hotelExt.setImg(imgs);
+            mlist.add(hotelExt);
         }
         return mlist;
+    }
+
+    private Img generateMeitImg(JSONObject image) {
+        String imageType = "";
+        switch (image.getJSONObject("category").getString("#text")) {
+            case "Exterior":
+                imageType = "1";
+                break;
+            case "Hotel Rooms":
+                imageType = "9";
+                break;
+            case "Amenities And Services":
+                imageType = "19";
+                break;
+            case "Lobby":
+                imageType = "32";
+                break;
+            default:
+                imageType = "10";
+                break;
+        }
+        Img img = new Img();
+        img.setImageOrigin(image.getString("url"));
+        img.setImageType(imageType);
+        return img;
     }
 
 }

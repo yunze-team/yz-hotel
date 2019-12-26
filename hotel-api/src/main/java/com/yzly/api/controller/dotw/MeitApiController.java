@@ -99,8 +99,9 @@ public class MeitApiController {
         }
         JSONObject reqData = result.getReqData();
         String hotelIds = reqData.getString("hotelId");
-
-        return request;
+        Object data = meitApiService.syncHotelExtend(hotelIds);
+        result.setData(data);
+        return baseResponseTrans(result);
     }
 
 }

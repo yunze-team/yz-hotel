@@ -17,9 +17,9 @@ import java.util.Map;
 public class MeitHotelExt {
 
     private String hotelId;
-    private List<Map<String, String>> extsn;// 属性列表
-    private List<Map<String, String>> facilities;// 酒店设施
-    private List<Map<String, String>> service;// 酒店服务
-    private List<Map<String, String>> img;// 酒店图片,1=周边环境，9=客房，19=配套设施，32=大厅，34=门面，10=其他
+    private List<Extsn> extsn;// 属性列表
+    private List<Facilities> facilities;// 酒店设施
+    private List<Service> service;// 酒店服务
+    private List<Img> img;// 酒店图片,1=周边环境，9=客房，19=配套设施，32=大厅，34=门面，10=其他
 
 }
