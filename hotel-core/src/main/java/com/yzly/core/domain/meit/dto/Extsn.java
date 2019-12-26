@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 /**
+ * meit静态信息同步api，酒店扩展属性
  * @author lazyb
  * @create 2019/12/26
  * @desc

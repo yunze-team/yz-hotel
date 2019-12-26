@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 /**
+ * meit酒店扩展信息api，酒店设施
  * @author lazyb
  * @create 2019/12/26
  * @desc
