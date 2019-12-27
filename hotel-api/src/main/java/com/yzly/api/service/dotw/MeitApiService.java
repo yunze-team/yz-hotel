@@ -1,12 +1,11 @@
 package com.yzly.api.service.dotw;
 
-import com.yzly.api.util.meit.MeitResultUtil;
 import com.yzly.core.domain.meit.MeitTraceLog;
+import com.yzly.core.domain.meit.dto.HotelRoomTypeBasic;
 import com.yzly.core.domain.meit.dto.MeitHotel;
 import com.yzly.core.domain.meit.dto.MeitHotelExt;
-import com.yzly.core.domain.meit.dto.MeitResult;
+import com.yzly.core.domain.meit.dto.RoomTypeExtModelList;
 import com.yzly.core.enums.DistributorEnum;
-import com.yzly.core.enums.meit.ResultEnum;
 import com.yzly.core.service.meit.MeitService;
 import lombok.extern.apachecommons.CommonsLog;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,6 +68,36 @@ public class MeitApiService {
         }
         Map<String, List> data = new HashMap<>();
         data.put("hotelExt", mlist);
+        return data;
+    }
+
+    /**
+     * 美团房型基础信息同步
+     * @param hotelId
+     * @return
+     */
+    public Object syncRoomBasic(String hotelId) {
+        List<HotelRoomTypeBasic> hlist = meitService.getRoomBasicsByIds(hotelId);
+        if (hlist == null) {
+            return null;
+        }
+        Map<String, List> data = new HashMap<>();
+        data.put("hotelRoomTypeBasics", hlist);
+        return data;
+    }
+
+    /**
+     * 美团房型扩展信息同步
+     * @param hotelId
+     * @return
+     */
+    public Object syncRoomExtend(String hotelId) {
+        List<RoomTypeExtModelList> hlist = meitService.getRoomExtendsByIds(hotelId);
+        if (hlist == null) {
+            return null;
+        }
+        Map<String, List> data = new HashMap<>();
+        data.put("roomTypeExtModelList", hlist);
         return data;
     }
 

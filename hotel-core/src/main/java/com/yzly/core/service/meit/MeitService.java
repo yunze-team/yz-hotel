@@ -5,16 +5,16 @@ import com.alibaba.fastjson.JSONObject;
 import com.yzly.core.domain.HotelSyncList;
 import com.yzly.core.domain.dotw.HotelAdditionalInfo;
 import com.yzly.core.domain.dotw.HotelInfo;
+import com.yzly.core.domain.dotw.RoomType;
 import com.yzly.core.domain.meit.MeitCity;
 import com.yzly.core.domain.meit.MeitTraceLog;
-import com.yzly.core.domain.meit.dto.Img;
-import com.yzly.core.domain.meit.dto.MeitHotel;
-import com.yzly.core.domain.meit.dto.MeitHotelExt;
+import com.yzly.core.domain.meit.dto.*;
 import com.yzly.core.enums.DistributorEnum;
 import com.yzly.core.enums.SyncStatus;
 import com.yzly.core.repository.HotelSyncListRepository;
 import com.yzly.core.repository.dotw.HotelAdditionalInfoRepository;
 import com.yzly.core.repository.dotw.HotelInfoRepository;
+import com.yzly.core.repository.dotw.RoomTypeRepository;
 import com.yzly.core.repository.meit.MeitCityRepository;
 import com.yzly.core.repository.meit.MeitTraceLogRepository;
 import lombok.extern.apachecommons.CommonsLog;
@@ -50,6 +50,8 @@ public class MeitService {
     private HotelInfoRepository hotelInfoRepository;
     @Autowired
     private HotelAdditionalInfoRepository hotelAdditionalInfoRepository;
+    @Autowired
+    private RoomTypeRepository roomTypeRepository;
 
     /**
      * 增加或修改美团调用日志
@@ -114,6 +116,11 @@ public class MeitService {
         return mlist;
     }
 
+    /**
+     * 通过ids列表获得酒店扩展信息
+     * @param hotelIds
+     * @return
+     */
     public List<MeitHotelExt> getHotelExtListByIds(String hotelIds) {
         String[] ids = hotelIds.split(",");
         List<MeitHotelExt> mlist = new ArrayList<>();
@@ -139,6 +146,51 @@ public class MeitService {
             mlist.add(hotelExt);
         }
         return mlist;
+    }
+
+    /**
+     * 通过id列表获得房型基础信息
+     * @param hotelIds
+     * @return
+     */
+    public List<HotelRoomTypeBasic> getRoomBasicsByIds(String hotelIds) {
+        String[] ids = hotelIds.split(",");
+        List<HotelRoomTypeBasic> hlist = new ArrayList<>();
+        for (String id : ids) {
+            HotelRoomTypeBasic hotelRoomTypeBasic = new HotelRoomTypeBasic();
+            hotelRoomTypeBasic.setHotelId(id);
+            List<RoomType> rlist = roomTypeRepository.findAllByHotelId(id);
+            List<RoomTypeBasic> rtypeList = new ArrayList<>();
+            for (RoomType r : rlist) {
+                RoomTypeBasic rtype = new RoomTypeBasic();
+                rtype.setRoomId(r.getRoomTypeCode());
+                rtype.setRoomNameEn(r.getName());
+                rtypeList.add(rtype);
+            }
+            hotelRoomTypeBasic.setRoomTypeBasics(rtypeList);
+            hlist.add(hotelRoomTypeBasic);
+        }
+        return hlist;
+    }
+
+    /**
+     * 通过id列表获得房型扩展信息列表
+     * @param hotelIds
+     * @return
+     */
+    public List<RoomTypeExtModelList> getRoomExtendsByIds(String hotelIds) {
+        String[] ids = hotelIds.split(",");
+        List<RoomTypeExtModelList> hlist = new ArrayList<>();
+        for (String id : ids) {
+            List<RoomType> rlist = roomTypeRepository.findAllByHotelId(id);
+            for (RoomType r : rlist) {
+                RoomTypeExtModelList re = new RoomTypeExtModelList();
+                re.setHotelId(id);
+                re.setRoomId(r.getRoomTypeCode());
+                hlist.add(re);
+            }
+        }
+        return hlist;
     }
 
     private Img generateMeitImg(JSONObject image) {

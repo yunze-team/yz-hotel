@@ -91,8 +91,49 @@ public class MeitApiController {
         return baseResponseTrans(result);
     }
 
+    /**
+     * 同步酒店扩展信息
+     * @param request
+     * @return
+     */
     @GetMapping("/hotel_extend")
     public Object hotelExtend(HttpServletRequest request) {
+        MeitResult result = baseRequestTrans(request);
+        if (!result.getSuccess()) {
+            return baseResponseTrans(result);
+        }
+        JSONObject reqData = result.getReqData();
+        String hotelIds = reqData.getString("hotelId");
+        Object data = meitApiService.syncHotelExtend(hotelIds);
+        result.setData(data);
+        return baseResponseTrans(result);
+    }
+
+    /**
+     * 同步房型基础信息
+     * @param request
+     * @return
+     */
+    @GetMapping("/room_basic")
+    public Object roomBasic(HttpServletRequest request) {
+        MeitResult result = baseRequestTrans(request);
+        if (!result.getSuccess()) {
+            return baseResponseTrans(result);
+        }
+        JSONObject reqData = result.getReqData();
+        String hotelIds = reqData.getString("hotelId");
+        Object data = meitApiService.syncRoomBasic(hotelIds);
+        result.setData(data);
+        return baseResponseTrans(result);
+    }
+
+    /**
+     * 同步房型扩展信息
+     * @param request
+     * @return
+     */
+    @GetMapping("/room_extend")
+    public Object roomExtend(HttpServletRequest request) {
         MeitResult result = baseRequestTrans(request);
         if (!result.getSuccess()) {
             return baseResponseTrans(result);
