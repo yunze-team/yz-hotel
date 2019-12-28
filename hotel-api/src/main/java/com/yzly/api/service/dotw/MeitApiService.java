@@ -1,10 +1,7 @@
 package com.yzly.api.service.dotw;
 
 import com.yzly.core.domain.meit.MeitTraceLog;
-import com.yzly.core.domain.meit.dto.HotelRoomTypeBasic;
-import com.yzly.core.domain.meit.dto.MeitHotel;
-import com.yzly.core.domain.meit.dto.MeitHotelExt;
-import com.yzly.core.domain.meit.dto.RoomTypeExtModelList;
+import com.yzly.core.domain.meit.dto.*;
 import com.yzly.core.enums.DistributorEnum;
 import com.yzly.core.service.meit.MeitService;
 import lombok.extern.apachecommons.CommonsLog;
@@ -98,6 +95,27 @@ public class MeitApiService {
         }
         Map<String, List> data = new HashMap<>();
         data.put("roomTypeExtModelList", hlist);
+        return data;
+    }
+
+    /**
+     * 美团产品搜索结果同步
+     * @param hotelIds 酒店ID，多个用“，”分隔
+     * @param roomId 房型ID，单产品查询时有值
+     * @param ratePlanCode 售卖计划，单产品查询时有值
+     * @param checkin 入住日期，格式为YYYY-MM-DD
+     * @param checkout 离店日期，格式为YYYY-MM-DD
+     * @param roomNumber 房间数
+     * @param numberOfAdults 成人数
+     * @param numberOfChildren 儿童数
+     * @param childrenAges 儿童年龄，以“,”分隔的数字组合
+     * @param currencyCode 币种，（海外）Currency code. ISO 4217（国内）默认为“CNY”
+     * @return
+     */
+    public Object syncGoodsSearch(String hotelIds, String roomId, String ratePlanCode, String checkin,
+                                  String checkout, Integer roomNumber, Integer numberOfAdults, Integer numberOfChildren,
+                                  String childrenAges, String currencyCode) {
+        Map<String, HotelMap> data = new HashMap<>();
         return data;
     }
 

@@ -145,4 +145,32 @@ public class MeitApiController {
         return baseResponseTrans(result);
     }
 
+    /**
+     * 产品信息搜索
+     * @param request
+     * @return
+     */
+    @GetMapping("/goods_search")
+    public Object goodsSearch(HttpServletRequest request) {
+        MeitResult result = baseRequestTrans(request);
+        if (!result.getSuccess()) {
+            return baseResponseTrans(result);
+        }
+        JSONObject reqData = result.getReqData();
+        String hotelIds = reqData.getString("hotelId");
+        String roomId = reqData.getString("roomId");
+        String ratePlanCode = reqData.getString("ratePlanCode");
+        String checkin = reqData.getString("checkin");
+        String checkout = reqData.getString("checkout");
+        Integer roomNumber = reqData.getInteger("roomNumber");
+        Integer numberOfAdults = reqData.getInteger("numberOfAdults");
+        Integer numberOfChildren = reqData.getInteger("numberOfChildren");
+        String childrenAges = reqData.getString("childrenAges");
+        String currencyCode = reqData.getString("currencyCode");
+        Object data = meitApiService.syncGoodsSearch(hotelIds, roomId, ratePlanCode, checkin, checkout,
+                roomNumber, numberOfAdults, numberOfChildren, childrenAges, currencyCode);
+        result.setData(data);
+        return baseResponseTrans(result);
+    }
+
 }

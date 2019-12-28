@@ -6,6 +6,8 @@ import com.yzly.api.util.XmlTool;
 import com.yzly.core.domain.dotw.BookingOrderInfo;
 import com.yzly.core.domain.dotw.RoomBookingInfo;
 import com.yzly.core.domain.dotw.vo.Passenger;
+import com.yzly.core.domain.meit.dto.GoodsSearchQuery;
+import com.yzly.core.service.dotw.CodeService;
 import com.yzly.core.util.PasswordEncryption;
 import lombok.extern.apachecommons.CommonsLog;
 import net.sf.json.xml.XMLSerializer;
@@ -13,6 +15,7 @@ import org.apache.commons.lang.StringUtils;
 import org.dom4j.Document;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -21,6 +24,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -40,6 +44,9 @@ public class DCMLHandler {
     private String DOTWCompanyCode;
     @Value("${dotw.url}")
     private String DOTWUrl;
+
+    @Autowired
+    private CodeService codeService;
 
     public Document generateBaseRequest() {
         Document doc = DocumentHelper.createDocument();
@@ -256,6 +263,46 @@ public class DCMLHandler {
         XMLSerializer xmlSerializer = new XMLSerializer();
         String resutStr = xmlSerializer.read(xmlResp).toString();
         return JSON.parseObject(resutStr);
+    }
+
+    /**
+     * 根据美团的产品搜索请求参数去dotw拉取价格数据
+     * @param goodsSearchQuery
+     * @return
+     */
+    public List<JSONObject> getRoomsByMeitQuery(GoodsSearchQuery goodsSearchQuery) {
+        List<JSONObject> jlist = new ArrayList<>();
+        String[] hotelIds = goodsSearchQuery.getHotelIds().split(",");
+        for (String hotelId : hotelIds) {
+            Document doc = generateBaseRequest();
+            Element customer = doc.getRootElement();
+            customer.addElement("product").setText("hotel");
+            Element request = customer.addElement("request");
+            request.addAttribute("command", "getrooms");
+            Element bookingDetails = request.addElement("bookingDetails");
+            bookingDetails.addElement("fromDate").setText(goodsSearchQuery.getCheckin());
+            bookingDetails.addElement("toDate").setText(goodsSearchQuery.getCheckout());
+            bookingDetails.addElement("currency").setText(codeService.getCurrencyCode(goodsSearchQuery.getCurrencyCode()));
+            String roomNum = goodsSearchQuery.getRoomNumber() == null ? "1" : String.valueOf(goodsSearchQuery.getRoomNumber());
+            Element rooms = bookingDetails.addElement("rooms").addAttribute("no", roomNum);
+            for (int i = 0; i < Integer.valueOf(roomNum); i++) {
+                Element room = rooms.addElement("room").addAttribute("runno", String.valueOf(i));
+                String adultsNum = goodsSearchQuery.getNumberOfAdults() == null ? "2" : String.valueOf(goodsSearchQuery.getNumberOfAdults());
+                room.addElement("adultsCode").setText(adultsNum);
+                String childrenNum = goodsSearchQuery.getNumberOfChildren() == null ? "0" : String.valueOf(goodsSearchQuery.getNumberOfChildren());
+                room.addElement("children").addAttribute("no", childrenNum);
+                if (!childrenNum.equals("0")) {
+
+                }
+            }
+            bookingDetails.addElement("productId").setText(hotelId);
+            String xmlResp = this.sendDotwString(doc);
+            XMLSerializer xmlSerializer = new XMLSerializer();
+            String resutStr = xmlSerializer.read(xmlResp).toString();
+            JSONObject res = JSON.parseObject(resutStr);
+            jlist.add(res);
+        }
+        return jlist;
     }
 
     public JSONObject confirmBookingByOrder(BookingOrderInfo orderInfo, List<Passenger> plist) {

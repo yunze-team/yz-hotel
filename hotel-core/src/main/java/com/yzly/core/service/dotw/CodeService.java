@@ -31,6 +31,8 @@ public class CodeService {
     private RoomAmenitieIdsRepository roomAmenitieIdsRepository;
     @Autowired
     private HotelClassificationIdsRepository hotelClassificationIdsRepository;
+    @Autowired
+    private CurrencyRepository currencyRepository;
 
     @Transactional
     public void syncRateBasis(JSONObject jsonObject) {
@@ -137,6 +139,16 @@ public class CodeService {
             HotelClassificationIds hotelClassificationIds = new HotelClassificationIds(code, idJson.getString("#text"));
             hotelClassificationIdsRepository.save(hotelClassificationIds);
         }
+    }
+
+    /**
+     * 通过币种名称获得dotw的币种的code
+     * @param name
+     * @return
+     */
+    public String getCurrencyCode(String name) {
+        Currency currency = currencyRepository.findByName(name);
+        return currency != null ? currency.getCode() : null;
     }
 
 }
