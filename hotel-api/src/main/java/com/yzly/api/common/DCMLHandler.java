@@ -290,10 +290,17 @@ public class DCMLHandler {
                 String adultsNum = goodsSearchQuery.getNumberOfAdults() == null ? "2" : String.valueOf(goodsSearchQuery.getNumberOfAdults());
                 room.addElement("adultsCode").setText(adultsNum);
                 String childrenNum = goodsSearchQuery.getNumberOfChildren() == null ? "0" : String.valueOf(goodsSearchQuery.getNumberOfChildren());
-                room.addElement("children").addAttribute("no", childrenNum);
+                Element children = room.addElement("children").addAttribute("no", childrenNum);
                 if (!childrenNum.equals("0")) {
-
+                    String[] childAges = goodsSearchQuery.getChildrenAges().split(",");
+                    for (int j = 0; j < Integer.valueOf(childrenNum); j++) {
+                        children.addElement("child").addAttribute("runno", String.valueOf(j)).setText(childAges[j]);
+                    }
                 }
+                room.addElement("rateBasis").setText("-1");
+                room.addElement("passengerNationality").setText("168");
+                room.addElement("passengerCountryOfResidence").setText("168");
+                // TODO: add room type selected by meit query
             }
             bookingDetails.addElement("productId").setText(hotelId);
             String xmlResp = this.sendDotwString(doc);
