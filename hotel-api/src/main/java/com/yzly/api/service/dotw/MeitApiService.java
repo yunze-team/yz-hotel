@@ -1,13 +1,18 @@
 package com.yzly.api.service.dotw;
 
+import com.alibaba.fastjson.JSONObject;
+import com.yzly.core.domain.dotw.RoomBookingInfo;
 import com.yzly.core.domain.meit.MeitTraceLog;
 import com.yzly.core.domain.meit.dto.*;
 import com.yzly.core.enums.DistributorEnum;
+import com.yzly.core.service.dotw.BookingService;
 import com.yzly.core.service.meit.MeitService;
 import lombok.extern.apachecommons.CommonsLog;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,6 +28,8 @@ public class MeitApiService {
 
     @Autowired
     private MeitService meitService;
+    @Autowired
+    private BookingService bookingService;
 
     /**
      * 添加美团调用日志记录
@@ -100,22 +107,39 @@ public class MeitApiService {
 
     /**
      * 美团产品搜索结果同步
-     * @param hotelIds 酒店ID，多个用“，”分隔
-     * @param roomId 房型ID，单产品查询时有值
-     * @param ratePlanCode 售卖计划，单产品查询时有值
-     * @param checkin 入住日期，格式为YYYY-MM-DD
-     * @param checkout 离店日期，格式为YYYY-MM-DD
-     * @param roomNumber 房间数
-     * @param numberOfAdults 成人数
-     * @param numberOfChildren 儿童数
-     * @param childrenAges 儿童年龄，以“,”分隔的数字组合
-     * @param currencyCode 币种，（海外）Currency code. ISO 4217（国内）默认为“CNY”
+     * @param jlist
      * @return
      */
-    public Object syncGoodsSearch(String hotelIds, String roomId, String ratePlanCode, String checkin,
-                                  String checkout, Integer roomNumber, Integer numberOfAdults, Integer numberOfChildren,
-                                  String childrenAges, String currencyCode) {
+    public Object syncGoodsSearch(List<JSONObject> jlist, GoodsSearchQuery goodsSearchQuery) {
         Map<String, HotelMap> data = new HashMap<>();
+        List<RoomBookingInfo> rlist = new ArrayList<>();
+        for (JSONObject jsonObject : jlist) {
+            JSONObject request = jsonObject.getJSONObject("request");
+            if (request != null) {
+                String successful = request.getString("successful");
+                if (StringUtils.isNotEmpty(successful) && "FALSE".equals(successful)) {
+                    continue;
+                }
+            } else {
+                log.info("jlist" + jlist);
+                String hotelId = request.getJSONObject("hotel").getString("@id");
+                rlist = bookingService.addRoomBookingByGetRoomsJson(request, hotelId, goodsSearchQuery.getCheckin(), goodsSearchQuery.getCheckout());
+                HotelMap hotelMap = new HotelMap();
+                hotelMap.setCurrencyCode(request.getString("currencyShort"));
+                List<Room> roomList = new ArrayList<>();
+                for (RoomBookingInfo roomBookingInfo : rlist) {
+                    Room room = new Room();
+                    Breakfast breakfast = new Breakfast();
+                    // 判断房型是否还有早餐
+                    if (!roomBookingInfo.getRateBasisId().equals("1331")) {
+                        breakfast.setCount(0);
+                    } else {
+                        breakfast.setCount(2);
+                    }
+                    // TODO: add day info price by rate
+                }
+            }
+        }
         return data;
     }
 

@@ -300,7 +300,13 @@ public class DCMLHandler {
                 room.addElement("rateBasis").setText("-1");
                 room.addElement("passengerNationality").setText("168");
                 room.addElement("passengerCountryOfResidence").setText("168");
-                // TODO: add room type selected by meit query
+                // add room type selected by meit query
+                if (StringUtils.isNotEmpty(goodsSearchQuery.getRoomId()) && StringUtils.isNotEmpty(goodsSearchQuery.getRatePlanCode())) {
+                    Element roomType = room.addElement("roomTypeSelected");
+                    roomType.addElement("code").setText(goodsSearchQuery.getRoomId());
+                    roomType.addElement("selectedRateBasis").setText("-1");
+                    roomType.addElement("allocationDetails").setText(goodsSearchQuery.getRatePlanCode());
+                }
             }
             bookingDetails.addElement("productId").setText(hotelId);
             String xmlResp = this.sendDotwString(doc);

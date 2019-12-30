@@ -2,11 +2,13 @@ package com.yzly.api.controller.dotw;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.yzly.api.common.DCMLHandler;
 import com.yzly.api.service.dotw.MeitApiService;
 import com.yzly.api.util.meit.MeitResultUtil;
 import com.yzly.api.util.meit.international.AESUtilUsingCommonDecodec;
 import com.yzly.api.util.meit.international.AuthValidatorUtil;
 import com.yzly.core.domain.meit.MeitTraceLog;
+import com.yzly.core.domain.meit.dto.GoodsSearchQuery;
 import com.yzly.core.domain.meit.dto.MeitResult;
 import com.yzly.core.enums.meit.ResultEnum;
 import lombok.extern.apachecommons.CommonsLog;
@@ -17,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 /**
  * @author lazyb
@@ -33,6 +36,8 @@ public class MeitApiController {
 
     @Autowired
     private MeitApiService meitApiService;
+    @Autowired
+    private DCMLHandler dcmlHandler;
 
     /**
      * 基础请求传递方法，负责将美团请求进行认证，并解密数据，记录日志
@@ -167,8 +172,10 @@ public class MeitApiController {
         Integer numberOfChildren = reqData.getInteger("numberOfChildren");
         String childrenAges = reqData.getString("childrenAges");
         String currencyCode = reqData.getString("currencyCode");
-        Object data = meitApiService.syncGoodsSearch(hotelIds, roomId, ratePlanCode, checkin, checkout,
+        GoodsSearchQuery goodsSearchQuery = new GoodsSearchQuery(hotelIds, roomId, ratePlanCode, checkin, checkout,
                 roomNumber, numberOfAdults, numberOfChildren, childrenAges, currencyCode);
+        List<JSONObject> jlist = dcmlHandler.getRoomsByMeitQuery(goodsSearchQuery);
+        Object data = meitApiService.syncGoodsSearch(jlist, goodsSearchQuery);
         result.setData(data);
         return baseResponseTrans(result);
     }

@@ -10,6 +10,7 @@ import com.yzly.core.domain.dotw.vo.Passenger;
 import com.yzly.core.repository.dotw.BookingOrderInfoRepository;
 import com.yzly.core.repository.dotw.RoomBookingInfoRepository;
 import lombok.extern.apachecommons.CommonsLog;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -32,6 +33,9 @@ public class BookingService {
 
     public List<RoomBookingInfo> addRoomBookingByGetRoomsJson(JSONObject jsonObject, String hid, String fromDate, String toDate) {
         JSONObject hotelJson = jsonObject.getJSONObject("hotel");
+        if (StringUtils.isEmpty(hid)) {
+            hid = hotelJson.getString("@id");
+        }
         JSONObject roomJson = hotelJson.getJSONObject("rooms").getJSONObject("room");
         List<RoomBookingInfo> result = new ArrayList<>();
         if (roomJson.getString("@count").equals("1")) {
