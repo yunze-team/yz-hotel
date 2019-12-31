@@ -63,6 +63,7 @@ public class HotelInfoService {
     private static final String DOTW_ROOM_PULL_SIZE = "DOTW_ROOM_PULL_SIZE";
     private static final String DOTW_ROOM_PULL_DATE = "DOTW_ROOM_PULL_DATE";
     private static final String DOTW_ROOM_PULL_CITY = "DOTW_ROOM_PULL_CITY";
+    private static final String MEIT_ROOM_PRICE_RATE = "MEIT_ROOM_PRICE_RATE";
 
     /**
      * 通过dotw给的excel数据更新酒店基础数据
@@ -298,6 +299,24 @@ public class HotelInfoService {
         DateTime date = DateTime.parse(attr.getEventValue(), DateTimeFormat.forPattern("yyyy-MM-dd"));
         attr.setEventValue(date.plusDays(1).toString("yyyy-MM-dd"));
         eventAttrRepository.save(attr);
+    }
+
+    /**
+     * 从event_attr中获取酒店价格上浮利率
+     * @return
+     */
+    public Double findHotelPriceRateByEvent() {
+        EventAttr attr = eventAttrRepository.findByEventType(MEIT_ROOM_PRICE_RATE);
+        return Double.valueOf(attr.getEventValue());
+    }
+
+    /**
+     * 获得酒店附加详细数据
+     * @param hotelId
+     * @return
+     */
+    public HotelAdditionalInfo findOneById(String hotelId) {
+        return hotelAdditionalInfoRepository.findOneByHotelId(hotelId);
     }
 
 }
