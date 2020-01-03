@@ -15,6 +15,6 @@ public class OrderInfo {
 
     private Long orderId;// 美团酒店id
     private String mobile;// 联系电话
-    private String persionName;// 联系人姓名
+    private String personName;// 联系人姓名
 
 }
