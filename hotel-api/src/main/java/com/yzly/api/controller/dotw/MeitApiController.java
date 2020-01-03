@@ -7,14 +7,17 @@ import com.yzly.api.service.dotw.MeitApiService;
 import com.yzly.api.util.meit.MeitResultUtil;
 import com.yzly.api.util.meit.international.AESUtilUsingCommonDecodec;
 import com.yzly.api.util.meit.international.AuthValidatorUtil;
+import com.yzly.api.util.meit.international.MeitReqUtil;
 import com.yzly.core.domain.meit.MeitTraceLog;
 import com.yzly.core.domain.meit.dto.GoodsSearchQuery;
 import com.yzly.core.domain.meit.dto.MeitResult;
+import com.yzly.core.domain.meit.dto.OrderCreateParam;
 import com.yzly.core.enums.meit.ResultEnum;
 import lombok.extern.apachecommons.CommonsLog;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -176,6 +179,24 @@ public class MeitApiController {
                 roomNumber, numberOfAdults, numberOfChildren, childrenAges, currencyCode);
         List<JSONObject> jlist = dcmlHandler.getRoomsByMeitQuery(goodsSearchQuery);
         Object data = meitApiService.syncGoodsSearch(jlist, goodsSearchQuery);
+        result.setData(data);
+        return baseResponseTrans(result);
+    }
+
+    /**
+     * 订单创建
+     * @param request
+     * @return
+     */
+    @PostMapping("/order_create")
+    public Object orderCreate(HttpServletRequest request) {
+        MeitResult result = baseRequestTrans(request);
+        if (!result.getSuccess()) {
+            return baseResponseTrans(result);
+        }
+        JSONObject reqData = result.getReqData();
+        OrderCreateParam orderCreateParam = MeitReqUtil.buildOrderParam(reqData);
+        Object data = meitApiService.createOrder(orderCreateParam);
         result.setData(data);
         return baseResponseTrans(result);
     }

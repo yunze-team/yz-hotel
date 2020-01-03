@@ -144,4 +144,9 @@ public class MeitApiService {
         return data;
     }
 
+    public Object createOrder(OrderCreateParam orderCreateParam) {
+        OrderResult orderResult = new OrderResult();
+        return orderResult;
+    }
+
 }
