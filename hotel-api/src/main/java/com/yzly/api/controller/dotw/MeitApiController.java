@@ -201,4 +201,22 @@ public class MeitApiController {
         return baseResponseTrans(result);
     }
 
+    /**
+     * 订单查询
+     * @param request
+     * @return
+     */
+    @PostMapping("/order_query")
+    public Object orderQuery(HttpServletRequest request) {
+        MeitResult result = baseRequestTrans(request);
+        if (!result.getSuccess()) {
+            return baseResponseTrans(result);
+        }
+        JSONObject reqData = result.getReqData();
+        String orderId = reqData.getString("orderId");
+        Object data = meitApiService.orderQueryResult(orderId);
+        result.setData(data);
+        return baseResponseTrans(result);
+    }
+
 }

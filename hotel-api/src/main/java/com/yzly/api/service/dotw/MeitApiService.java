@@ -160,4 +160,25 @@ public class MeitApiService {
         return orderResult;
     }
 
+    /**
+     * 查询美团酒店订单
+     * @param orderId
+     * @return
+     */
+    public Object orderQueryResult(String orderId) {
+        OrderResult orderResult = new OrderResult();
+        MeitOrderBookingInfo orderBookingInfo = meitService.getOrderByOrderId(orderId);
+        orderResult.setPartnerOrderId(orderBookingInfo.getPartnerOrderId());
+        orderResult.setOrderId(orderBookingInfo.getOrderId());
+        orderResult.setOrderStatus(orderBookingInfo.getOrderStatus());
+        orderResult.setTotalPrice(Integer.valueOf(orderBookingInfo.getTotalPrice()));
+        if (orderBookingInfo.getAgentOrderId() != null) {
+            orderResult.setAgentOrderId(orderBookingInfo.getAgentOrderId());
+        }
+        if (orderBookingInfo.getPenalty() != null) {
+            orderResult.setPenalty(orderBookingInfo.getPenalty());
+        }
+        return orderResult;
+    }
+
 }
