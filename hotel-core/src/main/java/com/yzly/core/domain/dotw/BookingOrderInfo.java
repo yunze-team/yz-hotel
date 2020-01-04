@@ -49,6 +49,9 @@ public class BookingOrderInfo {
     @Column(length = 10)
     private String children;
 
+    @Column(length = 100)
+    private String childrenAges;
+
     @Column(length = 10)
     private String passengerNationality;
 

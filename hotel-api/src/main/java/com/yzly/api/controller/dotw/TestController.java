@@ -29,20 +29,20 @@ public class TestController {
     @Autowired
     private DCMLHandler dcmlHandler;
 
-    @PostMapping("/booking")
-    public Object testBooking(String allocationDetails) {
-        RoomBookingInfo roomBookingInfo = roomBookingInfoRepository.findByAllocationDetails(allocationDetails);
-        Passenger passenger1 = new Passenger("147", "YAN", "DONG");
-        Passenger passenger2 = new Passenger("148", "LING", "ZHILING");
-        List<Passenger> plist = new ArrayList<>();
-        plist.add(passenger1);
-        plist.add(passenger2);
-        String fromDate = DateTime.now().toString("yyyy-MM-dd");
-        String toDate = DateTime.now().plusDays(1).toString("yyyy-MM-dd");
-        JSONObject jsonObject = dcmlHandler.confirmBooking(roomBookingInfo, plist, fromDate, toDate);
-        log.info("booking return: " + jsonObject);
-        return jsonObject;
-    }
+//    @PostMapping("/booking")
+//    public Object testBooking(String allocationDetails) {
+//        RoomBookingInfo roomBookingInfo = roomBookingInfoRepository.findByAllocationDetails(allocationDetails);
+//        Passenger passenger1 = new Passenger("147", "YAN", "DONG");
+//        Passenger passenger2 = new Passenger("148", "LING", "ZHILING");
+//        List<Passenger> plist = new ArrayList<>();
+//        plist.add(passenger1);
+//        plist.add(passenger2);
+//        String fromDate = DateTime.now().toString("yyyy-MM-dd");
+//        String toDate = DateTime.now().plusDays(1).toString("yyyy-MM-dd");
+//        JSONObject jsonObject = dcmlHandler.confirmBooking(roomBookingInfo, plist, fromDate, toDate);
+//        log.info("booking return: " + jsonObject);
+//        return jsonObject;
+//    }
 
     @PostMapping("/search")
     public Object searchBooking(String firstName, String lastName, String city) {

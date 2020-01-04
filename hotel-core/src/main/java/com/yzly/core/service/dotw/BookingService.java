@@ -184,7 +184,7 @@ public class BookingService {
      * @return
      * @throws Exception
      */
-    public BookingOrderInfo preCancelOrder(BookingOrderInfo orderInfo, JSONObject jsonObject) throws Exception {
+    public BookingOrderInfo preCancelOrder(BookingOrderInfo orderInfo, JSONObject jsonObject) {
         JSONObject penaltyApplied = jsonObject.getJSONObject("services").
                 getJSONObject("service").getJSONObject("cancellationPenalty").getJSONObject("penaltyApplied");
         orderInfo.setPenaltyApplied(penaltyApplied.getString("#text"));

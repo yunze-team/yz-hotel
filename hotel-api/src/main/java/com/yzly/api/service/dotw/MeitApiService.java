@@ -1,12 +1,18 @@
 package com.yzly.api.service.dotw;
 
 import com.alibaba.fastjson.JSONObject;
+import com.yzly.api.common.DCMLHandler;
+import com.yzly.api.util.meit.MeitResultUtil;
+import com.yzly.core.domain.dotw.BookingOrderInfo;
 import com.yzly.core.domain.dotw.HotelAdditionalInfo;
 import com.yzly.core.domain.dotw.RoomBookingInfo;
+import com.yzly.core.domain.dotw.enums.OrderStatus;
 import com.yzly.core.domain.meit.MeitOrderBookingInfo;
 import com.yzly.core.domain.meit.MeitTraceLog;
 import com.yzly.core.domain.meit.dto.*;
 import com.yzly.core.enums.DistributorEnum;
+import com.yzly.core.enums.meit.PlatformOrderStatusEnum;
+import com.yzly.core.enums.meit.ResultEnum;
 import com.yzly.core.service.dotw.BookingService;
 import com.yzly.core.service.dotw.HotelInfoService;
 import com.yzly.core.service.meit.MeitService;
@@ -15,6 +21,8 @@ import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -35,6 +43,8 @@ public class MeitApiService {
     private BookingService bookingService;
     @Autowired
     private HotelInfoService hotelInfoService;
+    @Autowired
+    private DCMLHandler dcmlHandler;
 
     /**
      * 添加美团调用日志记录
@@ -171,13 +181,81 @@ public class MeitApiService {
         orderResult.setPartnerOrderId(orderBookingInfo.getPartnerOrderId());
         orderResult.setOrderId(orderBookingInfo.getOrderId());
         orderResult.setOrderStatus(orderBookingInfo.getOrderStatus());
-        orderResult.setTotalPrice(Integer.valueOf(orderBookingInfo.getTotalPrice()));
+        orderResult.setTotalPrice(orderBookingInfo.getActualTotalPrice());
         if (orderBookingInfo.getAgentOrderId() != null) {
             orderResult.setAgentOrderId(orderBookingInfo.getAgentOrderId());
         }
         if (orderBookingInfo.getPenalty() != null) {
             orderResult.setPenalty(orderBookingInfo.getPenalty());
         }
+        return orderResult;
+    }
+
+    /**
+     * 去dotw完成美团订单
+     * @param orderId
+     * @return
+     * @throws Exception
+     */
+    public MeitResult finishOrder(String orderId) {
+        BookingOrderInfo bookingOrderInfo;
+        try {
+            bookingOrderInfo = meitService.saveBookingByMeitOrder(orderId);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            return MeitResultUtil.generateResult(ResultEnum.FAIL, null);
+        }
+        // 发往dotw确认
+        JSONObject result = dcmlHandler.confirmBookingByOrder(bookingOrderInfo);
+        if (!dcmlHandler.judgeResult(result)) {
+            bookingService.updateBookingOrderStatus(bookingOrderInfo, OrderStatus.FAILED);
+            meitService.updateOrderFail(orderId);
+            return MeitResultUtil.generateResult(ResultEnum.FAIL, null);
+        }
+        // 获得结果，更新order
+        BookingOrderInfo finalOrder = bookingService.updateBookingByJSON(result, bookingOrderInfo);
+        MeitOrderBookingInfo meitOrder = meitService.updateOrderByBookingInfo(orderId, finalOrder);
+        return MeitResultUtil.generateResult(ResultEnum.SUCCESS, meitOrder);
+    }
+
+    /**
+     * 去dotw取消美团订单
+     * @param orderId
+     * @return
+     */
+    public Object cancelOrder(String orderId) {
+        OrderResult orderResult = new OrderResult();
+        MeitOrderBookingInfo meitOrder = meitService.getOrderByOrderId(orderId);
+        BookingOrderInfo orderInfo = meitService.getBookingByMeitOrder(orderId);
+        orderResult.setOrderId(meitOrder.getOrderId());
+        orderResult.setPartnerOrderId(meitOrder.getPartnerOrderId());
+        if (orderInfo == null || !orderInfo.getOrderStatus().equals(OrderStatus.CONFIRMED)) {
+            log.error("order is null or order status is not confirmed");
+            orderResult.setOrderStatus(PlatformOrderStatusEnum.CANCEL_FAIL);
+            return orderResult;
+        }
+        // 发往dotw进行预取消订单
+        JSONObject preCancel = dcmlHandler.cancelBooking(orderInfo, "no");
+        if (!dcmlHandler.judgeResult(preCancel)) {
+            log.error("dotw precancel order fail");
+            orderResult.setOrderStatus(PlatformOrderStatusEnum.CANCEL_FAIL);
+            return orderResult;
+        }
+        orderInfo = bookingService.preCancelOrder(orderInfo, preCancel);
+        // 发往dotw进行取消订单
+        JSONObject cancel = dcmlHandler.cancelBooking(orderInfo, "yes");
+        if (!dcmlHandler.judgeResult(cancel)) {
+            log.error("dotw cancel order fail");
+            orderResult.setOrderStatus(PlatformOrderStatusEnum.CANCEL_FAIL);
+            return orderResult;
+        }
+        bookingService.updateBookingOrderStatus(orderInfo, OrderStatus.CANCELED);
+        Integer penalty = new BigDecimal(orderInfo.getPenaltyApplied()).
+                multiply(new BigDecimal(100)).setScale(0, RoundingMode.HALF_UP).intValue();
+        orderResult.setPenalty(penalty);
+        orderResult.setOrderStatus(PlatformOrderStatusEnum.CANCEL_SUCCESS);
+        // 更新美团订单的取消状态
+        meitService.updateCancelOrder(meitOrder, penalty);
         return orderResult;
     }
 

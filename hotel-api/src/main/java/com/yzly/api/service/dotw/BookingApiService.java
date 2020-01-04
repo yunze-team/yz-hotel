@@ -37,7 +37,7 @@ public class BookingApiService {
         // 保存订单初始信息
         BookingOrderInfo orderInfo = bookingService.saveBookingByAllocation(allocationDetails, plist);
         // 发往dotw确认
-        JSONObject result = dcmlHandler.confirmBookingByOrder(orderInfo, plist);
+        JSONObject result = dcmlHandler.confirmBookingByOrder(orderInfo);
         if (!dcmlHandler.judgeResult(result)) {
             bookingService.updateBookingOrderStatus(orderInfo, OrderStatus.FAILED);
             return result;

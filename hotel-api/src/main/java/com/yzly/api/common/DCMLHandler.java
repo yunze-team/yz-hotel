@@ -1,10 +1,10 @@
 package com.yzly.api.common;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.yzly.api.util.XmlTool;
 import com.yzly.core.domain.dotw.BookingOrderInfo;
-import com.yzly.core.domain.dotw.RoomBookingInfo;
 import com.yzly.core.domain.dotw.vo.Passenger;
 import com.yzly.core.domain.meit.dto.GoodsSearchQuery;
 import com.yzly.core.service.dotw.CodeService;
@@ -318,7 +318,12 @@ public class DCMLHandler {
         return jlist;
     }
 
-    public JSONObject confirmBookingByOrder(BookingOrderInfo orderInfo, List<Passenger> plist) {
+    /**
+     * 通过orderInfo实体去dotw下房间订单
+     * @param orderInfo
+     * @return
+     */
+    public JSONObject confirmBookingByOrder(BookingOrderInfo orderInfo) {
         Document doc = generateBaseRequest();
         Element customer = doc.getRootElement();
         customer.addElement("product").setText("hotel");
@@ -336,21 +341,29 @@ public class DCMLHandler {
         room.addElement("allocationDetails").setText(orderInfo.getAllocationDetails());
         room.addElement("adultsCode").setText(orderInfo.getActualAdults());
         room.addElement("actualAdults").setText(orderInfo.getActualAdults());
-        room.addElement("children").addAttribute("no", "0");
-        room.addElement("actualChildren").addAttribute("no", "0");
+        Element children = room.addElement("children").addAttribute("no", orderInfo.getChildren());
+        Element actualChildren = room.addElement("actualChildren").addAttribute("no", orderInfo.getChildren());
+        if (!orderInfo.getChildren().equals("0")) {
+            for (int i = 0; i < Integer.valueOf(orderInfo.getChildren()); i++) {
+                String[] ages = orderInfo.getChildrenAges().split(",");
+                children.addElement("child").addAttribute("runno", String.valueOf(i)).setText(ages[i]);
+                actualChildren.addElement("actualChild ").addAttribute("runno", String.valueOf(i)).setText(ages[i]);
+            }
+        }
         room.addElement("extraBed").setText("0");
         room.addElement("passengerNationality").setText("168");
         room.addElement("passengerCountryOfResidence").setText("168");
         Element passengersDetails = room.addElement("passengersDetails");
-        for (int i = 0; i < plist.size(); i++) {
-            Passenger passenger = plist.get(i);
+        JSONArray passengerArray = JSONObject.parseArray(orderInfo.getPassengerInfos());
+        for (int i = 0; i < passengerArray.size(); i++) {
+            JSONObject passengerObject = passengerArray.getJSONObject(i);
             Element passengerEl = passengersDetails.addElement("passenger");
             if (i == 0) {
                 passengerEl.addAttribute("leading", "yes");
             }
-            passengerEl.addElement("salutation").setText(passenger.getSalutationCode());
-            passengerEl.addElement("firstName").setText(passenger.getFirstName());
-            passengerEl.addElement("lastName").setText(passenger.getLastName());
+            passengerEl.addElement("salutation").setText(passengerObject.getString("salutationCode"));
+            passengerEl.addElement("firstName").setText(passengerObject.getString("firstName"));
+            passengerEl.addElement("lastName").setText(passengerObject.getString("lastName"));
         }
         room.addElement("specialRequests").addAttribute("count", "0");
         room.addElement("beddingPreference").setText("0");
@@ -360,55 +373,55 @@ public class DCMLHandler {
         return JSON.parseObject(resutStr);
     }
 
-    /**
-     * 去dotw发起预订单信息
-     * @param roomBookingInfo
-     * @param fromDate
-     * @param toDate
-     * @return
-     */
-    public JSONObject confirmBooking(RoomBookingInfo roomBookingInfo, List<Passenger> plist,
-                                  String fromDate, String toDate) {
-        Document doc = generateBaseRequest();
-        Element customer = doc.getRootElement();
-        customer.addElement("product").setText("hotel");
-        Element request = customer.addElement("request");
-        request.addAttribute("command", "confirmbooking");
-        Element bookingDetails = request.addElement("bookingDetails");
-        bookingDetails.addElement("fromDate").setText(fromDate);
-        bookingDetails.addElement("toDate").setText(toDate);
-        bookingDetails.addElement("currency").setText("2524");
-        bookingDetails.addElement("productId").setText(roomBookingInfo.getHotelId());
-        Element rooms = bookingDetails.addElement("rooms").addAttribute("no", "1");
-        Element room = rooms.addElement("room").addAttribute("runno", "0");
-        room.addElement("roomTypeCode").setText(roomBookingInfo.getRoomTypeCode());
-        room.addElement("selectedRateBasis").setText(roomBookingInfo.getRateBasisId());
-        room.addElement("allocationDetails").setText(roomBookingInfo.getAllocationDetails());
-        room.addElement("adultsCode").setText("2");
-        room.addElement("actualAdults").setText("2");
-        room.addElement("children").addAttribute("no", "0");
-        room.addElement("actualChildren").addAttribute("no", "0");
-        room.addElement("extraBed").setText("0");
-        room.addElement("passengerNationality").setText("168");
-        room.addElement("passengerCountryOfResidence").setText("168");
-        Element passengersDetails = room.addElement("passengersDetails");
-        for (int i = 0; i < plist.size(); i++) {
-            Passenger passenger = plist.get(i);
-            Element passengerEl = passengersDetails.addElement("passenger");
-            if (i == 0) {
-                passengerEl.addAttribute("leading", "yes");
-            }
-            passengerEl.addElement("salutation").setText(passenger.getSalutationCode());
-            passengerEl.addElement("firstName").setText(passenger.getFirstName());
-            passengerEl.addElement("lastName").setText(passenger.getLastName());
-        }
-        room.addElement("specialRequests").addAttribute("count", "0");
-        room.addElement("beddingPreference").setText("0");
-        String xmlResp = this.sendDotwString(doc);
-        XMLSerializer xmlSerializer = new XMLSerializer();
-        String resutStr = xmlSerializer.read(xmlResp).toString();
-        return JSON.parseObject(resutStr);
-    }
+//    /**
+//     * 去dotw发起预订单信息
+//     * @param roomBookingInfo
+//     * @param fromDate
+//     * @param toDate
+//     * @return
+//     */
+//    public JSONObject confirmBooking(RoomBookingInfo roomBookingInfo, List<Passenger> plist,
+//                                  String fromDate, String toDate) {
+//        Document doc = generateBaseRequest();
+//        Element customer = doc.getRootElement();
+//        customer.addElement("product").setText("hotel");
+//        Element request = customer.addElement("request");
+//        request.addAttribute("command", "confirmbooking");
+//        Element bookingDetails = request.addElement("bookingDetails");
+//        bookingDetails.addElement("fromDate").setText(fromDate);
+//        bookingDetails.addElement("toDate").setText(toDate);
+//        bookingDetails.addElement("currency").setText("2524");
+//        bookingDetails.addElement("productId").setText(roomBookingInfo.getHotelId());
+//        Element rooms = bookingDetails.addElement("rooms").addAttribute("no", "1");
+//        Element room = rooms.addElement("room").addAttribute("runno", "0");
+//        room.addElement("roomTypeCode").setText(roomBookingInfo.getRoomTypeCode());
+//        room.addElement("selectedRateBasis").setText(roomBookingInfo.getRateBasisId());
+//        room.addElement("allocationDetails").setText(roomBookingInfo.getAllocationDetails());
+//        room.addElement("adultsCode").setText("2");
+//        room.addElement("actualAdults").setText("2");
+//        room.addElement("children").addAttribute("no", "0");
+//        room.addElement("actualChildren").addAttribute("no", "0");
+//        room.addElement("extraBed").setText("0");
+//        room.addElement("passengerNationality").setText("168");
+//        room.addElement("passengerCountryOfResidence").setText("168");
+//        Element passengersDetails = room.addElement("passengersDetails");
+//        for (int i = 0; i < plist.size(); i++) {
+//            Passenger passenger = plist.get(i);
+//            Element passengerEl = passengersDetails.addElement("passenger");
+//            if (i == 0) {
+//                passengerEl.addAttribute("leading", "yes");
+//            }
+//            passengerEl.addElement("salutation").setText(passenger.getSalutationCode());
+//            passengerEl.addElement("firstName").setText(passenger.getFirstName());
+//            passengerEl.addElement("lastName").setText(passenger.getLastName());
+//        }
+//        room.addElement("specialRequests").addAttribute("count", "0");
+//        room.addElement("beddingPreference").setText("0");
+//        String xmlResp = this.sendDotwString(doc);
+//        XMLSerializer xmlSerializer = new XMLSerializer();
+//        String resutStr = xmlSerializer.read(xmlResp).toString();
+//        return JSON.parseObject(resutStr);
+//    }
 
     /**
      * 获取dotw_ratebasis

@@ -71,6 +71,11 @@ public class MeitApiController {
         }
     }
 
+    /**
+     * 基础美团请求返回方法，负责将返回值封装并加密数据
+     * @param meitResult
+     * @return
+     */
     private String baseResponseTrans(MeitResult meitResult) {
         try {
             return AESUtilUsingCommonDecodec.decrypt(JSONObject.toJSONString(meitResult));
@@ -215,6 +220,24 @@ public class MeitApiController {
         JSONObject reqData = result.getReqData();
         String orderId = reqData.getString("orderId");
         Object data = meitApiService.orderQueryResult(orderId);
+        result.setData(data);
+        return baseResponseTrans(result);
+    }
+
+    /**
+     *
+     * @param request
+     * @return
+     */
+    @PostMapping("/order_cancel")
+    public Object orderCancel(HttpServletRequest request) {
+        MeitResult result = baseRequestTrans(request);
+        if (!result.getSuccess()) {
+            return baseResponseTrans(result);
+        }
+        JSONObject reqData = result.getReqData();
+        String orderId = reqData.getString("orderId");
+        Object data = meitApiService.cancelOrder(orderId);
         result.setData(data);
         return baseResponseTrans(result);
     }
