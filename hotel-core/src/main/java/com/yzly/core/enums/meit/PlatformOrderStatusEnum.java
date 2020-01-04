@@ -7,6 +7,6 @@ package com.yzly.core.enums.meit;
  **/
 public enum PlatformOrderStatusEnum {
 
-    BOOK_SUCCESS, BOOK_FAIL, BOOKING;
+    BOOK_SUCCESS, BOOK_FAIL, BOOKING, CANCEL_SUCCESS, CANCEL_FAIL;
 
 }

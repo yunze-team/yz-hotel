@@ -16,4 +16,6 @@ public interface MeitOrderBookingInfoRepository extends JpaRepository<MeitOrderB
 
     List<MeitOrderBookingInfo> findAllByOrderId(String orderId);
 
+    MeitOrderBookingInfo findByOrderId(String orderId);
+
 }

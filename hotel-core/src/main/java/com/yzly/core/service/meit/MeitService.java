@@ -1,12 +1,12 @@
 package com.yzly.core.service.meit;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.yzly.core.domain.HotelSyncList;
-import com.yzly.core.domain.dotw.HotelAdditionalInfo;
-import com.yzly.core.domain.dotw.HotelInfo;
-import com.yzly.core.domain.dotw.RoomBookingInfo;
-import com.yzly.core.domain.dotw.RoomType;
+import com.yzly.core.domain.dotw.*;
+import com.yzly.core.domain.dotw.enums.OrderStatus;
+import com.yzly.core.domain.dotw.vo.Passenger;
 import com.yzly.core.domain.event.EventAttr;
 import com.yzly.core.domain.meit.MeitCity;
 import com.yzly.core.domain.meit.MeitOrderBookingInfo;
@@ -16,9 +16,7 @@ import com.yzly.core.enums.DistributorEnum;
 import com.yzly.core.enums.SyncStatus;
 import com.yzly.core.enums.meit.PlatformOrderStatusEnum;
 import com.yzly.core.repository.HotelSyncListRepository;
-import com.yzly.core.repository.dotw.HotelAdditionalInfoRepository;
-import com.yzly.core.repository.dotw.HotelInfoRepository;
-import com.yzly.core.repository.dotw.RoomTypeRepository;
+import com.yzly.core.repository.dotw.*;
 import com.yzly.core.repository.event.EventAttrRepository;
 import com.yzly.core.repository.meit.MeitCityRepository;
 import com.yzly.core.repository.meit.MeitOrderBookingInfoRepository;
@@ -66,6 +64,12 @@ public class MeitService {
     private EventAttrRepository eventAttrRepository;
     @Autowired
     private MeitOrderBookingInfoRepository meitOrderBookingInfoRepository;
+    @Autowired
+    private RoomBookingInfoRepository roomBookingInfoRepository;
+    @Autowired
+    private BookingOrderInfoRepository bookingOrderInfoRepository;
+    @Autowired
+    private CurrencyRepository currencyRepository;
 
     private static final String MEIT_ROOM_PRICE_RATE = "MEIT_ROOM_PRICE_RATE";
 
@@ -348,8 +352,20 @@ public class MeitService {
         orderBookingInfo.setPartnerOrderId(String.valueOf(new SnowflakeIdWorker(workId, datacenterId).nextId()));
         orderBookingInfo.setOrderId(orderCreateParam.getOrderInfo().getOrderId());
         orderBookingInfo.setOrderStatus(PlatformOrderStatusEnum.BOOKING);
+        orderBookingInfo.setActualTotalPrice(Integer.valueOf(orderCreateParam.getTotalPrice()));
         orderBookingInfo = meitOrderBookingInfoRepository.save(orderBookingInfo);
         return orderBookingInfo;
+    }
+
+    /**
+     * 更新订单状态为失败
+     * @param orderId
+     * @return
+     */
+    public MeitOrderBookingInfo updateOrderFail(String orderId) {
+        MeitOrderBookingInfo meitOrder = meitOrderBookingInfoRepository.findByOrderId(orderId);
+        meitOrder.setOrderStatus(PlatformOrderStatusEnum.BOOK_FAIL);
+        return meitOrderBookingInfoRepository.save(meitOrder);
     }
 
     /**
@@ -360,6 +376,88 @@ public class MeitService {
     public MeitOrderBookingInfo getOrderByOrderId(String orderId) {
         List<MeitOrderBookingInfo> mlist = meitOrderBookingInfoRepository.findAllByOrderId(orderId);
         return mlist.get(0);
+    }
+
+    /**
+     * 根据美团orderid保存订单表
+     * @param orderId
+     * @return
+     * @throws Exception
+     */
+    public BookingOrderInfo saveBookingByMeitOrder(String orderId) throws Exception {
+        MeitOrderBookingInfo meitOrder = meitOrderBookingInfoRepository.findByOrderId(orderId);
+        String allocationDetails = meitOrder.getRatePlanCode();
+        List<Passenger> plist = new ArrayList<>();
+        JSONArray guestArray = JSONArray.parseArray(meitOrder.getGuestInfo());
+        for (int i = 0; i < guestArray.size(); i++) {
+            Passenger passenger = new Passenger("3801",
+                    guestArray.getJSONObject(i).getString("firstName"),
+                    guestArray.getJSONObject(i).getString("lastName"));
+            plist.add(passenger);
+        }
+        BookingOrderInfo bookingOrderInfo = bookingOrderInfoRepository.findByAllocationDetails(allocationDetails);
+        if (bookingOrderInfo == null) {
+            bookingOrderInfo = new BookingOrderInfo();
+        }
+        RoomBookingInfo roomBookingInfo = roomBookingInfoRepository.findByAllocationDetails(allocationDetails);
+        if (roomBookingInfo == null) {
+            throw new Exception("room is null");
+        }
+        bookingOrderInfo.setHotelId(roomBookingInfo.getHotelId());
+        bookingOrderInfo.setRoomTypeCode(roomBookingInfo.getRoomTypeCode());
+        bookingOrderInfo.setAllocationDetails(allocationDetails);
+        bookingOrderInfo.setSelectedRateBasis(roomBookingInfo.getRateBasisId());
+        bookingOrderInfo.setActualAdults(String.valueOf(meitOrder.getNumberOfAdults()));
+        bookingOrderInfo.setChildren(String.valueOf(meitOrder.getNumberOfChildren()));
+        bookingOrderInfo.setChildrenAges(meitOrder.getChildrenAges());
+        bookingOrderInfo.setPassengerNationality("168");
+        bookingOrderInfo.setFromDate(meitOrder.getCheckin());
+        bookingOrderInfo.setToDate(meitOrder.getCheckout());
+        bookingOrderInfo.setPassengerInfos(JSONObject.toJSONString(plist));
+        bookingOrderInfo.setCurrency(currencyRepository.findByName(meitOrder.getCurrencyCode()).getCode());
+        bookingOrderInfo.setOrderStatus(OrderStatus.SAVED);
+        return bookingOrderInfoRepository.save(bookingOrderInfo);
+    }
+
+    /**
+     * 根据dotw订单信息更新美团订单信息
+     * @param orderId
+     * @param bookingOrderInfo
+     * @return
+     */
+    public MeitOrderBookingInfo updateOrderByBookingInfo(String orderId, BookingOrderInfo bookingOrderInfo) {
+        MeitOrderBookingInfo meitOrder = meitOrderBookingInfoRepository.findByOrderId(orderId);
+        meitOrder.setAgentOrderId(bookingOrderInfo.getBookingCode());
+        BigDecimal basePrice = new BigDecimal(bookingOrderInfo.getPriceValue());
+        // 获得酒店价格上浮利率
+        EventAttr attr = eventAttrRepository.findByEventType(MEIT_ROOM_PRICE_RATE);
+        Double priceRate = Double.valueOf(attr.getEventValue());
+        BigDecimal totalPrice = basePrice.multiply(new BigDecimal(100)).multiply(new BigDecimal(1 + priceRate));
+        meitOrder.setActualTotalPrice(totalPrice.setScale(0, RoundingMode.HALF_UP).intValue());
+        meitOrder.setOrderStatus(PlatformOrderStatusEnum.BOOK_SUCCESS);
+        return meitOrderBookingInfoRepository.save(meitOrder);
+    }
+
+    /**
+     * 通过美团订单id获得dotw订单详细
+     * @param orderId
+     * @return
+     */
+    public BookingOrderInfo getBookingByMeitOrder(String orderId) {
+        MeitOrderBookingInfo meitOrder = meitOrderBookingInfoRepository.findByOrderId(orderId);
+        return bookingOrderInfoRepository.findByBookingCode(meitOrder.getAgentOrderId());
+    }
+
+    /**
+     * 更新美团订单的取消状态
+     * @param meitOrder
+     * @param penalty
+     * @return
+     */
+    public MeitOrderBookingInfo updateCancelOrder(MeitOrderBookingInfo meitOrder, Integer penalty) {
+        meitOrder.setPenalty(penalty);
+        meitOrder.setOrderStatus(PlatformOrderStatusEnum.CANCEL_SUCCESS);
+        return meitOrderBookingInfoRepository.save(meitOrder);
     }
 
 }

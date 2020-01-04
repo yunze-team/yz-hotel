@@ -96,6 +96,9 @@ public class MeitOrderBookingInfo {
     @Column
     private Integer penalty;// 罚金
 
+    @Column
+    private Integer actualTotalPrice;// 实际订单总金额
+
     @Column(nullable = false, updatable = false, name = "created_at")
     @Temporal(TemporalType.TIMESTAMP)
     @CreatedDate
