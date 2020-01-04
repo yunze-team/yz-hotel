@@ -93,6 +93,9 @@ public class MeitOrderBookingInfo {
     @Column(length = 50)
     private String orderMessage;// 订单说明
 
+    @Column
+    private Integer penalty;// 罚金
+
     @Column(nullable = false, updatable = false, name = "created_at")
     @Temporal(TemporalType.TIMESTAMP)
     @CreatedDate

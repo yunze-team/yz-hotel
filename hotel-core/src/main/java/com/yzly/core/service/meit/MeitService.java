@@ -352,4 +352,14 @@ public class MeitService {
         return orderBookingInfo;
     }
 
+    /**
+     * 根据美团订单号获得美团订单
+     * @param orderId
+     * @return
+     */
+    public MeitOrderBookingInfo getOrderByOrderId(String orderId) {
+        List<MeitOrderBookingInfo> mlist = meitOrderBookingInfoRepository.findAllByOrderId(orderId);
+        return mlist.get(0);
+    }
+
 }

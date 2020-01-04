@@ -23,5 +23,6 @@ public class OrderResult {
     private PlatformOrderStatusEnum orderStatus;// 订单状态
     private String orderMessage;// 订单说明
     private Integer totalPrice;// 订单总金额，单位分
+    private Integer penalty;// 罚金，取消状态的订单使用
 
 }
