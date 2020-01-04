@@ -3,6 +3,7 @@ package com.yzly.api.service.dotw;
 import com.alibaba.fastjson.JSONObject;
 import com.yzly.core.domain.dotw.HotelAdditionalInfo;
 import com.yzly.core.domain.dotw.RoomBookingInfo;
+import com.yzly.core.domain.meit.MeitOrderBookingInfo;
 import com.yzly.core.domain.meit.MeitTraceLog;
 import com.yzly.core.domain.meit.dto.*;
 import com.yzly.core.enums.DistributorEnum;
@@ -144,8 +145,18 @@ public class MeitApiService {
         return data;
     }
 
+    /**
+     * 创建美团酒店订单
+     * @param orderCreateParam
+     * @return
+     */
     public Object createOrder(OrderCreateParam orderCreateParam) {
         OrderResult orderResult = new OrderResult();
+        MeitOrderBookingInfo orderBookingInfo = meitService.createMeitOrder(orderCreateParam);
+        orderResult.setPartnerOrderId(orderBookingInfo.getPartnerOrderId());
+        orderResult.setOrderId(orderBookingInfo.getOrderId());
+        orderResult.setOrderStatus(orderBookingInfo.getOrderStatus());
+        orderResult.setTotalPrice(Integer.valueOf(orderBookingInfo.getTotalPrice()));
         return orderResult;
     }
 
