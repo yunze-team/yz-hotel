@@ -9,22 +9,27 @@ import com.yzly.core.domain.dotw.RoomBookingInfo;
 import com.yzly.core.domain.dotw.RoomType;
 import com.yzly.core.domain.event.EventAttr;
 import com.yzly.core.domain.meit.MeitCity;
+import com.yzly.core.domain.meit.MeitOrderBookingInfo;
 import com.yzly.core.domain.meit.MeitTraceLog;
 import com.yzly.core.domain.meit.dto.*;
 import com.yzly.core.enums.DistributorEnum;
 import com.yzly.core.enums.SyncStatus;
+import com.yzly.core.enums.meit.PlatformOrderStatusEnum;
 import com.yzly.core.repository.HotelSyncListRepository;
 import com.yzly.core.repository.dotw.HotelAdditionalInfoRepository;
 import com.yzly.core.repository.dotw.HotelInfoRepository;
 import com.yzly.core.repository.dotw.RoomTypeRepository;
 import com.yzly.core.repository.event.EventAttrRepository;
 import com.yzly.core.repository.meit.MeitCityRepository;
+import com.yzly.core.repository.meit.MeitOrderBookingInfoRepository;
 import com.yzly.core.repository.meit.MeitTraceLogRepository;
+import com.yzly.core.util.SnowflakeIdWorker;
 import lombok.extern.apachecommons.CommonsLog;
 import org.apache.commons.lang.StringUtils;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -59,8 +64,15 @@ public class MeitService {
     private RoomTypeRepository roomTypeRepository;
     @Autowired
     private EventAttrRepository eventAttrRepository;
+    @Autowired
+    private MeitOrderBookingInfoRepository meitOrderBookingInfoRepository;
 
     private static final String MEIT_ROOM_PRICE_RATE = "MEIT_ROOM_PRICE_RATE";
+
+    @Value("${snowflake.workId}")
+    private long workId;
+    @Value("${snowflake.datacenterId}")
+    private long datacenterId;
 
 
 
@@ -310,6 +322,34 @@ public class MeitService {
         dayInfo.setStatus(1);
         dayInfo.setCounts(1);
         return dayInfo;
+    }
+
+    /**
+     * 创建美团订单入库
+     * @param orderCreateParam
+     * @return
+     */
+    public MeitOrderBookingInfo createMeitOrder(OrderCreateParam orderCreateParam) {
+        MeitOrderBookingInfo orderBookingInfo = new MeitOrderBookingInfo();
+        orderBookingInfo.setHotelId(orderCreateParam.getHotelId());
+        orderBookingInfo.setRoomId(orderCreateParam.getRoomId());
+        orderBookingInfo.setRatePlanCode(orderCreateParam.getRatePlanCode());
+        orderBookingInfo.setCheckin(orderCreateParam.getCheckin());
+        orderBookingInfo.setCheckout(orderCreateParam.getCheckout());
+        orderBookingInfo.setNumberOfAdults(orderCreateParam.getNumberOfAdults());
+        orderBookingInfo.setNumberOfChildren(orderCreateParam.getNumberOfChildren());
+        orderBookingInfo.setChildrenAges(orderCreateParam.getChildrenAges());
+        orderBookingInfo.setRoomNum(orderCreateParam.getRoomNum());
+        orderBookingInfo.setTotalPrice(orderCreateParam.getTotalPrice());
+        orderBookingInfo.setCurrencyCode(orderCreateParam.getCurrencyCode());
+        orderBookingInfo.setGuestInfo(JSONArray.toJSONString(orderCreateParam.getGuestInfo()));
+        orderBookingInfo.setOrderInfo(JSONObject.toJSONString(orderCreateParam.getOrderInfo()));
+        orderBookingInfo.setCreditCard(JSONObject.toJSONString(orderCreateParam.getCreditCard()));
+        orderBookingInfo.setPartnerOrderId(String.valueOf(new SnowflakeIdWorker(workId, datacenterId).nextId()));
+        orderBookingInfo.setOrderId(orderCreateParam.getOrderInfo().getOrderId());
+        orderBookingInfo.setOrderStatus(PlatformOrderStatusEnum.BOOKING);
+        orderBookingInfo = meitOrderBookingInfoRepository.save(orderBookingInfo);
+        return orderBookingInfo;
     }
 
 }
