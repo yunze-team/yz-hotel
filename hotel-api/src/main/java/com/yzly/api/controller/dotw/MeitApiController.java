@@ -225,7 +225,7 @@ public class MeitApiController {
     }
 
     /**
-     *
+     * 取消订单
      * @param request
      * @return
      */
