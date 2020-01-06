@@ -19,13 +19,13 @@
                         <i class="fa fa-folder"></i> <span>DOTW</span>
                     </a>
                     <ul class="tree-view">
-                        <li id="page_synHotel">
-                            <a href="#">
+                        <li id="sys_hotel_info">
+                            <a href="/index/syn_hotel_info">
                                 <span>已同步酒店</span>
                             </a>
                         </li>
                         <li id="page_order">
-                            <a href="#">
+                            <a href="/index/order_info">
                                 <span>订单管理</span>
                             </a>
                         </li>

@@ -1,19 +1,15 @@
 package com.yzly.core.repository;
 
 import com.yzly.core.domain.HotelSyncList;
+import com.yzly.core.domain.dotw.HotelSyncDetailInfoList;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-/**
- * @author lazyb
- * @create 2019/12/20
- * @desc
- **/
 @Repository
-public interface HotelSyncListRepository extends JpaRepository<HotelSyncList, Long> {
+public interface HotelSyncDetailListRepository extends JpaRepository<HotelSyncDetailInfoList, String> {
 
-    Page<HotelSyncList> findAll(Specification<HotelSyncList> query, Pageable pageable);
+    Page<HotelSyncDetailInfoList> findAll(Specification<HotelSyncList> query, Pageable pageable);
 }

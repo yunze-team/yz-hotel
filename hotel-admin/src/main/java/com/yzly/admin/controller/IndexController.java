@@ -101,4 +101,14 @@ public class IndexController {
         return "hotel";
     }
 
+    @RequestMapping("/index/syn_hotel_info")
+    public String synHotels() {
+        return "syn_hotel_info";
+    }
+
+    @RequestMapping("/index/order_info")
+    public String orderInfo() {
+        return "order_info";
+    }
+
 }
