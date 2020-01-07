@@ -2,9 +2,8 @@
 <html lang="zh-CN">
 <head>
 <#include "/common/common.ftl">
-    <script src="/static/js/echarts.common.min.js"></script>
 </head>
-<body class="hold-transition skin-blue sidebar-mini">
+<body class="hold-transition sidebar-mini layout-fixed">
 <div class="wrapper">
 
     <#include "/common/header.ftl">
