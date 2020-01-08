@@ -19,10 +19,10 @@
 <#--<link rel="stylesheet" href="/static/font-awesome/css/font-awesome.min.css">-->
 <link rel="stylesheet" href="/static/iconicons/css/ionicons.min.css">
 <#--<link rel="stylesheet" href="/static/css/AdminLTE.min.css">-->
-<#--<link rel="stylesheet" href="/static/css/_all-skins.min.css">-->
-<#--<link rel="stylesheet" href="/static/css/themes/bootstrap/easyui.css">-->
-<#--<link rel="stylesheet" href="/static/css/themes/icon.css">-->
-<#--<script src="/static/js/jquery-2.2.3.min.js"></script>-->
+<link rel="stylesheet" href="/static/css/_all-skins.min.css">
+<link rel="stylesheet" href="/static/css/themes/bootstrap/easyui.css">
+<link rel="stylesheet" href="/static/css/themes/icon.css">
+<script src="/static/js/jquery-2.2.3.min.js"></script>
 <#--<script src="/static/bootstrap/js/bootstrap.js"></script>-->
 <script src="/static/js/jquery.easyui.min.js"></script>
 <script src="/static/js/easyloader.js"></script>
