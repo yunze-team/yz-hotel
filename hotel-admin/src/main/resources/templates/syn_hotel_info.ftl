@@ -34,7 +34,27 @@
                     <span>酒店名称：</span>
                     <input type="text" id="hotelName" style="line-height:26px;border:1px solid #ccc" />
                     <a href="javascript:doSearch();" class="easyui-linkbutton" data-options="iconCls:'icon-search'" style="width: 80px;">搜索</a>
+                    <a href="javascript:add();" class="easyui-linkbutton" data-options="iconCls:'icon-add'" style="width: 100px;">导入excel</a>
                 </div>
+
+                <div id="dlg" class="easyui-dialog" style="width: 400px; padding: 10px 20px;" closed="true" buttons="#dlg-buttons">
+                    <form id="fm" method="post">
+                        <input type="hidden" name="id" />
+                        <table cellpadding="5">
+                            <tr>
+                                <td>excel路径地址：</td>
+                                <td>
+                                    <input type="text" name="path" class="easyui-textbox" required="true" />
+                                </td>
+                            </tr>
+                        </table>
+                    </form>
+                </div>
+                <div id="dlg-buttons">
+                    <a href="javascript:void(0);" class="easyui-linkbutton" iconCls="icon-ok" onclick="addExcel()">确定</a>
+                    <a href="javascript:void(0);" class="easyui-linkbutton" iconCls="icon-cancel" onclick="$('#dlg').dialog('close');">取消</a>
+                </div>
+
             </div>
         </section>
     </div>
@@ -48,6 +68,29 @@
         $('#hotelTable').datagrid('load', {
             hotelCode: $('#hotelCode').val(),
             hotelName:$('#hotelName').val()
+        });
+    }
+
+    function add() {
+        $('#fm').form('clear');
+        $('#dlg').dialog('open');
+    }
+
+    function addExcel() {
+        $('#fm').form('submit', {
+            url: '/syn_info/syn_excel',
+            onSubmit: function() {
+                return $(this).form('validate');
+            },
+            success: function(result) {
+                if (result == 'SUCCESS') {
+                    $.messager.alert('成功', result);
+                    $('#dlg').dialog('close');
+                    $('#hotelTable').datagrid('reload');
+                } else {
+                    $.messager.alert('错误', 'error');
+                }
+            }
         });
     }
 

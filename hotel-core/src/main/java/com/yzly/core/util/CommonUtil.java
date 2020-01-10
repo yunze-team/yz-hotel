@@ -1,7 +1,11 @@
 package com.yzly.core.util;
 
+import com.yzly.core.domain.HotelSyncList;
 import com.yzly.core.domain.dotw.HotelInfo;
 import com.yzly.core.domain.jltour.JLHotel;
+import com.yzly.core.enums.DistributorEnum;
+import com.yzly.core.enums.SupplierEnum;
+import com.yzly.core.enums.SyncStatus;
 import lombok.extern.apachecommons.CommonsLog;
 import org.apache.commons.lang.StringUtils;
 import org.apache.poi.ss.usermodel.Row;
@@ -148,6 +152,43 @@ public class CommonUtil {
         }
         log.info("jl excel list size:" + hlist.size());
         return hlist;
+    }
+
+    /**
+     * 读取excel获取美团酒店同步列表
+     * @param path
+     * @return
+     * @throws Exception
+     */
+    public List<HotelSyncList> execlToSyncList(String path) throws Exception {
+        InputStream is = new FileInputStream(path);
+        XSSFWorkbook excel = new XSSFWorkbook(is);
+        List<HotelSyncList> list = new ArrayList<>();
+        // 取工作表第一个
+        XSSFSheet sheet = excel.getSheetAt(0);
+        // 循环行Row
+        for (int rowNum = 1; rowNum <= sheet.getLastRowNum(); rowNum++) {
+            XSSFRow row = sheet.getRow(rowNum);
+            if (row == null) {
+                continue;
+            }
+            // 取出hotelid
+            try {
+                String hotelId = row.getCell(3).getStringCellValue();
+                Long dotwHotelId = Long.valueOf(hotelId);
+                if (dotwHotelId > 0) {
+                    HotelSyncList hotelSyncList = new HotelSyncList();
+                    hotelSyncList.setDistributor(DistributorEnum.MEIT);
+                    hotelSyncList.setSupplier(SupplierEnum.DOTW);
+                    hotelSyncList.setSyncStatus(SyncStatus.UNSYNC);
+                    hotelSyncList.setHotelId(hotelId);
+                    list.add(hotelSyncList);
+                }
+            } catch (Exception e) {
+                continue;
+            }
+        }
+        return list;
     }
 
 }
