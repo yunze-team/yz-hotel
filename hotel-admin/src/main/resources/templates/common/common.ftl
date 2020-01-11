@@ -11,6 +11,8 @@
 <link rel="stylesheet" href="/static/css/themes/icon.css">
 <script src="/static/js/jquery-2.2.3.min.js"></script>
 <script src="/static/bootstrap/js/bootstrap.js"></script>
+<!-- AdminLTE App -->
+<script src="/static/js/app.min.js"></script>
 <script src="/static/js/jquery.easyui.min.js"></script>
 <script src="/static/js/easyloader.js"></script>
 <script src="/static/js/easyui-lang-zh_CN.js"></script>

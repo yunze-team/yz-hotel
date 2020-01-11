@@ -1,7 +1,7 @@
 <header class="main-header">
     <a href="/index" class="logo">
-        <span class="logo-mini"><b>昀</b>泽</span>
-        <span class="logo-lg"><b>昀</b>泽</span>
+        <span class="logo-mini"><b>昀泽</b></span>
+        <span class="logo-lg"><b>昀泽</b></span>
     </a>
 
     <nav class="navbar navbar-static-top">

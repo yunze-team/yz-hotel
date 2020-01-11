@@ -16,4 +16,6 @@ import org.springframework.stereotype.Repository;
 public interface HotelSyncListRepository extends JpaRepository<HotelSyncList, Long> {
 
     Page<HotelSyncList> findAll(Specification<HotelSyncList> query, Pageable pageable);
+
+    HotelSyncList findByHotelId(String hotelId);
 }
