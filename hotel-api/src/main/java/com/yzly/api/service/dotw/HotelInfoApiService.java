@@ -184,6 +184,30 @@ public class HotelInfoApiService {
     }
 
     /**
+     * 用户美团任务拉取dotw酒店和房型数据
+     * @param hotelIds
+     */
+    public void pullHotelAndRoomsInfoByIds(String hotelIds) {
+        List<String> ids = Arrays.asList(hotelIds.split(","));
+        String fromDate = DateTime.now().toString("yyyy-MM-dd");
+        String toDate = DateTime.now().plusDays(1).toString("yyyy-MM-dd");
+        JSONObject jsonObject = dcmlHandler.searchHotelInfoById(ids, fromDate, toDate);
+        if (jsonObject != null && !jsonObject.getJSONObject("hotels").getString("@count").equals("0")) {
+            JSONObject hotelJSON = null;
+            if (jsonObject.getJSONObject("hotels").getString("@count").equals("1")) {
+                hotelJSON = jsonObject.getJSONObject("hotels").getJSONObject("hotel");
+                hotelInfoService.addRoomsAndHotelAdditionalInfoByHotelJson(hotelJSON);
+            } else {
+                JSONArray hotelArray = jsonObject.getJSONObject("hotels").getJSONArray("hotel");
+                for (int arrIndex = 0; arrIndex < hotelArray.size(); arrIndex++) {
+                    hotelJSON = hotelArray.getJSONObject(arrIndex);
+                    hotelInfoService.addRoomsAndHotelAdditionalInfoByHotelJson(hotelJSON);
+                }
+            }
+        }
+    }
+
+    /**
      * 用来定时任务拉取酒店当天房型价格数据
      * @throws Exception
      */

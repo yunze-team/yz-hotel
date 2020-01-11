@@ -45,6 +45,8 @@ public class MeitApiService {
     private HotelInfoService hotelInfoService;
     @Autowired
     private DCMLHandler dcmlHandler;
+    @Autowired
+    private HotelInfoApiService hotelInfoApiService;
 
     /**
      * 添加美团调用日志记录
@@ -81,6 +83,7 @@ public class MeitApiService {
      * @return
      */
     public Object syncHotelExtend(String hotelId) {
+        hotelInfoApiService.pullHotelAndRoomsInfoByIds(hotelId);
         List<MeitHotelExt> mlist = meitService.getHotelExtListByIds(hotelId);
         if (mlist == null) {
             return null;
@@ -96,6 +99,7 @@ public class MeitApiService {
      * @return
      */
     public Object syncRoomBasic(String hotelId) {
+        hotelInfoApiService.pullHotelAndRoomsInfoByIds(hotelId);
         List<HotelRoomTypeBasic> hlist = meitService.getRoomBasicsByIds(hotelId);
         if (hlist == null) {
             return null;
@@ -111,6 +115,7 @@ public class MeitApiService {
      * @return
      */
     public Object syncRoomExtend(String hotelId) {
+        hotelInfoApiService.pullHotelAndRoomsInfoByIds(hotelId);
         List<RoomTypeExtModelList> hlist = meitService.getRoomExtendsByIds(hotelId);
         if (hlist == null) {
             return null;
@@ -135,11 +140,11 @@ public class MeitApiService {
                     continue;
                 }
             } else {
-                log.info("jlist" + jlist);
-                String hotelId = request.getJSONObject("hotel").getString("@id");
-                List<RoomBookingInfo> rlist = bookingService.addRoomBookingByGetRoomsJson(request, hotelId, goodsSearchQuery.getCheckin(), goodsSearchQuery.getCheckout());
+                log.info("jsonObject" + jsonObject);
+                String hotelId = jsonObject.getJSONObject("hotel").getString("@id");
+                List<RoomBookingInfo> rlist = bookingService.addRoomBookingByGetRoomsJson(jsonObject, hotelId, goodsSearchQuery.getCheckin(), goodsSearchQuery.getCheckout());
                 HotelMap hotelMap = new HotelMap();
-                hotelMap.setCurrencyCode(request.getString("currencyShort"));
+                hotelMap.setCurrencyCode(jsonObject.getString("currencyShort"));
                 List<Room> roomList = new ArrayList<>();
                 HotelAdditionalInfo hotelAdditionalInfo = hotelInfoService.findOneById(hotelId);
                 for (RoomBookingInfo roomBookingInfo : rlist) {

@@ -109,7 +109,11 @@ public class BookingOrderInfo {
     @Column
     private String voucher;
 
-    @Column(length = 100)
+    @Lob
+    @Column
+    private String tariffNotes;
+
+    @Column(length = 200)
     private String paymentGuaranteedBy;
 
     @Column(length = 200)

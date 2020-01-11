@@ -14,8 +14,8 @@ import java.util.List;
 @Repository
 public interface MeitOrderBookingInfoRepository extends JpaRepository<MeitOrderBookingInfo, Long> {
 
-    List<MeitOrderBookingInfo> findAllByOrderId(String orderId);
+    List<MeitOrderBookingInfo> findAllByOrderId(Long orderId);
 
-    MeitOrderBookingInfo findByOrderId(String orderId);
+    MeitOrderBookingInfo findByOrderId(Long orderId);
 
 }

@@ -122,12 +122,11 @@ public class MeitService {
         for (HotelSyncList hs : hpage.getContent()) {
             HotelInfo hotelInfo = hotelInfoRepository.findByDotwHotelCode(hs.getHotelId());
             MeitHotel mh = new MeitHotel();
-            MeitCity mc = meitCityRepository.findByNameEN(hotelInfo.getCity());
-            if (mc == null) {
-                continue;
-            }
+            List<MeitCity> mc = meitCityRepository.findAllByNameEN(hotelInfo.getCity());
             mh.setHotelId(hs.getHotelId());
-            mh.setCityId(Integer.valueOf(mc.getCityId()));
+            if (mc.size() > 0) {
+                mh.setCityId(Integer.valueOf(mc.get(0).getCityId()));
+            }
             mh.setNameCn(hotelInfo.getHotelNameCn());
             mh.setNameEn(hotelInfo.getHotelName());
             mh.setAddressCn(hotelInfo.getHotelAddressCn());
@@ -296,24 +295,30 @@ public class MeitService {
             for (int i = 0; i < cancelArray.size() - 1; i++) {
                 JSONObject rule = cancelArray.getJSONObject(i);
                 RefundRule refundRule = new RefundRule();
-                refundRule.setReturnable(true);
-                refundRule.setRefundType(1);
-                DateTime hotelCheckIn = DateTime.parse(roomBookingInfo.getFromDate() + " " + room.getCheckInTime(), DateTimeFormat.forPattern("yyyy-MM-dd HH:mm"));
-                if (StringUtils.isNotEmpty(rule.getString("fromDate"))) {
-                    DateTime fromDate = DateTime.parse(rule.getString("fromDate"), DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss"));
-                    long maxCheckInTime = (hotelCheckIn.getMillis() - fromDate.getMillis()) % (1000 * 60 * 60 * 24) / (1000 * 60 * 60);
-                    Integer maxCheckIn = maxCheckInTime > 0 ? Integer.valueOf(String.valueOf(maxCheckInTime)) : 0;
-                    refundRule.setMaxHoursBeforeCheckIn(maxCheckIn);
+                try {
+                    refundRule.setReturnable(true);
+                    refundRule.setRefundType(1);
+                    DateTime hotelCheckIn = DateTime.parse(roomBookingInfo.getFromDate() + " " + room.getCheckInTime(), DateTimeFormat.forPattern("yyyy-MM-dd HH:mm"));
+                    if (StringUtils.isNotEmpty(rule.getString("fromDate"))) {
+                        DateTime fromDate = DateTime.parse(rule.getString("fromDate"), DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss"));
+                        long maxCheckInTime = (hotelCheckIn.getMillis() - fromDate.getMillis()) % (1000 * 60 * 60 * 24) / (1000 * 60 * 60);
+                        Integer maxCheckIn = maxCheckInTime > 0 ? Integer.valueOf(String.valueOf(maxCheckInTime)) : 0;
+                        refundRule.setMaxHoursBeforeCheckIn(maxCheckIn);
+                    }
+                    DateTime toDate = DateTime.parse(rule.getString("toDate"), DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss"));
+                    long minCheckInTime = (hotelCheckIn.getMillis() - toDate.getMillis()) % (1000 * 60 * 60 * 24) / (1000 * 60 * 60);
+                    Integer minCheckIn = minCheckInTime > 0 ? Integer.valueOf(String.valueOf(minCheckInTime)) : 0;
+                    refundRule.setMinHoursBeforeCheckIn(minCheckIn);
+                    refundRule.setFine(new BigDecimal(rule.getJSONObject("cancelCharge").getString("#text"))
+                            .multiply(new BigDecimal(100)).setScale(0, RoundingMode.HALF_UP).intValue());
+                } catch (Exception e) {
+                    log.error(e.getMessage());
+                    refundRule.setReturnable(false);
                 }
-                DateTime toDate = DateTime.parse(rule.getString("toDate"), DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss"));
-                long minCheckInTime = (hotelCheckIn.getMillis() - toDate.getMillis()) % (1000 * 60 * 60 * 24) / (1000 * 60 * 60);
-                Integer minCheckIn = minCheckInTime > 0 ? Integer.valueOf(String.valueOf(minCheckInTime)) : 0;
-                refundRule.setMinHoursBeforeCheckIn(minCheckIn);
-                refundRule.setFine(new BigDecimal(rule.getJSONObject("cancelCharge").getString("#text"))
-                        .multiply(new BigDecimal(100)).setScale(0, RoundingMode.HALF_UP).intValue());
                 refundRules.add(refundRule);
             }
         }
+        room.setRefundRules(refundRules);
         return room;
     }
 
@@ -363,7 +368,7 @@ public class MeitService {
      * @return
      */
     public MeitOrderBookingInfo updateOrderFail(String orderId) {
-        MeitOrderBookingInfo meitOrder = meitOrderBookingInfoRepository.findByOrderId(orderId);
+        MeitOrderBookingInfo meitOrder = meitOrderBookingInfoRepository.findByOrderId(Long.valueOf(orderId));
         meitOrder.setOrderStatus(PlatformOrderStatusEnum.BOOK_FAIL);
         return meitOrderBookingInfoRepository.save(meitOrder);
     }
@@ -374,7 +379,7 @@ public class MeitService {
      * @return
      */
     public MeitOrderBookingInfo getOrderByOrderId(String orderId) {
-        List<MeitOrderBookingInfo> mlist = meitOrderBookingInfoRepository.findAllByOrderId(orderId);
+        List<MeitOrderBookingInfo> mlist = meitOrderBookingInfoRepository.findAllByOrderId(Long.valueOf(orderId));
         return mlist.get(0);
     }
 
@@ -385,7 +390,7 @@ public class MeitService {
      * @throws Exception
      */
     public BookingOrderInfo saveBookingByMeitOrder(String orderId) throws Exception {
-        MeitOrderBookingInfo meitOrder = meitOrderBookingInfoRepository.findByOrderId(orderId);
+        MeitOrderBookingInfo meitOrder = meitOrderBookingInfoRepository.findByOrderId(Long.valueOf(orderId));
         String allocationDetails = meitOrder.getRatePlanCode();
         List<Passenger> plist = new ArrayList<>();
         JSONArray guestArray = JSONArray.parseArray(meitOrder.getGuestInfo());
@@ -426,7 +431,7 @@ public class MeitService {
      * @return
      */
     public MeitOrderBookingInfo updateOrderByBookingInfo(String orderId, BookingOrderInfo bookingOrderInfo) {
-        MeitOrderBookingInfo meitOrder = meitOrderBookingInfoRepository.findByOrderId(orderId);
+        MeitOrderBookingInfo meitOrder = meitOrderBookingInfoRepository.findByOrderId(Long.valueOf(orderId));
         meitOrder.setAgentOrderId(bookingOrderInfo.getBookingCode());
         BigDecimal basePrice = new BigDecimal(bookingOrderInfo.getPriceValue());
         // 获得酒店价格上浮利率
@@ -444,7 +449,7 @@ public class MeitService {
      * @return
      */
     public BookingOrderInfo getBookingByMeitOrder(String orderId) {
-        MeitOrderBookingInfo meitOrder = meitOrderBookingInfoRepository.findByOrderId(orderId);
+        MeitOrderBookingInfo meitOrder = meitOrderBookingInfoRepository.findByOrderId(Long.valueOf(orderId));
         return bookingOrderInfoRepository.findByBookingCode(meitOrder.getAgentOrderId());
     }
 

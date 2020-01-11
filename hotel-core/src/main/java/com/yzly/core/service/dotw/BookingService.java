@@ -173,6 +173,7 @@ public class BookingService {
         orderInfo.setMealsPriceValue(bookingJson.getJSONObject("mealsPrice").getString("#text"));
         orderInfo.setType(bookingJson.getString("type"));
         orderInfo.setReturnedCode(jsonObject.getString("returnedCode"));
+        orderInfo.setTariffNotes(jsonObject.getString("tariffNotes"));
         orderInfo.setOrderStatus(OrderStatus.CONFIRMED);
         return bookingOrderInfoRepository.save(orderInfo);
     }
