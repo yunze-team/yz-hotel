@@ -73,11 +73,9 @@
   position: relative;
   border: 0;
 }
-.tabs li .tabs-inner {
+.tabs li a.tabs-inner {
   display: inline-block;
   text-decoration: none;
-  cursor: hand;
-  cursor: pointer;
   margin: 0;
   padding: 0 10px;
   height: 25px;
@@ -90,11 +88,11 @@
   -webkit-border-radius: 0px 0px 0 0;
   border-radius: 0px 0px 0 0;
 }
-.tabs li.tabs-selected .tabs-inner {
+.tabs li.tabs-selected a.tabs-inner {
   font-weight: bold;
   outline: none;
 }
-.tabs li.tabs-selected .tabs-inner:hover {
+.tabs li.tabs-selected a:hover.tabs-inner {
   cursor: default;
   pointer: default;
 }
@@ -146,7 +144,7 @@
   margin-top: -8px;
 }
 .tabs-title {
-  font-size: 14px;
+  font-size: 12px;
 }
 .tabs-closable {
   padding-right: 8px;
@@ -169,7 +167,7 @@
 .tabs-header-bottom .tabs li {
   margin: -1px 4px 0 0;
 }
-.tabs-header-bottom .tabs li .tabs-inner {
+.tabs-header-bottom .tabs li a.tabs-inner {
   -moz-border-radius: 0 0 0px 0px;
   -webkit-border-radius: 0 0 0px 0px;
   border-radius: 0 0 0px 0px;
@@ -227,11 +225,11 @@
   margin: 0 0 4px -1px;
   float: left;
 }
-.tabs-justified li .tabs-inner {
+.tabs-justified li a.tabs-inner {
   padding-left: 0;
   padding-right: 0;
 }
-.tabs-header-left .tabs li .tabs-inner {
+.tabs-header-left .tabs li a.tabs-inner {
   display: block;
   text-align: left;
   padding-left: 10px;
@@ -240,7 +238,7 @@
   -webkit-border-radius: 0px 0 0 0px;
   border-radius: 0px 0 0 0px;
 }
-.tabs-header-right .tabs li .tabs-inner {
+.tabs-header-right .tabs li a.tabs-inner {
   display: block;
   text-align: left;
   padding-left: 10px;
@@ -278,7 +276,7 @@
 .tabs-header-right .tabs-pill {
   padding-left: 3px;
 }
-.tabs-header .tabs-pill li .tabs-inner {
+.tabs-header .tabs-pill li a.tabs-inner {
   -moz-border-radius: 0px 0px 0px 0px;
   -webkit-border-radius: 0px 0px 0px 0px;
   border-radius: 0px 0px 0px 0px;
@@ -321,16 +319,16 @@
 .tabs li a.tabs-close {
   background: url('images/tabs_icons.png') no-repeat -34px center;
 }
-.tabs li .tabs-inner:hover {
+.tabs li a.tabs-inner:hover {
   background: #E6E6E6;
   color: #444;
   filter: none;
 }
-.tabs li.tabs-selected .tabs-inner {
+.tabs li.tabs-selected a.tabs-inner {
   background-color: #fff;
   color: #777;
 }
-.tabs li .tabs-inner {
+.tabs li a.tabs-inner {
   color: #777;
   background-color: #ffffff;
 }
@@ -347,11 +345,11 @@
 .tabs-tool,
 .tabs,
 .tabs-panels,
-.tabs li .tabs-inner,
-.tabs li.tabs-selected .tabs-inner,
-.tabs-header-bottom .tabs li.tabs-selected .tabs-inner,
-.tabs-header-left .tabs li.tabs-selected .tabs-inner,
-.tabs-header-right .tabs li.tabs-selected .tabs-inner {
+.tabs li a.tabs-inner,
+.tabs li.tabs-selected a.tabs-inner,
+.tabs-header-bottom .tabs li.tabs-selected a.tabs-inner,
+.tabs-header-left .tabs li.tabs-selected a.tabs-inner,
+.tabs-header-right .tabs li.tabs-selected a.tabs-inner {
   border-color: #ddd;
 }
 .tabs-p-tool a:hover,
@@ -359,19 +357,19 @@
 .tabs-scroller-over {
   background-color: #E6E6E6;
 }
-.tabs li.tabs-selected .tabs-inner {
+.tabs li.tabs-selected a.tabs-inner {
   border-bottom: 1px solid #fff;
 }
-.tabs-header-bottom .tabs li.tabs-selected .tabs-inner {
+.tabs-header-bottom .tabs li.tabs-selected a.tabs-inner {
   border-top: 1px solid #fff;
 }
-.tabs-header-left .tabs li.tabs-selected .tabs-inner {
+.tabs-header-left .tabs li.tabs-selected a.tabs-inner {
   border-right: 1px solid #fff;
 }
-.tabs-header-right .tabs li.tabs-selected .tabs-inner {
+.tabs-header-right .tabs li.tabs-selected a.tabs-inner {
   border-left: 1px solid #fff;
 }
-.tabs-header .tabs-pill li.tabs-selected .tabs-inner {
+.tabs-header .tabs-pill li.tabs-selected a.tabs-inner {
   background: #CCE6FF;
   color: #000;
   filter: none;

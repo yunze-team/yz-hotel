@@ -3,6 +3,7 @@
   border-width: 0 1px 0 0;
 }
 .propertygrid .datagrid-group {
+  height: 21px;
   overflow: hidden;
   border-width: 0 0 1px 0;
   border-style: solid;

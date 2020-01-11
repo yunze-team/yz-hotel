@@ -2,8 +2,7 @@
 .combobox-group,
 .combobox-stick {
   font-size: 12px;
-  padding: 6px 4px;
-  line-height: 20px;
+  padding: 3px;
 }
 .combobox-item-disabled {
   opacity: 0.5;

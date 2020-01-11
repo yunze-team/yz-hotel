@@ -1,13 +1,10 @@
-*{
-	box-sizing: border-box;
-}
 .m-toolbar{
 	position: relative;
 	text-align: center;
-	min-height: 34px;
+	min-height: 32px;
 }
 .m-toolbar .m-title{
-	line-height: 34px;
+	line-height: 32px;
 	font-size: 16px;
 	font-weight: bold;
 	text-align: center;
@@ -33,35 +30,30 @@
 	position: relative;
 	vertical-align: top;
 	top: 50%;
-	margin-top: -15px;
+	margin-top: -13px;
 }
 .m-back::before,.m-next::after{
+	position: relative;
 	display: inline-block;
 	box-sizing: border-box;
 	vertical-align: top;
 	border-style: solid;
 	-webkit-transform:rotate(45deg);
 	transform:rotate(45deg);
-	width: 12px;
-	height: 12px;
+	width: 10px;
+	height: 10px;
+	top: 7px;
 	content: '';
-	position: absolute;
-	top: 50%;
-	margin-top: -6px;
 }
 .m-back::before{
 	border-width: 0 0 1px 1px;
-	left: 8px;
+	margin-left: 6px;
+	margin-right: -6px;
 }
 .m-next::after{
 	border-width: 1px 1px 0 0;
-	right: 8px;
-}
-.m-back .l-btn-text{
-	padding-left: 12px;
-}
-.m-next .l-btn-text{
-	padding-right: 12px;
+	margin-left: -6px;
+	margin-right: 6px;
 }
 .m-buttongroup{
 	display: inline-block;
@@ -259,28 +251,25 @@
 .navpanel{
 	position: absolute;
 }
-.textbox .textbox-text{
-	padding: 0 4px;
-	height: 30px;
-	line-height: 30px;
-}
+
 .calendar-header,.calendar-title{
 	height: 30px;
 }
 .calendar-title span{
-	height: 30px;
-	line-height: 30px
+	height: 26px;
+	line-height: 26px
 }
 .datebox-button{
 	height: 24px;
 }
 .datebox-button a{
 	line-height: 24px;
+	display1: inline-block;
 }
 .tree-node{
+	height:28px;
+	padding:5px 0;
 	box-sizing: border-box;
-	height: 32px;
-	padding: 3px 0;
 }
 
 .panel-title{
@@ -326,7 +315,7 @@
 }
 
 .datagrid-row,.datagrid-header-row{
-	height: 32px;
+	height: 35px;
 }
 .datalist .datagrid-group-title,
 .m-list .m-list-group{
@@ -353,3 +342,36 @@
 	right: 12px;
 }
 
+.spinner-arrow-up,.spinner-arrow-down{
+	position: relative;
+	display: inline-block;
+	width: 50%;
+	height: 100%;
+	background: none;
+	float: right;
+}
+.spinner-arrow-down{
+	float: left;
+}
+.spinner-arrow-up::after,
+.spinner-arrow-down::after{
+	position: absolute;
+	display: inline-block;
+	box-sizing: border-box;
+	vertical-align: top;
+	border-style: solid;
+	border-width: 2px 2px 0 0;
+	-webkit-transform:rotate(-45deg);
+	transform:rotate(-45deg);
+	width: 10px;
+	height: 10px;
+	left: 50%;
+	top: 50%;
+	margin-left: -5px;
+	margin-top: -3px;
+	content: '';
+}
+.spinner-arrow-down::after{
+	border-width: 0 0 2px 2px;
+	margin-top: -8px;
+}
