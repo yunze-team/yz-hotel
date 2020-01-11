@@ -37,9 +37,12 @@
                     <a href="javascript:add();" class="easyui-linkbutton" data-options="iconCls:'icon-add'" style="width: 100px;">导入excel</a>
                 </div>
 
-                <div id="dlg" class="easyui-dialog" style="width: 400px; padding: 10px 20px;" closed="true" buttons="#dlg-buttons">
+                <div id="dlg" class="easyui-dialog" style="width: 400px; padding: 10px 20px;" title="execl导入"
+                    data-options="
+                        buttons:'#dlg-buttons',
+                        closed:true
+                    ">
                     <form id="fm" method="post">
-                        <input type="hidden" name="id" />
                         <table cellpadding="5">
                             <tr>
                                 <td>excel路径地址：</td>
