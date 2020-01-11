@@ -1,5 +1,5 @@
 function slideMenu(menu) {
-    $('.sidebar-menu').children('li').each(function() {
+    $('.nav-link').children('a').each(function() {
        $(this).removeClass('active');
     });
     $('#' + menu).addClass('active');
