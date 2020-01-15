@@ -347,7 +347,7 @@ public class DCMLHandler {
             for (int i = 0; i < Integer.valueOf(orderInfo.getChildren()); i++) {
                 String[] ages = orderInfo.getChildrenAges().split(",");
                 children.addElement("child").addAttribute("runno", String.valueOf(i)).setText(ages[i]);
-                actualChildren.addElement("actualChild ").addAttribute("runno", String.valueOf(i)).setText(ages[i]);
+                actualChildren.addElement("actualChild").addAttribute("runno", String.valueOf(i)).setText(ages[i]);
             }
         }
         room.addElement("extraBed").setText("0");

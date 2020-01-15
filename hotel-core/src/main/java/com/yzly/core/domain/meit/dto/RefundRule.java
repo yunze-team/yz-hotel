@@ -18,5 +18,7 @@ public class RefundRule {
     private String refundDesc;// 退订规则描述
     private Integer maxHoursBeforeCheckIn;// 退订规则开始时间
     private Integer minHoursBeforeCheckIn;// 退订规则结束时间
+    private String fromDate;
+    private String toDate;
 
 }

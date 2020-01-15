@@ -64,6 +64,7 @@ public class IndexController {
     @RequestMapping(value = "/login", method = RequestMethod.POST)
     public String login(Users admin, RedirectAttributes redirectAttributes) {
         UsernamePasswordToken token = new UsernamePasswordToken(admin.getName(), admin.getPassword());
+        token.setRememberMe(true);
         Subject currentUser = SecurityUtils.getSubject();
         try {
             log.info("用户{}进行登录验证" + admin.getName());

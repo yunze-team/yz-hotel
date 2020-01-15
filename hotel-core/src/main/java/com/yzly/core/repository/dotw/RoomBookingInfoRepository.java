@@ -5,6 +5,8 @@ import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 /**
  * @author lazyb
  * @create 2019/12/2
@@ -18,5 +20,7 @@ public interface RoomBookingInfoRepository extends MongoRepository<RoomBookingIn
     RoomBookingInfo findByAllocationDetailsAndFromDateAndToDate(String allocationDetails, String fromDate, String toDate);
 
     RoomBookingInfo findByRoomTypeCodeAndFromDateAndToDate(String roomTypeCode, String fromDate, String toDate);
+
+    List<RoomBookingInfo> findAllByRoomTypeCode(String roomTypeCode);
 
 }

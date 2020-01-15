@@ -47,6 +47,7 @@ public class MeitReqUtil {
             guestInfo.setRoomSeq(infoObject.getInteger("roomSeq"));
             guestInfo.setFirstName(infoObject.getString("firstName"));
             guestInfo.setLastName(infoObject.getString("lastName"));
+            guestInfo.setGender(infoObject.getString("gender"));
             guestInfos.add(guestInfo);
         }
         orderCreateParam.setGuestInfo(guestInfos);

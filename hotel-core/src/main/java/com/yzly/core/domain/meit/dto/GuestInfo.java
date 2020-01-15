@@ -17,5 +17,6 @@ public class GuestInfo {
     private Integer roomSeq;// 房间序号
     private String firstName;// 名
     private String lastName;// 姓
+    private String gender;// 性别
 
 }

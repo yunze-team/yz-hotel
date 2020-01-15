@@ -301,11 +301,13 @@ public class MeitService {
                     DateTime hotelCheckIn = DateTime.parse(roomBookingInfo.getFromDate() + " " + room.getCheckInTime(), DateTimeFormat.forPattern("yyyy-MM-dd HH:mm"));
                     if (StringUtils.isNotEmpty(rule.getString("fromDate"))) {
                         DateTime fromDate = DateTime.parse(rule.getString("fromDate"), DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss"));
+                        refundRule.setFromDate(fromDate.minusDays(2).toString("yyyy-MM-dd HH:mm:ss"));
                         long maxCheckInTime = (hotelCheckIn.getMillis() - fromDate.getMillis()) % (1000 * 60 * 60 * 24) / (1000 * 60 * 60);
                         Integer maxCheckIn = maxCheckInTime > 0 ? Integer.valueOf(String.valueOf(maxCheckInTime)) : 0;
                         refundRule.setMaxHoursBeforeCheckIn(maxCheckIn);
                     }
                     DateTime toDate = DateTime.parse(rule.getString("toDate"), DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss"));
+                    refundRule.setToDate(toDate.minusDays(2).toString("yyyy-MM-dd HH:mm:ss"));
                     long minCheckInTime = (hotelCheckIn.getMillis() - toDate.getMillis()) % (1000 * 60 * 60 * 24) / (1000 * 60 * 60);
                     Integer minCheckIn = minCheckInTime > 0 ? Integer.valueOf(String.valueOf(minCheckInTime)) : 0;
                     refundRule.setMinHoursBeforeCheckIn(minCheckIn);
@@ -395,7 +397,18 @@ public class MeitService {
         List<Passenger> plist = new ArrayList<>();
         JSONArray guestArray = JSONArray.parseArray(meitOrder.getGuestInfo());
         for (int i = 0; i < guestArray.size(); i++) {
-            Passenger passenger = new Passenger("3801",
+            String salutaionCode;
+            String gender = guestArray.getJSONObject(i).getString("gender");
+            if (gender.toLowerCase().equals("male")) {
+                salutaionCode = "1328";
+            } else if (gender.toLowerCase().equals("female")) {
+                salutaionCode = "15134";
+            } else if (gender.toLowerCase().equals("child")) {
+                salutaionCode = "14632";
+            } else {
+                salutaionCode = "3801";
+            }
+            Passenger passenger = new Passenger(salutaionCode,
                     guestArray.getJSONObject(i).getString("firstName"),
                     guestArray.getJSONObject(i).getString("lastName"));
             plist.add(passenger);
@@ -404,10 +417,11 @@ public class MeitService {
         if (bookingOrderInfo == null) {
             bookingOrderInfo = new BookingOrderInfo();
         }
-        RoomBookingInfo roomBookingInfo = roomBookingInfoRepository.findByAllocationDetails(allocationDetails);
-        if (roomBookingInfo == null) {
+        List<RoomBookingInfo> roomBookingInfoList = roomBookingInfoRepository.findAllByRoomTypeCode(meitOrder.getRoomId());
+        if (roomBookingInfoList.size() == 0) {
             throw new Exception("room is null");
         }
+        RoomBookingInfo roomBookingInfo = roomBookingInfoList.get(0);
         bookingOrderInfo.setHotelId(roomBookingInfo.getHotelId());
         bookingOrderInfo.setRoomTypeCode(roomBookingInfo.getRoomTypeCode());
         bookingOrderInfo.setAllocationDetails(allocationDetails);

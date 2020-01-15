@@ -1,17 +1,24 @@
 package com.yzly.api.controller.dotw;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.yzly.api.common.DCMLHandler;
+import com.yzly.api.service.dotw.MeitApiService;
+import com.yzly.api.util.meit.MeitResultUtil;
+import com.yzly.api.util.meit.international.MeitReqUtil;
 import com.yzly.core.domain.dotw.RoomBookingInfo;
 import com.yzly.core.domain.dotw.vo.Passenger;
+import com.yzly.core.domain.meit.dto.GoodsSearchQuery;
+import com.yzly.core.domain.meit.dto.MeitResult;
+import com.yzly.core.domain.meit.dto.OrderCreateParam;
+import com.yzly.core.enums.meit.ResultEnum;
 import com.yzly.core.repository.dotw.RoomBookingInfoRepository;
 import lombok.extern.apachecommons.CommonsLog;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,6 +35,8 @@ public class TestController {
     private RoomBookingInfoRepository roomBookingInfoRepository;
     @Autowired
     private DCMLHandler dcmlHandler;
+    @Autowired
+    private MeitApiService meitApiService;
 
 //    @PostMapping("/booking")
 //    public Object testBooking(String allocationDetails) {
@@ -47,6 +56,62 @@ public class TestController {
     @PostMapping("/search")
     public Object searchBooking(String firstName, String lastName, String city) {
         return dcmlHandler.searchBooking(new Passenger("147", firstName, lastName), city);
+    }
+
+    private MeitResult baseRequestTrans(String json) {
+        JSONObject req = JSON.parseObject(json);
+        MeitResult res = MeitResultUtil.generateResult(ResultEnum.SUCCESS, null);
+        res.setReqData(req);
+        return res;
+    }
+
+    @PostMapping("/goods_search")
+    public Object goodsSearch(@RequestBody String json) {
+        MeitResult result = baseRequestTrans(json);
+        JSONObject reqData = result.getReqData();
+        String hotelIds = reqData.getString("hotelId");
+        String roomId = reqData.getString("roomId");
+        String ratePlanCode = reqData.getString("ratePlanCode");
+        String checkin = reqData.getString("checkin");
+        String checkout = reqData.getString("checkout");
+        Integer roomNumber = reqData.getInteger("roomNumber");
+        Integer numberOfAdults = reqData.getInteger("numberOfAdults");
+        Integer numberOfChildren = reqData.getInteger("numberOfChildren");
+        String childrenAges = reqData.getString("childrenAges");
+        String currencyCode = reqData.getString("currencyCode");
+        GoodsSearchQuery goodsSearchQuery = new GoodsSearchQuery(hotelIds, roomId, ratePlanCode, checkin, checkout,
+                roomNumber, numberOfAdults, numberOfChildren, childrenAges, currencyCode);
+        List<JSONObject> jlist = dcmlHandler.getRoomsByMeitQuery(goodsSearchQuery);
+        Object data = meitApiService.syncGoodsSearch(jlist, goodsSearchQuery);
+        result.setData(data);
+        return result;
+    }
+
+
+    @PostMapping("/order_create")
+    public Object orderCreate(@RequestBody String json) {
+        MeitResult result = baseRequestTrans(json);
+        if (!result.getSuccess()) {
+            return result;
+        }
+        JSONObject reqData = result.getReqData();
+        OrderCreateParam orderCreateParam = MeitReqUtil.buildOrderParam(reqData);
+        Object data = meitApiService.createOrder(orderCreateParam);
+        result.setData(data);
+        return result;
+    }
+
+    @PostMapping("/hotel_extend")
+    public Object hotelExtend(@RequestBody String json) {
+        MeitResult result = baseRequestTrans(json);
+        if (!result.getSuccess()) {
+            return result;
+        }
+        JSONObject reqData = result.getReqData();
+        String hotelIds = reqData.getString("hotelId");
+        Object data = meitApiService.syncHotelExtend(hotelIds);
+        result.setData(data);
+        return result;
     }
 
 }
