@@ -1,6 +1,7 @@
 package com.yzly.api.controller.dotw;
 
 import com.yzly.api.service.dotw.HotelInfoApiService;
+import com.yzly.core.service.meit.TaskService;
 import lombok.extern.apachecommons.CommonsLog;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,6 +21,8 @@ public class TaskController {
 
     @Autowired
     private HotelInfoApiService hotelInfoApiService;
+    @Autowired
+    private TaskService taskService;
 
     /**
      * 拉取酒店信息和房型信息的定时方法
@@ -60,6 +63,44 @@ public class TaskController {
     @GetMapping("/update_date")
     public Object updatePullDate() {
         hotelInfoApiService.plusDaysWithPullDate();
+        return "SUCCESS";
+    }
+
+    /**
+     * 根据hotel_manual_sync_list的数据去dotw同步酒店基础信息
+     * @return
+     */
+    @GetMapping("/sync_list")
+    public Object syncHotelAndRoomByList() {
+        Runnable runnable = () -> {
+            try {
+                String ids = taskService.getManualSyncHotelIds();
+                hotelInfoApiService.pullHotelAndRoomsInfoByIds(ids);
+            } catch (Exception e) {
+                log.error(e.getMessage());
+            }
+        };
+        Thread thread = new Thread(runnable);
+        thread.start();
+        return "SUCCESS";
+    }
+
+    /**
+     * 根据时间同步30天的价格，并保存在dotw_room_price_by_date表中
+     * @return
+     */
+    @GetMapping("/sync_price")
+    public Object syncRoomPriceByDate() {
+        Runnable runnable = () -> {
+            try {
+                String ids = taskService.getManualSyncHotelIds();
+                hotelInfoApiService.syncRoomPriceByIdsAndDays(ids, 30);
+            } catch (Exception e) {
+                log.error(e.getMessage());
+            }
+        };
+        Thread thread = new Thread(runnable);
+        thread.start();
         return "SUCCESS";
     }
 

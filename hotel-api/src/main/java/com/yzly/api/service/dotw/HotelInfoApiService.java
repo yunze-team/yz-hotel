@@ -8,6 +8,7 @@ import com.yzly.core.domain.dotw.RoomBookingInfo;
 import com.yzly.core.domain.dotw.query.HotelQuery;
 import com.yzly.core.service.dotw.BookingService;
 import com.yzly.core.service.dotw.HotelInfoService;
+import com.yzly.core.service.meit.TaskService;
 import lombok.extern.apachecommons.CommonsLog;
 import org.apache.commons.lang.StringUtils;
 import org.joda.time.DateTime;
@@ -33,6 +34,8 @@ public class HotelInfoApiService {
     private DCMLHandler dcmlHandler;
     @Autowired
     private BookingService bookingService;
+    @Autowired
+    private TaskService taskService;
 
     public void syncBasicData() {
         try {
@@ -55,6 +58,21 @@ public class HotelInfoApiService {
     public JSONObject searchHotel(String ids, String fromDate, String toDate) {
         List<String> idArray = Arrays.asList(ids.split(","));
         return dcmlHandler.searchHotelPriceByID(idArray, fromDate, toDate);
+    }
+
+    /**
+     * 根据酒店ids和时间期限，同步房间价格并入库
+     * @param ids 酒店ids
+     * @param days 时间期限
+     */
+    public void syncRoomPriceByIdsAndDays(String ids, Integer days) {
+        List<String> hotelIds = Arrays.asList(ids.split(","));
+        for (int i = 0; i < days; i++) {
+            String fromDate = DateTime.now().plusDays(i).toString("yyyy-MM-dd");
+            String toDate = DateTime.now().plusDays(i).plusDays(1).toString("yyyy-MM-dd");
+            JSONObject priceObject = dcmlHandler.searchHotelPriceByID(hotelIds, fromDate, toDate);
+            taskService.syncRoomPriceByDate(priceObject, fromDate, toDate);
+        }
     }
 
     public JSONObject searchHotelByCountryAndCity(String country, String city, int page, int size) {
