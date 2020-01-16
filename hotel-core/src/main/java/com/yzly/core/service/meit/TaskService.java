@@ -57,24 +57,40 @@ public class TaskService {
         for (int i = 0; i < hotelArray.size(); i++) {
             JSONObject hotelObject = hotelArray.getJSONObject(i);
             String hotelId = hotelObject.getString("@hotelid");
-            JSONArray roomTypeArray = hotelObject.getJSONObject("rooms").getJSONObject("room").getJSONArray("roomType");
-            for (int j = 0; j < roomTypeArray.size(); j++) {
-                JSONObject rateBasesObject = roomTypeArray.getJSONObject(j);
-                String roomName = rateBasesObject.getString("name");
-                String roomTypeCOde = rateBasesObject.getString("@roomtypecode");
-                Object rateBases = rateBasesObject.getObject("rateBases", Object.class);
-                if (rateBases instanceof JSONObject) {
-                    JSONObject rateJSON = ((JSONObject) rateBases).getJSONObject("rateBasis");
-                    buildRoomPriceByJSON(rateJSON, hotelId, roomName, roomTypeCOde, fromDate, toDate);
-                } else if (rateBases instanceof JSONArray) {
-                    JSONArray rateArray = (JSONArray) rateBases;
-                    for (int k = 0; k < rateArray.size(); k++) {
-                        JSONObject rateJSON = rateArray.getJSONObject(i);
-                        buildRoomPriceByJSON(rateJSON, hotelId, roomName, roomTypeCOde, fromDate, toDate);
-                    }
-                } else {
-                    continue;
+            Object roomTypeObject = hotelObject.getJSONObject("rooms").getJSONObject("room").getObject("roomType", Object.class);
+            if (roomTypeObject instanceof JSONArray) {
+                JSONArray roomTypeArray = (JSONArray) roomTypeObject;
+                for (int j = 0; j < roomTypeArray.size(); j++) {
+                    JSONObject rateBasesObject = roomTypeArray.getJSONObject(j);
+                    executeRoomTypeJson(rateBasesObject, hotelId, fromDate, toDate);
                 }
+            } else if (roomTypeObject instanceof JSONObject) {
+                JSONObject roomTypeJson = (JSONObject) roomTypeObject;
+                executeRoomTypeJson(roomTypeJson, hotelId, fromDate, toDate);
+            }
+        }
+    }
+
+    /**
+     * 处理返回的roomtype报文
+     * @param roomTypeJson
+     * @param hotelId
+     * @param fromDate
+     * @param toDate
+     */
+    private void executeRoomTypeJson(JSONObject roomTypeJson, String hotelId, String fromDate, String toDate) {
+        JSONObject rateBasesObject = roomTypeJson;
+        String roomName = rateBasesObject.getString("name");
+        String roomTypeCOde = rateBasesObject.getString("@roomtypecode");
+        Object rateBases = rateBasesObject.getObject("rateBases", Object.class);
+        if (rateBases instanceof JSONObject) {
+            JSONObject rateJSON = ((JSONObject) rateBases).getJSONObject("rateBasis");
+            buildRoomPriceByJSON(rateJSON, hotelId, roomName, roomTypeCOde, fromDate, toDate);
+        } else if (rateBases instanceof JSONArray) {
+            JSONArray rateArray = (JSONArray) rateBases;
+            for (int k = 0; k < rateArray.size(); k++) {
+                JSONObject rateJSON = rateArray.getJSONObject(k);
+                buildRoomPriceByJSON(rateJSON, hotelId, roomName, roomTypeCOde, fromDate, toDate);
             }
         }
     }

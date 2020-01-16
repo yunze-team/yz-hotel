@@ -20,4 +20,10 @@ public interface TaskControllerInter {
     @GetMapping("/api/task/update_date")
     String updatePullDate();
 
+    @GetMapping("/api/task/sync_list")
+    String syncHotelAndRoomByList();
+
+    @GetMapping("/api/task/sync_price")
+    String syncRoomPriceByDate();
+
 }
