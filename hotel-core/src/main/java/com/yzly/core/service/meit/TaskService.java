@@ -107,7 +107,8 @@ public class TaskService {
      */
     private RoomPriceByDate buildRoomPriceByJSON(JSONObject rateJSON, String hotelId, String roomName,
                                                  String roomTypeCode, String fromDate, String toDate) {
-        RoomPriceByDate roomPrice = roomPriceByDateRepository.findByRoomTypeCodeAndFromDateAndToDate(roomTypeCode, fromDate, toDate);
+        String rateBasis = rateBasisRepository.findByCode(rateJSON.getString("@id")).getName();
+        RoomPriceByDate roomPrice = roomPriceByDateRepository.findByRoomTypeCodeAndRateBasisAndFromDateAndToDate(roomTypeCode, rateBasis, fromDate, toDate);
         if (roomPrice == null) {
             roomPrice = new RoomPriceByDate();
         }
@@ -117,7 +118,7 @@ public class TaskService {
         roomPrice.setRoomName(roomName);
         roomPrice.setRoomTypeCode(roomTypeCode);
         roomPrice.setTotal(rateJSON.getString("total"));
-        roomPrice.setRateBasis(rateBasisRepository.findByCode(rateJSON.getString("@id")).getName());
+        roomPrice.setRateBasis(rateBasis);
         return roomPriceByDateRepository.save(roomPrice);
     }
 

@@ -14,4 +14,6 @@ public interface RoomPriceByDateRepository extends JpaRepository<RoomPriceByDate
 
     RoomPriceByDate findByRoomTypeCodeAndFromDateAndToDate(String roomTypeCode, String fromDate, String toDate);
 
+    RoomPriceByDate findByRoomTypeCodeAndRateBasisAndFromDateAndToDate(String roomTypeCode, String rateBasis, String fromDate, String toDate);
+
 }
