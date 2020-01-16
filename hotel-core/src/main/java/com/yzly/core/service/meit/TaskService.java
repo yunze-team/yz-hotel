@@ -122,4 +122,11 @@ public class TaskService {
         return roomPriceByDateRepository.save(roomPrice);
     }
 
+    /**
+     * 情况所有的房型价格数据
+     */
+    public void delAllRoomPrice() {
+        roomPriceByDateRepository.deleteAllInBatch();
+    }
+
 }

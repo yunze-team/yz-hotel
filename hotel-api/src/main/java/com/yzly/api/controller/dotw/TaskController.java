@@ -93,6 +93,9 @@ public class TaskController {
     public Object syncRoomPriceByDate() {
         Runnable runnable = () -> {
             try {
+                // 在重新拉取数据之前，清空30天价格表数据
+                taskService.delAllRoomPrice();
+                // 重新拉取30天价格数据
                 String ids = taskService.getManualSyncHotelIds();
                 hotelInfoApiService.syncRoomPriceByIdsAndDays(ids, 30);
             } catch (Exception e) {

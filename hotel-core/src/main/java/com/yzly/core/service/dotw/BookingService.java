@@ -187,7 +187,7 @@ public class BookingService {
      */
     public BookingOrderInfo preCancelOrder(BookingOrderInfo orderInfo, JSONObject jsonObject) {
         JSONObject penaltyApplied = jsonObject.getJSONObject("services").
-                getJSONObject("service").getJSONObject("cancellationPenalty").getJSONObject("penaltyApplied");
+                getJSONObject("service").getJSONObject("cancellationPenalty").getJSONObject("charge");
         orderInfo.setPenaltyApplied(penaltyApplied.getString("#text"));
         orderInfo.setOrderStatus(OrderStatus.PRECANCLED);
         return bookingOrderInfoRepository.save(orderInfo);
