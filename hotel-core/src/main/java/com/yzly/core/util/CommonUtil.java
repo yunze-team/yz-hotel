@@ -2,12 +2,17 @@ package com.yzly.core.util;
 
 import com.yzly.core.domain.HotelSyncList;
 import com.yzly.core.domain.dotw.HotelInfo;
+import com.yzly.core.domain.dotw.RoomPriceByDate;
+import com.yzly.core.domain.dotw.RoomType;
+import com.yzly.core.domain.dotw.vo.RoomPriceExcelData;
 import com.yzly.core.domain.jltour.JLHotel;
 import com.yzly.core.enums.DistributorEnum;
 import com.yzly.core.enums.SupplierEnum;
 import com.yzly.core.enums.SyncStatus;
+import com.yzly.core.repository.dotw.RoomPriceByDateRepository;
 import lombok.extern.apachecommons.CommonsLog;
 import org.apache.commons.lang.StringUtils;
+import org.apache.poi.hssf.usermodel.*;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -15,10 +20,10 @@ import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.io.FileInputStream;
-import java.io.InputStream;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,6 +33,9 @@ import java.util.List;
 @Component
 @CommonsLog
 public class CommonUtil {
+
+    @Autowired
+    private RoomPriceByDateRepository roomPriceByDateRepository;
 
     public List<HotelInfo> excelToHotelBean(String path) throws Exception {
         InputStream is = new FileInputStream(path);
@@ -188,6 +196,100 @@ public class CommonUtil {
             }
         }
         return list;
+    }
+
+    /**
+     * 生成酒店30天房态的价格excel
+     * @param rlist
+     * @param days
+     * @param filePath
+     */
+    public void generateRoomPriceExcel(List<RoomPriceExcelData> rlist, List<String> days, String filePath) {
+        HSSFWorkbook workbook = new HSSFWorkbook();
+        HSSFSheet sheet = workbook.createSheet("房态30天价格");
+        // 创建表头
+        HSSFRow rowTitle = sheet.createRow(0);
+        // 创建单元格样式
+        HSSFFont font = workbook.createFont();
+        font.setBoldweight(HSSFFont.BOLDWEIGHT_BOLD);
+        HSSFCellStyle cellStyle = workbook.createCellStyle();
+        cellStyle.setFont(font);
+        // 创建表头单元格
+        // 创建酒店code
+        HSSFCell cell_hotel_code = rowTitle.createCell(0);
+        cell_hotel_code.setCellValue("酒店CODE");
+        cell_hotel_code.setCellStyle(cellStyle);
+        // 创建酒店名称
+        HSSFCell cell_hotel_name = rowTitle.createCell(1);
+        cell_hotel_name.setCellValue("酒店名称");
+        cell_hotel_name.setCellStyle(cellStyle);
+        // 创建房型code
+        HSSFCell cell_room_code = rowTitle.createCell(2);
+        cell_room_code.setCellValue("房型CODE");
+        cell_room_code.setCellStyle(cellStyle);
+        // 创建房型名称
+        HSSFCell cell_room_name = rowTitle.createCell(3);
+        cell_room_name.setCellValue("房型名称");
+        cell_room_name.setCellStyle(cellStyle);
+        // 创建房型价格
+        for (int i = 0; i < days.size(); i++) {
+            HSSFCell cell_room_price = rowTitle.createCell(3 + i + 1);
+            cell_room_price.setCellValue(days.get(i));
+            cell_room_price.setCellStyle(cellStyle);
+        }
+        // 表头结束，创建内容
+        for (int i = 0; i < rlist.size(); i++) {
+            RoomPriceExcelData roomPrice = rlist.get(i);
+            List<RoomType> tlist = roomPrice.getRoomTypeList();
+            for (int j = 0; j < tlist.size(); j++) {
+                HSSFRow row = sheet.createRow(sheet.getLastRowNum() + 1);
+                RoomType roomType = tlist.get(j);
+                // 创建表头单元格
+                // 创建酒店code
+                HSSFCell body_cell_hotel_code = row.createCell(0);
+                body_cell_hotel_code.setCellValue(roomPrice.getHotelCode());
+                // 创建酒店名称
+                HSSFCell body_cell_hotel_name = row.createCell(1);
+                body_cell_hotel_name.setCellValue(roomPrice.getHotelName());
+                // 创建房型code
+                HSSFCell body_cell_room_code = row.createCell(2);
+                body_cell_room_code.setCellValue(roomType.getRoomTypeCode());
+                // 创建房型名称
+                HSSFCell body_cell_room_name = row.createCell(3);
+                body_cell_room_name.setCellValue(roomType.getName());
+                // 填充30天房价数据
+                for (int k = 0; k < days.size(); k++) {
+                    HSSFCell price_cell = row.createCell(3 + k + 1);
+                    List<RoomPriceByDate> priceDates = roomPriceByDateRepository.
+                            findAllByRoomTypeCodeAndFromDate(roomType.getRoomTypeCode(), days.get(k));
+                    String rateBasisTotal = "";
+                    for (RoomPriceByDate price : priceDates) {
+                        rateBasisTotal += price.getRateBasis() + "/" + price.getTotal() + ";";
+                    }
+                    price_cell.setCellValue(rateBasisTotal);
+                }
+            }
+        }
+        // 生成excel
+        File file = new File(filePath);
+        FileOutputStream fout = null;
+        try {
+            fout = new FileOutputStream(file);
+            workbook.write(fout);
+            fout.flush();
+            fout.close();
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        } finally {
+            if (fout != null) {
+                try {
+                    fout.close();
+                } catch (Exception e) {
+                    log.error(e.getMessage());
+                }
+            }
+        }
+
     }
 
 }

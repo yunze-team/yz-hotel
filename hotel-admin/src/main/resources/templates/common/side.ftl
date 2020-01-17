@@ -2,9 +2,8 @@
 
     <section class="sidebar">
         <ul class="sidebar-menu">
-            <#if username == 'admin'>
                 <li id="page_index">
-                    <a href="/index">
+                    <a href="/">
                         <i class="fa fa-dashboard"></i> <span>首页</span>
                     </a>
                 </li>
@@ -27,6 +26,11 @@
                         <li id="page_order">
                             <a href="/index/order_info">
                                 <span>订单管理</span>
+                            </a>
+                        </li>
+                        <li id="page_room_price">
+                            <a href="/index/room_price">
+                                <span>房型30天价格</span>
                             </a>
                         </li>
                     </ul>
@@ -58,7 +62,6 @@
             <#--End-->
 
 
-            </#if>
         </ul>
     </section>
 
