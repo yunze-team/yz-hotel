@@ -26,4 +26,7 @@ public interface TaskControllerInter {
     @GetMapping("/api/task/sync_price")
     String syncRoomPriceByDate();
 
+    @GetMapping("/api/task/room_price_excel")
+    String generateRoomPriceExcel();
+
 }

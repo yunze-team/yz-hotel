@@ -13,10 +13,12 @@ import com.yzly.core.repository.dotw.RoomPriceByDateRepository;
 import lombok.extern.apachecommons.CommonsLog;
 import org.apache.commons.lang.StringUtils;
 import org.apache.poi.hssf.usermodel.*;
+import org.apache.poi.hssf.util.HSSFColor;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
+import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -214,6 +216,7 @@ public class CommonUtil {
         font.setBoldweight(HSSFFont.BOLDWEIGHT_BOLD);
         HSSFCellStyle cellStyle = workbook.createCellStyle();
         cellStyle.setFont(font);
+        cellStyle = buildBorderStyle(cellStyle);
         // 创建表头单元格
         // 创建酒店code
         HSSFCell cell_hotel_code = rowTitle.createCell(0);
@@ -237,6 +240,8 @@ public class CommonUtil {
             cell_room_price.setCellValue(days.get(i));
             cell_room_price.setCellStyle(cellStyle);
         }
+        HSSFCellStyle bodyCellStyle = workbook.createCellStyle();
+        bodyCellStyle = buildBorderStyle(bodyCellStyle);
         // 表头结束，创建内容
         for (int i = 0; i < rlist.size(); i++) {
             RoomPriceExcelData roomPrice = rlist.get(i);
@@ -244,19 +249,22 @@ public class CommonUtil {
             for (int j = 0; j < tlist.size(); j++) {
                 HSSFRow row = sheet.createRow(sheet.getLastRowNum() + 1);
                 RoomType roomType = tlist.get(j);
-                // 创建表头单元格
                 // 创建酒店code
                 HSSFCell body_cell_hotel_code = row.createCell(0);
                 body_cell_hotel_code.setCellValue(roomPrice.getHotelCode());
+                body_cell_hotel_code.setCellStyle(bodyCellStyle);
                 // 创建酒店名称
                 HSSFCell body_cell_hotel_name = row.createCell(1);
                 body_cell_hotel_name.setCellValue(roomPrice.getHotelName());
+                body_cell_hotel_name.setCellStyle(bodyCellStyle);
                 // 创建房型code
                 HSSFCell body_cell_room_code = row.createCell(2);
                 body_cell_room_code.setCellValue(roomType.getRoomTypeCode());
+                body_cell_room_code.setCellStyle(bodyCellStyle);
                 // 创建房型名称
                 HSSFCell body_cell_room_name = row.createCell(3);
                 body_cell_room_name.setCellValue(roomType.getName());
+                body_cell_room_name.setCellStyle(bodyCellStyle);
                 // 填充30天房价数据
                 for (int k = 0; k < days.size(); k++) {
                     HSSFCell price_cell = row.createCell(3 + k + 1);
@@ -267,6 +275,28 @@ public class CommonUtil {
                         rateBasisTotal += price.getRateBasis() + "/" + price.getTotal() + ";";
                     }
                     price_cell.setCellValue(rateBasisTotal);
+                    price_cell.setCellStyle(bodyCellStyle);
+                }
+                // 最后一行时，合并酒店单元格
+                if (j == tlist.size() - 1 && tlist.size() > 1) {
+                    try {
+                        bodyCellStyle.setAlignment(HSSFCellStyle.ALIGN_CENTER);
+                        // 合并酒店code单元格
+                        CellRangeAddress hotel_code_region = new CellRangeAddress(sheet.getLastRowNum() - j, sheet.getLastRowNum(), 0, 0);
+                        sheet.addMergedRegion(hotel_code_region);
+                        HSSFCell merge_hotel_code = sheet.getRow(sheet.getLastRowNum() - j).getCell(0);
+                        merge_hotel_code.setCellStyle(bodyCellStyle);
+                        merge_hotel_code.setCellValue(roomPrice.getHotelCode());
+                        // 合并酒店名称单元格
+                        CellRangeAddress hotel_name_region = new CellRangeAddress(sheet.getLastRowNum() - j, sheet.getLastRowNum(), 1, 1);
+                        sheet.addMergedRegion(hotel_name_region);
+                        HSSFCell merge_hotel_name = sheet.getRow(sheet.getLastRowNum() - j).getCell(1);
+                        merge_hotel_name.setCellStyle(bodyCellStyle);
+                        merge_hotel_name.setCellValue(roomPrice.getHotelName());
+                    } catch (Exception e) {
+                        log.error(e.getMessage());
+                        continue;
+                    }
                 }
             }
         }
@@ -290,6 +320,18 @@ public class CommonUtil {
             }
         }
 
+    }
+
+    private HSSFCellStyle buildBorderStyle(HSSFCellStyle cellStyle) {
+        cellStyle.setBorderBottom(HSSFCellStyle.BORDER_THIN);
+        cellStyle.setBorderLeft(HSSFCellStyle.BORDER_THIN);
+        cellStyle.setBorderRight(HSSFCellStyle.BORDER_THIN);
+        cellStyle.setBorderTop(HSSFCellStyle.BORDER_THIN);
+        cellStyle.setBottomBorderColor(HSSFColor.BLACK.index);
+        cellStyle.setLeftBorderColor(HSSFColor.BLACK.index);
+        cellStyle.setRightBorderColor(HSSFColor.BLACK.index);
+        cellStyle.setLeftBorderColor(HSSFColor.BLACK.index);
+        return cellStyle;
     }
 
 }

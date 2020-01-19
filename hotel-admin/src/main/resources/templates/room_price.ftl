@@ -47,7 +47,8 @@
                     <span>离店日期：</span>
                     <input type="text" id="toDate" class="Wdate" onFocus="WdatePicker({lang:'zh-cn',dateFmt:'yyyy-MM-dd',readOnly:true})">
                     <a href="javascript:doSearch();" class="easyui-linkbutton" data-options="iconCls:'icon-search'" style="width: 80px;">搜索</a>
-                    <a href="javascript:excel();" class="easyui-linkbutton" data-options="iconCls:'icon-edit'" style="width: 200px;">导出excel</a>
+<#--                    <a href="javascript:excel();" class="easyui-linkbutton" data-options="iconCls:'icon-edit'" style="width: 100px;">生成excel</a>-->
+                    <a href="javascript:download();" class="easyui-linkbutton" data-options="iconCls:'icon-edit'" style="width: 100px;">下载excel</a>
                 </div>
 
             </div>
@@ -81,6 +82,16 @@
                 }
             }
         );
+    }
+    function download() {
+        var form=$("<form>");
+        form.attr("style","display:none");
+        form.attr("target","");
+        form.attr("method","post");//提交方式为post
+        form.attr("action","/sys/price_file_download");//定义action
+
+        $("body").append(form);
+        form.submit();        
     }
 </script>
 </body>

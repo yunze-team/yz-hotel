@@ -1,12 +1,20 @@
 package com.yzly.api.controller.dotw;
 
 import com.yzly.api.service.dotw.HotelInfoApiService;
+import com.yzly.core.domain.dotw.vo.RoomPriceExcelData;
+import com.yzly.core.service.dotw.RoomPriceService;
 import com.yzly.core.service.meit.TaskService;
+import com.yzly.core.util.CommonUtil;
 import lombok.extern.apachecommons.CommonsLog;
+import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 定时任务调用controller
@@ -19,10 +27,17 @@ import org.springframework.web.bind.annotation.RestController;
 @CommonsLog
 public class TaskController {
 
+    @Value("${dotw.room.price.excel}")
+    private String excelFileName;
+
     @Autowired
     private HotelInfoApiService hotelInfoApiService;
     @Autowired
     private TaskService taskService;
+    @Autowired
+    private RoomPriceService roomPriceService;
+    @Autowired
+    private CommonUtil commonUtil;
 
     /**
      * 拉取酒店信息和房型信息的定时方法
@@ -101,6 +116,26 @@ public class TaskController {
             } catch (Exception e) {
                 log.error(e.getMessage());
             }
+        };
+        Thread thread = new Thread(runnable);
+        thread.start();
+        return "SUCCESS";
+    }
+
+    /**
+     * 抽取room_price表中的数据，并生成30天房价excel
+     * @return
+     */
+    @GetMapping("/room_price_excel")
+    public Object generateRoomPriceExcel() {
+        Runnable runnable = () -> {
+            List<String> days = new ArrayList<>();
+            for (int i = 0; i < 30; i++) {
+                String fromDate = DateTime.now().plusDays(i).toString("yyyy-MM-dd");
+                days.add(fromDate);
+            }
+            List<RoomPriceExcelData> rlist = roomPriceService.getAllPriceExcelData(days);
+            commonUtil.generateRoomPriceExcel(rlist, days, excelFileName);
         };
         Thread thread = new Thread(runnable);
         thread.start();
