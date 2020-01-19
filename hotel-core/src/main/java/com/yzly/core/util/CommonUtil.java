@@ -280,7 +280,8 @@ public class CommonUtil {
                 // 最后一行时，合并酒店单元格
                 if (j == tlist.size() - 1 && tlist.size() > 1) {
                     try {
-                        bodyCellStyle.setAlignment(HSSFCellStyle.ALIGN_CENTER);
+                        // 设置垂直居中
+                        bodyCellStyle.setVerticalAlignment(HSSFCellStyle.VERTICAL_CENTER);
                         // 合并酒店code单元格
                         CellRangeAddress hotel_code_region = new CellRangeAddress(sheet.getLastRowNum() - j, sheet.getLastRowNum(), 0, 0);
                         sheet.addMergedRegion(hotel_code_region);
