@@ -53,7 +53,7 @@ public class SysController {
                 }
                 if (fis != null) {
                     try {
-                        fis.close();;
+                        fis.close();
                     } catch (IOException e) {
                         log.error(e.getMessage());
                     }
