@@ -3,7 +3,7 @@
 <head>
 <#include "/common/common.ftl">
 </head>
-<body class="hold-transition sidebar-mini layout-fixed">
+<body class="hold-transition sidebar-mini skin-blue">
 <div class="wrapper">
 
     <#include "/common/header.ftl">
