@@ -20,17 +20,17 @@
                     <ul class="treeview-menu">
                         <li id="sys_hotel_info">
                             <a href="/index/syn_hotel_info">
-                                <span>已同步酒店</span>
+                                <i class="fa fa-circle-o"></i> <span>已同步酒店</span>
                             </a>
                         </li>
-                        <li id="page_order">
+                        <li id="order_info">
                             <a href="/index/order_info">
-                                <span>订单管理</span>
+                                <i class="fa fa-circle-o"></i> <span>订单管理</span>
                             </a>
                         </li>
                         <li id="page_room_price">
                             <a href="/index/room_price">
-                                <span>房型30天价格</span>
+                                <i class="fa fa-circle-o"></i> <span>房型30天价格</span>
                             </a>
                         </li>
                     </ul>
