@@ -50,18 +50,18 @@ public class MeitApiController {
      */
     private MeitResult baseRequestTrans(HttpServletRequest request) {
         String encyptData = request.getParameter("param");
-//        String traceId = request.getHeader("Request-Trace");
-//        MeitTraceLog traceLog = meitApiService.addTraceLog(traceId, encyptData, null, null);
-//        log.info("traceLog: " + JSONObject.toJSONString(traceLog));
-//        ResultEnum resultEnum = new AuthValidatorUtil().validate(request, secret);
-//        if (!resultEnum.equals(ResultEnum.SUCCESS)) {
-//            return MeitResultUtil.generateResult(resultEnum, null);
-//        }
+        String traceId = request.getHeader("Request-Trace");
+        MeitTraceLog traceLog = meitApiService.addTraceLog(traceId, encyptData, null, null);
+        log.info("traceLog: " + JSONObject.toJSONString(traceLog));
+        ResultEnum resultEnum = new AuthValidatorUtil().validate(request, secret);
+        if (!resultEnum.equals(ResultEnum.SUCCESS)) {
+            return MeitResultUtil.generateResult(resultEnum, null);
+        }
         try {
-//            String reqData = AESUtilUsingCommonDecodec.decrypt(encyptData);
-            String reqData = encyptData;
+            String reqData = AESUtilUsingCommonDecodec.decrypt(encyptData);
+//            String reqData = encyptData;
             // 更新美团调用日志的解密数据
-//            meitApiService.addTraceLog(traceId, encyptData, reqData, traceLog);
+            meitApiService.addTraceLog(traceId, encyptData, reqData, traceLog);
             JSONObject req = JSON.parseObject(reqData);
             MeitResult res = MeitResultUtil.generateResult(ResultEnum.SUCCESS, null);
             res.setReqData(req);
@@ -79,8 +79,8 @@ public class MeitApiController {
      */
     private String baseResponseTrans(MeitResult meitResult) {
         try {
-//            return AESUtilUsingCommonDecodec.decrypt(JSONObject.toJSONString(meitResult));
-            return JSONObject.toJSONString(meitResult);
+            return AESUtilUsingCommonDecodec.decrypt(JSONObject.toJSONString(meitResult));
+//            return JSONObject.toJSONString(meitResult);
         } catch (Exception e) {
             log.error(e.getMessage());
             return null;

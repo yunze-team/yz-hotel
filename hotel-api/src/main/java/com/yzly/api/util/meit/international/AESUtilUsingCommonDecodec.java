@@ -18,7 +18,7 @@ public class AESUtilUsingCommonDecodec {
     public static final String CIPHER_ALGORITHM = "AES";
 
     // 加密密钥
-    private static final byte[] keyValue = "xxx".getBytes();
+    private static final byte[] keyValue = "meituanhotelopen".getBytes();
 
     /**
      * 转换密钥
