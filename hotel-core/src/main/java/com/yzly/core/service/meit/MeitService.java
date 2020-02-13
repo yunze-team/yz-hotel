@@ -122,7 +122,7 @@ public class MeitService {
         for (HotelSyncList hs : hpage.getContent()) {
             HotelInfo hotelInfo = hotelInfoRepository.findByDotwHotelCode(hs.getHotelId());
             MeitHotel mh = new MeitHotel();
-            List<MeitCity> mc = meitCityRepository.findAllByNameEN(hotelInfo.getCity());
+            List<MeitCity> mc = meitCityRepository.findAllByNameENLike("%" + hotelInfo.getCity().replaceAll(" ", "") + "%");
             mh.setHotelId(hs.getHotelId());
             if (mc.size() > 0) {
                 mh.setCityId(Integer.valueOf(mc.get(0).getCityId()));

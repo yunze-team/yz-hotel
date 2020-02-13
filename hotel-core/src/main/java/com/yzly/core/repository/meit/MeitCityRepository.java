@@ -18,4 +18,6 @@ public interface MeitCityRepository extends JpaRepository<MeitCity, Long> {
 
     List<MeitCity> findAllByNameEN(String name);
 
+    List<MeitCity> findAllByNameENLike(String name);
+
 }

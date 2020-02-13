@@ -103,6 +103,7 @@ public class MeitApiController {
         int limit = reqData.getInteger("limit");
         Object data = meitApiService.syncHotelBasic(skip, limit);
         result.setData(data);
+        log.info(result);
         return baseResponseTrans(result);
     }
 
@@ -121,6 +122,7 @@ public class MeitApiController {
         String hotelIds = reqData.getString("hotelId");
         Object data = meitApiService.syncHotelExtend(hotelIds);
         result.setData(data);
+        log.info(result);
         return baseResponseTrans(result);
     }
 
@@ -139,6 +141,7 @@ public class MeitApiController {
         String hotelIds = reqData.getString("hotelId");
         Object data = meitApiService.syncRoomBasic(hotelIds);
         result.setData(data);
+        log.info(result);
         return baseResponseTrans(result);
     }
 
@@ -157,6 +160,7 @@ public class MeitApiController {
         String hotelIds = reqData.getString("hotelId");
         Object data = meitApiService.syncRoomExtend(hotelIds);
         result.setData(data);
+        log.info(result);
         return baseResponseTrans(result);
     }
 
@@ -187,6 +191,7 @@ public class MeitApiController {
         List<JSONObject> jlist = dcmlHandler.getRoomsByMeitQuery(goodsSearchQuery);
         Object data = meitApiService.syncGoodsSearch(jlist, goodsSearchQuery);
         result.setData(data);
+        log.info(result);
         return baseResponseTrans(result);
     }
 
@@ -205,6 +210,7 @@ public class MeitApiController {
         OrderCreateParam orderCreateParam = MeitReqUtil.buildOrderParam(reqData);
         Object data = meitApiService.createOrder(orderCreateParam);
         result.setData(data);
+        log.info(result);
         return baseResponseTrans(result);
     }
 
@@ -223,6 +229,7 @@ public class MeitApiController {
         String orderId = reqData.getString("orderId");
         Object data = meitApiService.orderQueryResult(orderId);
         result.setData(data);
+        log.info(result);
         return baseResponseTrans(result);
     }
 
@@ -241,6 +248,7 @@ public class MeitApiController {
         String orderId = reqData.getString("orderId");
         Object data = meitApiService.cancelOrder(orderId);
         result.setData(data);
+        log.info(result);
         return baseResponseTrans(result);
     }
 
