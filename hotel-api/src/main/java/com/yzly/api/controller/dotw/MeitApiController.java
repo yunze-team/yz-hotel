@@ -79,7 +79,7 @@ public class MeitApiController {
      */
     private String baseResponseTrans(MeitResult meitResult) {
         try {
-            return AESUtilUsingCommonDecodec.decrypt(JSONObject.toJSONString(meitResult));
+            return AESUtilUsingCommonDecodec.encrypt(JSONObject.toJSONString(meitResult));
 //            return JSONObject.toJSONString(meitResult);
         } catch (Exception e) {
             log.error(e.getMessage());
