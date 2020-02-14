@@ -90,6 +90,10 @@ public class BookingService {
         List<RoomBookingInfo> rlist = new ArrayList<>();
         if (rateBaseJson.getString("@count").equals("1")) {
             JSONObject rateJson = rateBaseJson.getJSONObject("rateBasis");
+            // 判断价格中是否有changedOccupancy，有则过滤掉
+            if (StringUtils.isNotEmpty(rateJson.getString("changedOccupancy"))) {
+                return rlist;
+            }
             RoomBookingInfo room = getRoomBookingByJson(rateJson, roomTypeJson, hid, fromDate, toDate);
             // 需要改造判断方法，根据roomtype和fromdate和todate判断唯一，如果有值，更新此值
             RoomBookingInfo sroom = roomBookingInfoRepository.findByRoomTypeCodeAndFromDateAndToDate(room.getRoomTypeCode(), fromDate, toDate);
@@ -102,6 +106,10 @@ public class BookingService {
             JSONArray rateArrayJson = rateBaseJson.getJSONArray("rateBasis");
             for (int i = 0; i < rateArrayJson.size(); i++) {
                 JSONObject rateJson = rateArrayJson.getJSONObject(i);
+                // 判断价格中是否有changedOccupancy，有则过滤掉
+                if (StringUtils.isNotEmpty(rateJson.getString("changedOccupancy"))) {
+                    continue;
+                }
                 RoomBookingInfo room = getRoomBookingByJson(rateJson, roomTypeJson, hid, fromDate, toDate);
                 RoomBookingInfo sroom = roomBookingInfoRepository.findByRoomTypeCodeAndFromDateAndToDate(room.getRoomTypeCode(), fromDate, toDate);
                 if (sroom != null) {
