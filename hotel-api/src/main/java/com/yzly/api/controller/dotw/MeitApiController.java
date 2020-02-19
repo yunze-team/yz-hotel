@@ -62,7 +62,8 @@ public class MeitApiController {
             JSONObject req = JSON.parseObject(reqData);
             MeitResult res = MeitResultUtil.generateResult(ResultEnum.SUCCESS, null);
             res.setReqData(req);
-            return res;
+            res.setTraceId(traceId);
+            return meitApiService.addMeitRes(res);
         } catch (Exception e) {
             log.error(e.getMessage());
             return MeitResultUtil.generateResult(ResultEnum.FAIL, null);
@@ -78,6 +79,7 @@ public class MeitApiController {
         try {
             String result = JSONObject.toJSONString(meitResult);
             log.info(result);
+            meitApiService.addMeitRes(meitResult);
             return AESUtilUsingCommonDecodec.encrypt(result);
 //            return JSONObject.toJSONString(meitResult);
         } catch (Exception e) {

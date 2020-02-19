@@ -20,6 +20,7 @@ import com.yzly.core.repository.dotw.*;
 import com.yzly.core.repository.event.EventAttrRepository;
 import com.yzly.core.repository.meit.MeitCityRepository;
 import com.yzly.core.repository.meit.MeitOrderBookingInfoRepository;
+import com.yzly.core.repository.meit.MeitResultRepository;
 import com.yzly.core.repository.meit.MeitTraceLogRepository;
 import com.yzly.core.util.SnowflakeIdWorker;
 import lombok.extern.apachecommons.CommonsLog;
@@ -70,6 +71,8 @@ public class MeitService {
     private BookingOrderInfoRepository bookingOrderInfoRepository;
     @Autowired
     private CurrencyRepository currencyRepository;
+    @Autowired
+    private MeitResultRepository meitResultRepository;
 
     private static final String MEIT_ROOM_PRICE_RATE = "MEIT_ROOM_PRICE_RATE";
 
@@ -96,6 +99,25 @@ public class MeitService {
         meitTraceLog.setEncryptData(encyptData);
         meitTraceLog.setReqData(reqData);
         return meitTraceLogRepository.save(meitTraceLog);
+    }
+
+    /**
+     * 增加或修改美团结果返回日志
+     * @param meitResult
+     * @return
+     */
+    public MeitResult addOrUpdateRes(MeitResult meitResult) {
+        String req = "";
+        if (meitResult.getReqData() != null) {
+            req = meitResult.getReqData().toJSONString();
+        }
+        String resp = "";
+        if (meitResult.getData() != null) {
+            resp = JSONObject.toJSONString(meitResult.getData());
+        }
+        meitResult.setReq(req);
+        meitResult.setResp(resp);
+        return meitResultRepository.save(meitResult);
     }
 
     /**

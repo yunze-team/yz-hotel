@@ -309,6 +309,7 @@ public class DCMLHandler {
                 }
             }
             bookingDetails.addElement("productId").setText(hotelId);
+            // 这一块可做改动，需要缓存数据并提前查询
             String xmlResp = this.sendDotwString(doc);
             XMLSerializer xmlSerializer = new XMLSerializer();
             String resutStr = xmlSerializer.read(xmlResp).toString();

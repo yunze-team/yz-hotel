@@ -61,6 +61,15 @@ public class MeitApiService {
     }
 
     /**
+     * 添加美团调用结果日志
+     * @param meitResult
+     * @return
+     */
+    public MeitResult addMeitRes(MeitResult meitResult) {
+        return meitService.addOrUpdateRes(meitResult);
+    }
+
+    /**
      * 美团酒店同步方法
      * @param skip
      * @param limit
