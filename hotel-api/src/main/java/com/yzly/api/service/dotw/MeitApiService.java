@@ -89,7 +89,7 @@ public class MeitApiService {
             return null;
         }
         Map<String, List> data = new HashMap<>();
-        data.put("hotelExt", mlist);
+        data.put("hotelExts", mlist);
         return data;
     }
 

@@ -168,7 +168,10 @@ public class MeitService {
                     imgs.add(generateMeitImg(io));
                 }
             }
+            hotelExt.setHotelId(id);
             hotelExt.setImg(imgs);
+            MeitHotelExts hotelExts = new MeitHotelExts();
+            hotelExts.setHotelExt(hotelExt);
             mlist.add(hotelExt);
         }
         return mlist;
@@ -194,6 +197,8 @@ public class MeitService {
                 rtypeList.add(rtype);
             }
             hotelRoomTypeBasic.setRoomTypeBasics(rtypeList);
+            HotelRoomTypeBasics hotelRoomTypeBasics = new HotelRoomTypeBasics();
+            hotelRoomTypeBasics.setHotelRoomTypeBasic(hotelRoomTypeBasic);
             hlist.add(hotelRoomTypeBasic);
         }
         return hlist;

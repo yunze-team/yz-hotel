@@ -319,4 +319,21 @@ public class HotelInfoService {
         return hotelAdditionalInfoRepository.findOneByHotelId(hotelId);
     }
 
+    /**
+     * 通过酒店列表id判断酒店附属信息和房型信息本地缓存是否存在
+     * @param hotelIds
+     * @return
+     */
+    public Boolean judgeHotelAdditionalAndRoomType(List<String> hotelIds) {
+        boolean flag = false;
+        for (String id : hotelIds) {
+            HotelAdditionalInfo info = hotelAdditionalInfoRepository.findOneByHotelId(id);
+            List<RoomType> rlist = roomTypeRepository.findAllByHotelId(id);
+            if (info != null && rlist.size() > 0) {
+                flag = true;
+            }
+        }
+        return flag;
+    }
+
 }
