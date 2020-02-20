@@ -36,4 +36,6 @@ public class GoodsSearchQuery {
         this.childrenAges = childrenAges;
         this.currencyCode = currencyCode;
     }
+
+    public GoodsSearchQuery() {}
 }

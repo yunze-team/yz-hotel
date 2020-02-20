@@ -1,6 +1,7 @@
 package com.yzly.api.controller.dotw;
 
 import com.yzly.api.service.dotw.HotelInfoApiService;
+import com.yzly.api.service.dotw.TaskApiService;
 import com.yzly.core.domain.dotw.vo.RoomPriceExcelData;
 import com.yzly.core.service.dotw.RoomPriceService;
 import com.yzly.core.service.meit.TaskService;
@@ -38,6 +39,8 @@ public class TaskController {
     private RoomPriceService roomPriceService;
     @Autowired
     private CommonUtil commonUtil;
+    @Autowired
+    private TaskApiService taskApiService;
 
     /**
      * 拉取酒店信息和房型信息的定时方法
@@ -136,6 +139,27 @@ public class TaskController {
             }
             List<RoomPriceExcelData> rlist = roomPriceService.getAllPriceExcelData(days);
             commonUtil.generateRoomPriceExcel(rlist, days, excelFileName);
+        };
+        Thread thread = new Thread(runnable);
+        thread.start();
+        return "SUCCESS";
+    }
+
+    /**
+     * 根据hotel_sync_list中的数据，按照event_attr中的参数配置，拉取30天的价格，并缓存在mongodb中
+     * @return
+     */
+    @GetMapping("/sync_price_xml")
+    public Object syncRoomPriceXmlByDate() {
+        Runnable runnable = () -> {
+            try {
+                // 在重新拉取数据之前，清空30天价格表数据
+                taskService.delAllRoomPriceXml();
+                // 重新拉取30天价格数据
+                taskApiService.syncDotwRoomPrice();
+            } catch (Exception e) {
+                log.error(e.getMessage());
+            }
         };
         Thread thread = new Thread(runnable);
         thread.start();

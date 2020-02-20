@@ -36,8 +36,22 @@ public class BookingService {
         if (StringUtils.isEmpty(hid)) {
             hid = hotelJson.getString("@id");
         }
-        JSONObject roomJson = hotelJson.getJSONObject("rooms").getJSONObject("room");
+        JSONObject roomsJson = hotelJson.getJSONObject("rooms");
         List<RoomBookingInfo> result = new ArrayList<>();
+        if (roomsJson.getString("@count").equals("1")) {
+            JSONObject roomJson = roomsJson.getJSONObject("room");
+            result = this.generateRoomTypeByJSON(roomJson, result, hid, fromDate, toDate);
+        } else {
+            JSONArray roomsArrrayJson = roomsJson.getJSONArray("room");
+            for (int i = 0; i < roomsArrrayJson.size(); i++) {
+                JSONObject roomJson = roomsArrrayJson.getJSONObject(i);
+                result = this.generateRoomTypeByJSON(roomJson, result, hid, fromDate, toDate);
+            }
+        }
+        return result;
+    }
+
+    private List<RoomBookingInfo> generateRoomTypeByJSON(JSONObject roomJson, List<RoomBookingInfo> result, String hid, String fromDate, String toDate) {
         if (roomJson.getString("@count").equals("1")) {
             JSONObject roomTypeJson = roomJson.getJSONObject("roomType");
             List<RoomBookingInfo> rlist = getRoomBaseInfoByJson(roomTypeJson, hid, fromDate, toDate);

@@ -5,9 +5,11 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.yzly.api.util.XmlTool;
 import com.yzly.core.domain.dotw.BookingOrderInfo;
+import com.yzly.core.domain.dotw.HotelRoomPriceXml;
 import com.yzly.core.domain.dotw.vo.Passenger;
 import com.yzly.core.domain.meit.dto.GoodsSearchQuery;
 import com.yzly.core.service.dotw.CodeService;
+import com.yzly.core.service.meit.TaskService;
 import com.yzly.core.util.PasswordEncryption;
 import lombok.extern.apachecommons.CommonsLog;
 import net.sf.json.xml.XMLSerializer;
@@ -47,6 +49,8 @@ public class DCMLHandler {
 
     @Autowired
     private CodeService codeService;
+    @Autowired
+    private TaskService taskService;
 
     public Document generateBaseRequest() {
         Document doc = DocumentHelper.createDocument();
@@ -266,6 +270,59 @@ public class DCMLHandler {
     }
 
     /**
+     * 通过美团查询参数和酒店id获得房型价格数据
+     * @param hotelId
+     * @param goodsSearchQuery
+     * @return
+     */
+    public String getRoomsByMeitQueryWithHotelId(String hotelId, GoodsSearchQuery goodsSearchQuery) {
+        List<HotelRoomPriceXml> hlist = taskService.findPriceByQuery(goodsSearchQuery, hotelId);
+        if (hlist != null && hlist.size() > 0) {
+            return hlist.get(0).getXmlResp();
+        }
+        Document doc = generateBaseRequest();
+        Element customer = doc.getRootElement();
+        customer.addElement("product").setText("hotel");
+        Element request = customer.addElement("request");
+        request.addAttribute("command", "getrooms");
+        Element bookingDetails = request.addElement("bookingDetails");
+        bookingDetails.addElement("fromDate").setText(goodsSearchQuery.getCheckin());
+        bookingDetails.addElement("toDate").setText(goodsSearchQuery.getCheckout());
+        bookingDetails.addElement("currency").setText(codeService.getCurrencyCode(goodsSearchQuery.getCurrencyCode()));
+        String roomNum = goodsSearchQuery.getRoomNumber() == null ? "1" : String.valueOf(goodsSearchQuery.getRoomNumber());
+        Element rooms = bookingDetails.addElement("rooms").addAttribute("no", roomNum);
+        for (int i = 0; i < Integer.valueOf(roomNum); i++) {
+            Element room = rooms.addElement("room").addAttribute("runno", String.valueOf(i));
+            String adultsNum = goodsSearchQuery.getNumberOfAdults() == null ? "2" : String.valueOf(goodsSearchQuery.getNumberOfAdults());
+            room.addElement("adultsCode").setText(adultsNum);
+            String childrenNum = goodsSearchQuery.getNumberOfChildren() == null ? "0" : String.valueOf(goodsSearchQuery.getNumberOfChildren());
+            Element children = room.addElement("children").addAttribute("no", childrenNum);
+            if (!childrenNum.equals("0")) {
+                String[] childAges = goodsSearchQuery.getChildrenAges().split(",");
+                for (int j = 0; j < Integer.valueOf(childrenNum); j++) {
+                    children.addElement("child").addAttribute("runno", String.valueOf(j)).setText(childAges[j]);
+                }
+            }
+            room.addElement("rateBasis").setText("-1");
+            room.addElement("passengerNationality").setText("168");
+            room.addElement("passengerCountryOfResidence").setText("168");
+            // add room type selected by meit query
+            if (StringUtils.isNotEmpty(goodsSearchQuery.getRoomId()) && StringUtils.isNotEmpty(goodsSearchQuery.getRatePlanCode())) {
+                Element roomType = room.addElement("roomTypeSelected");
+                roomType.addElement("code").setText(goodsSearchQuery.getRoomId());
+                roomType.addElement("selectedRateBasis").setText("-1");
+                roomType.addElement("allocationDetails").setText(goodsSearchQuery.getRatePlanCode());
+            }
+        }
+        bookingDetails.addElement("productId").setText(hotelId);
+        // 这一块可做改动，需要缓存数据并提前查询
+        String xmlResp = this.sendDotwString(doc);
+        XMLSerializer xmlSerializer = new XMLSerializer();
+        String resutStr = xmlSerializer.read(xmlResp).toString();
+        return resutStr;
+    }
+
+    /**
      * 根据美团的产品搜索请求参数去dotw拉取价格数据
      * @param goodsSearchQuery
      * @return
@@ -274,45 +331,7 @@ public class DCMLHandler {
         List<JSONObject> jlist = new ArrayList<>();
         String[] hotelIds = goodsSearchQuery.getHotelIds().split(",");
         for (String hotelId : hotelIds) {
-            Document doc = generateBaseRequest();
-            Element customer = doc.getRootElement();
-            customer.addElement("product").setText("hotel");
-            Element request = customer.addElement("request");
-            request.addAttribute("command", "getrooms");
-            Element bookingDetails = request.addElement("bookingDetails");
-            bookingDetails.addElement("fromDate").setText(goodsSearchQuery.getCheckin());
-            bookingDetails.addElement("toDate").setText(goodsSearchQuery.getCheckout());
-            bookingDetails.addElement("currency").setText(codeService.getCurrencyCode(goodsSearchQuery.getCurrencyCode()));
-            String roomNum = goodsSearchQuery.getRoomNumber() == null ? "1" : String.valueOf(goodsSearchQuery.getRoomNumber());
-            Element rooms = bookingDetails.addElement("rooms").addAttribute("no", roomNum);
-            for (int i = 0; i < Integer.valueOf(roomNum); i++) {
-                Element room = rooms.addElement("room").addAttribute("runno", String.valueOf(i));
-                String adultsNum = goodsSearchQuery.getNumberOfAdults() == null ? "2" : String.valueOf(goodsSearchQuery.getNumberOfAdults());
-                room.addElement("adultsCode").setText(adultsNum);
-                String childrenNum = goodsSearchQuery.getNumberOfChildren() == null ? "0" : String.valueOf(goodsSearchQuery.getNumberOfChildren());
-                Element children = room.addElement("children").addAttribute("no", childrenNum);
-                if (!childrenNum.equals("0")) {
-                    String[] childAges = goodsSearchQuery.getChildrenAges().split(",");
-                    for (int j = 0; j < Integer.valueOf(childrenNum); j++) {
-                        children.addElement("child").addAttribute("runno", String.valueOf(j)).setText(childAges[j]);
-                    }
-                }
-                room.addElement("rateBasis").setText("-1");
-                room.addElement("passengerNationality").setText("168");
-                room.addElement("passengerCountryOfResidence").setText("168");
-                // add room type selected by meit query
-                if (StringUtils.isNotEmpty(goodsSearchQuery.getRoomId()) && StringUtils.isNotEmpty(goodsSearchQuery.getRatePlanCode())) {
-                    Element roomType = room.addElement("roomTypeSelected");
-                    roomType.addElement("code").setText(goodsSearchQuery.getRoomId());
-                    roomType.addElement("selectedRateBasis").setText("-1");
-                    roomType.addElement("allocationDetails").setText(goodsSearchQuery.getRatePlanCode());
-                }
-            }
-            bookingDetails.addElement("productId").setText(hotelId);
-            // 这一块可做改动，需要缓存数据并提前查询
-            String xmlResp = this.sendDotwString(doc);
-            XMLSerializer xmlSerializer = new XMLSerializer();
-            String resutStr = xmlSerializer.read(xmlResp).toString();
+            String resutStr = this.getRoomsByMeitQueryWithHotelId(hotelId, goodsSearchQuery);
             JSONObject res = JSON.parseObject(resutStr);
             jlist.add(res);
         }
@@ -335,39 +354,45 @@ public class DCMLHandler {
         bookingDetails.addElement("toDate").setText(orderInfo.getToDate());
         bookingDetails.addElement("currency").setText(orderInfo.getCurrency());
         bookingDetails.addElement("productId").setText(orderInfo.getHotelId());
-        Element rooms = bookingDetails.addElement("rooms").addAttribute("no", "1");
-        Element room = rooms.addElement("room").addAttribute("runno", "0");
-        room.addElement("roomTypeCode").setText(orderInfo.getRoomTypeCode());
-        room.addElement("selectedRateBasis").setText(orderInfo.getSelectedRateBasis());
-        room.addElement("allocationDetails").setText(orderInfo.getAllocationDetails());
-        room.addElement("adultsCode").setText(orderInfo.getActualAdults());
-        room.addElement("actualAdults").setText(orderInfo.getActualAdults());
-        Element children = room.addElement("children").addAttribute("no", orderInfo.getChildren());
-        Element actualChildren = room.addElement("actualChildren").addAttribute("no", orderInfo.getChildren());
-        if (!orderInfo.getChildren().equals("0")) {
-            for (int i = 0; i < Integer.valueOf(orderInfo.getChildren()); i++) {
-                String[] ages = orderInfo.getChildrenAges().split(",");
-                children.addElement("child").addAttribute("runno", String.valueOf(i)).setText(ages[i]);
-                actualChildren.addElement("actualChild").addAttribute("runno", String.valueOf(i)).setText(ages[i]);
+        Integer roomNum = orderInfo.getRoomNum();
+        Element rooms = bookingDetails.addElement("rooms").addAttribute("no", String.valueOf(roomNum));
+        String[] allocationDetails = orderInfo.getAllocationDetails().split(",");
+        for (int j = 0; j < roomNum; j++) {
+            Element room = rooms.addElement("room").addAttribute("runno", String.valueOf(j));
+            room.addElement("roomTypeCode").setText(orderInfo.getRoomTypeCode());
+            room.addElement("selectedRateBasis").setText(orderInfo.getSelectedRateBasis());
+            room.addElement("allocationDetails").setText(allocationDetails[j]);
+            room.addElement("adultsCode").setText(orderInfo.getActualAdults());
+            room.addElement("actualAdults").setText(orderInfo.getActualAdults());
+            Element children = room.addElement("children").addAttribute("no", orderInfo.getChildren());
+            Element actualChildren = room.addElement("actualChildren").addAttribute("no", orderInfo.getChildren());
+            if (!orderInfo.getChildren().equals("0")) {
+                for (int i = 0; i < Integer.valueOf(orderInfo.getChildren()); i++) {
+                    String[] ages = orderInfo.getChildrenAges().split(",");
+                    children.addElement("child").addAttribute("runno", String.valueOf(i)).setText(ages[i]);
+                    actualChildren.addElement("actualChild").addAttribute("runno", String.valueOf(i)).setText(ages[i]);
+                }
             }
-        }
-        room.addElement("extraBed").setText("0");
-        room.addElement("passengerNationality").setText("168");
-        room.addElement("passengerCountryOfResidence").setText("168");
-        Element passengersDetails = room.addElement("passengersDetails");
-        JSONArray passengerArray = JSONObject.parseArray(orderInfo.getPassengerInfos());
-        for (int i = 0; i < passengerArray.size(); i++) {
-            JSONObject passengerObject = passengerArray.getJSONObject(i);
-            Element passengerEl = passengersDetails.addElement("passenger");
-            if (i == 0) {
-                passengerEl.addAttribute("leading", "yes");
+            room.addElement("extraBed").setText("0");
+            room.addElement("passengerNationality").setText("168");
+            room.addElement("passengerCountryOfResidence").setText("168");
+            Element passengersDetails = room.addElement("passengersDetails");
+            JSONArray passengerArray = JSONObject.parseArray(orderInfo.getPassengerInfos());
+            for (int i = 0; i < passengerArray.size(); i++) {
+                JSONObject passengerObject = passengerArray.getJSONObject(i);
+                if (passengerObject.getInteger("roomSeq") == j) {
+                    Element passengerEl = passengersDetails.addElement("passenger");
+                    if (passengerObject.getInteger("seq") == 0) {
+                        passengerEl.addAttribute("leading", "yes");
+                    }
+                    passengerEl.addElement("salutation").setText(passengerObject.getString("salutationCode"));
+                    passengerEl.addElement("firstName").setText(passengerObject.getString("firstName"));
+                    passengerEl.addElement("lastName").setText(passengerObject.getString("lastName"));
+                }
             }
-            passengerEl.addElement("salutation").setText(passengerObject.getString("salutationCode"));
-            passengerEl.addElement("firstName").setText(passengerObject.getString("firstName"));
-            passengerEl.addElement("lastName").setText(passengerObject.getString("lastName"));
+            room.addElement("specialRequests").addAttribute("count", "0");
+            room.addElement("beddingPreference").setText("0");
         }
-        room.addElement("specialRequests").addAttribute("count", "0");
-        room.addElement("beddingPreference").setText("0");
         String xmlResp = this.sendDotwString(doc);
         XMLSerializer xmlSerializer = new XMLSerializer();
         String resutStr = xmlSerializer.read(xmlResp).toString();
@@ -446,6 +471,32 @@ public class DCMLHandler {
         Document doc = generateBaseRequest();
         Element customer = doc.getRootElement();
         customer.addElement("request").addAttribute("command", "getsalutationsids");
+        String xmlResp = this.sendDotwString(doc);
+        XMLSerializer xmlSerializer = new XMLSerializer();
+        String resutStr = xmlSerializer.read(xmlResp).toString();
+        return JSON.parseObject(resutStr);
+    }
+
+    /**
+     * 取消订单的测试方法
+     * @param bookingCode
+     * @param penaltyApplied
+     * @param isConfirm
+     * @return
+     */
+    public JSONObject testCancelBooking(String bookingCode, String penaltyApplied, String isConfirm) {
+        Document doc = generateBaseRequest();
+        Element customer = doc.getRootElement();
+        Element request = customer.addElement("request").addAttribute("command", "cancelbooking");
+        Element bookingDetails = request.addElement("bookingDetails");
+        bookingDetails.addElement("bookingType").setText("1");
+        bookingDetails.addElement("bookingCode").setText(bookingCode);
+        bookingDetails.addElement("confirm").setText(isConfirm);
+        if (isConfirm.equals("yes")) {
+            Element testPricesAndAllocation = bookingDetails.addElement("testPricesAndAllocation");
+            Element service = testPricesAndAllocation.addElement("service").addAttribute("referencenumber", bookingCode);
+            service.addElement("penaltyApplied").setText(penaltyApplied);
+        }
         String xmlResp = this.sendDotwString(doc);
         XMLSerializer xmlSerializer = new XMLSerializer();
         String resutStr = xmlSerializer.read(xmlResp).toString();

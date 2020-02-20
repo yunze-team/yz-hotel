@@ -355,7 +355,7 @@ public class MeitService {
         DayInfo dayInfo = new DayInfo();
         BigDecimal basePrice = new BigDecimal(date.getJSONObject("price").getString("#text"));
         BigDecimal finalPrice = basePrice.multiply(new BigDecimal(100)).multiply(new BigDecimal(1 + priceRate));
-        dayInfo.setRoomPrice(finalPrice.setScale(0, RoundingMode.HALF_UP).intValue());
+        dayInfo.setBasePrice(finalPrice.setScale(0, RoundingMode.HALF_UP).intValue());
         dayInfo.setDate(date.getString("@datetime"));
         dayInfo.setStatus(1);
         dayInfo.setCounts(1);
@@ -438,6 +438,8 @@ public class MeitService {
             Passenger passenger = new Passenger(salutaionCode,
                     guestArray.getJSONObject(i).getString("firstName"),
                     guestArray.getJSONObject(i).getString("lastName"));
+            passenger.setRoomSeq(Integer.valueOf(guestArray.getJSONObject(i).getString("roomSeq")));
+            passenger.setSeq(Integer.valueOf(guestArray.getJSONObject(i).getString("seq")));
             plist.add(passenger);
         }
         BookingOrderInfo bookingOrderInfo = bookingOrderInfoRepository.findByAllocationDetails(allocationDetails);
@@ -462,6 +464,7 @@ public class MeitService {
         bookingOrderInfo.setPassengerInfos(JSONObject.toJSONString(plist));
         bookingOrderInfo.setCurrency(currencyRepository.findByName(meitOrder.getCurrencyCode()).getCode());
         bookingOrderInfo.setOrderStatus(OrderStatus.SAVED);
+        bookingOrderInfo.setRoomNum(meitOrder.getRoomNum());
         return bookingOrderInfoRepository.save(bookingOrderInfo);
     }
 

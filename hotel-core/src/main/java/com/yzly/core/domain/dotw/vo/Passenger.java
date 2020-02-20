@@ -13,6 +13,8 @@ public class Passenger {
     private String salutationCode;
     private String firstName;
     private String lastName;
+    private Integer roomSeq;
+    private Integer seq;
 
     public Passenger(String salutationCode, String firstName, String lastName) {
         this.salutationCode = salutationCode;

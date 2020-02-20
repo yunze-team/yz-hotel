@@ -29,4 +29,7 @@ public interface TaskControllerInter {
     @GetMapping("/api/task/room_price_excel")
     String generateRoomPriceExcel();
 
+    @GetMapping("/api/task/sync_price_xml")
+    String syncRoomPriceXmlByDate();
+
 }

@@ -142,4 +142,7 @@ public class BookingOrderInfo {
     @Transient
     private List<Passenger> passengerList;
 
+    @Column
+    private Integer roomNum;// 预定房间数量
+
 }

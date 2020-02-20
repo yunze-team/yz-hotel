@@ -3,14 +3,27 @@ package com.yzly.core.service.meit;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.yzly.core.domain.HotelManualSyncList;
+import com.yzly.core.domain.HotelSyncList;
+import com.yzly.core.domain.dotw.HotelRoomPriceXml;
 import com.yzly.core.domain.dotw.RoomPriceByDate;
+import com.yzly.core.domain.event.EventAttr;
+import com.yzly.core.domain.meit.dto.GoodsSearchQuery;
 import com.yzly.core.repository.HotelManualSyncListRepository;
+import com.yzly.core.repository.HotelSyncListRepository;
+import com.yzly.core.repository.dotw.HotelRoomPriceXmlRepository;
 import com.yzly.core.repository.dotw.RateBasisRepository;
 import com.yzly.core.repository.dotw.RoomPriceByDateRepository;
+import com.yzly.core.repository.event.EventAttrRepository;
 import lombok.extern.apachecommons.CommonsLog;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.ExampleMatcher;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -28,6 +41,14 @@ public class TaskService {
     private RoomPriceByDateRepository roomPriceByDateRepository;
     @Autowired
     private RateBasisRepository rateBasisRepository;
+    @Autowired
+    private HotelRoomPriceXmlRepository hotelRoomPriceXmlRepository;
+    @Autowired
+    private EventAttrRepository eventAttrRepository;
+    @Autowired
+    private HotelSyncListRepository hotelSyncListRepository;
+
+    private static final String MEIT_ROOM_PRICE_PULL_SIZE = "MEIT_ROOM_PRICE_PULL_SIZE";
 
     /**
      * 获得所有的需要手工同步的酒店ids
@@ -127,6 +148,82 @@ public class TaskService {
      */
     public void delAllRoomPrice() {
         roomPriceByDateRepository.deleteAllInBatch();
+    }
+
+    /**
+     * 组装price实体参数
+     * @param resp
+     * @param goodsSearchQuery
+     * @param hotelId
+     * @return
+     */
+    private HotelRoomPriceXml generatePriceXmlByGoodsSearchQuery(String resp, GoodsSearchQuery goodsSearchQuery, String hotelId) {
+        HotelRoomPriceXml hotelRoomPriceXml = new HotelRoomPriceXml();
+        hotelRoomPriceXml.setHotelId(hotelId);
+        hotelRoomPriceXml.setFromDate(goodsSearchQuery.getCheckin());
+        hotelRoomPriceXml.setToDate(goodsSearchQuery.getCheckout());
+        hotelRoomPriceXml.setCurrency(goodsSearchQuery.getCurrencyCode());
+        hotelRoomPriceXml.setNumberOfAdults(goodsSearchQuery.getNumberOfAdults() == null ? "2" : String.valueOf(goodsSearchQuery.getNumberOfAdults()));
+        hotelRoomPriceXml.setRoomNumber(goodsSearchQuery.getRoomNumber() == null ? "1" : String.valueOf(goodsSearchQuery.getRoomNumber()));
+        String childrenNum = goodsSearchQuery.getNumberOfChildren() == null ? "0" : String.valueOf(goodsSearchQuery.getNumberOfChildren());
+        hotelRoomPriceXml.setNumberOfChildren(childrenNum);
+        if (!childrenNum.equals("0")) {
+            hotelRoomPriceXml.setChildrenAges(goodsSearchQuery.getChildrenAges());
+        }
+        if (StringUtils.isNotEmpty(resp)) {
+            hotelRoomPriceXml.setXmlResp(resp);
+        }
+        return hotelRoomPriceXml;
+    }
+
+    /**
+     * 通过美团查询参数和dotw返回xml结果来保存房型价格数据
+     * @param resp
+     * @param goodsSearchQuery
+     * @param hotelId
+     * @return
+     */
+    public HotelRoomPriceXml addRoomPrice(String resp, GoodsSearchQuery goodsSearchQuery, String hotelId) {
+        HotelRoomPriceXml hotelRoomPriceXml = this.generatePriceXmlByGoodsSearchQuery(resp, goodsSearchQuery, hotelId);
+        return hotelRoomPriceXmlRepository.insert(hotelRoomPriceXml);
+    }
+
+    /**
+     * 通过参数查询price实体
+     * @param goodsSearchQuery
+     * @param hotelId
+     * @return
+     */
+    public List<HotelRoomPriceXml> findPriceByQuery(GoodsSearchQuery goodsSearchQuery, String hotelId) {
+        HotelRoomPriceXml hotelRoomPriceXml = this.generatePriceXmlByGoodsSearchQuery(null, goodsSearchQuery, hotelId);
+        ExampleMatcher exampleMatcher = ExampleMatcher.matching()
+                .withIgnorePaths("id", "xmlResp")
+                .withIgnoreCase().withIgnoreNullValues();
+        Example<HotelRoomPriceXml> priceXmlExample = Example.of(hotelRoomPriceXml, exampleMatcher);
+        return hotelRoomPriceXmlRepository.findAll(priceXmlExample);
+    }
+
+    /**
+     * 通过配置表的数量配置，获得酒店同步列表的酒店ids
+     * @return
+     */
+    public List<String> findSyncHotelIdsByAttr() {
+        EventAttr attr = eventAttrRepository.findByEventType(MEIT_ROOM_PRICE_PULL_SIZE);
+        Integer pullSize = Integer.valueOf(attr.getEventValue());
+        Page<HotelSyncList> hpage = hotelSyncListRepository.findAll(new PageRequest(0, pullSize));
+        List<HotelSyncList> hlist = hpage.getContent();
+        List<String> ids = new ArrayList<>();
+        for (HotelSyncList h : hlist) {
+            ids.add(h.getHotelId());
+        }
+        return ids;
+    }
+
+    /**
+     * 删除所有的房型价格数据
+     */
+    public void delAllRoomPriceXml() {
+        hotelRoomPriceXmlRepository.deleteAll();
     }
 
 }

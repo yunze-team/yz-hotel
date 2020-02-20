@@ -114,4 +114,19 @@ public class TestController {
         return result;
     }
 
+    @PostMapping("/cancel")
+    public Object cancel(@RequestBody String json) {
+        JSONObject req = JSON.parseObject(json);
+        String bookingCode = req.getString("bookingCode");
+        String penaltyApplied = req.getString("penaltyApplied");
+        return dcmlHandler.testCancelBooking(bookingCode, penaltyApplied, "yes");
+    }
+
+    @PostMapping("/precancel")
+    public Object precancel(@RequestBody String json) {
+        JSONObject req = JSON.parseObject(json);
+        String bookingCode = req.getString("bookingCode");
+        return dcmlHandler.testCancelBooking(bookingCode, null, "no");
+    }
+
 }
