@@ -342,9 +342,9 @@ public class MeitService {
                     }
                     DateTime hotelCheckIn = DateTime.parse(roomBookingInfo.getFromDate() + " " + room.getCheckInTime(), DateTimeFormat.forPattern("yyyy-MM-dd HH:mm"));
                     if (StringUtils.isNotEmpty(rule.getString("fromDate"))) {
-                        DateTime fromDate = DateTime.parse(rule.getString("fromDate"), DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss")).minusDays(2);
-                        if (fromDate.isBefore(System.currentTimeMillis())) {
-                            refundRule.setMaxHoursBeforeCheckIn(null);
+                        DateTime fromDate = DateTime.parse(rule.getString("fromDate"), DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss")).minusDays(2).minusSeconds(1);
+                        if (i == 0 && fromDate.isBefore(System.currentTimeMillis())) {
+                            refundRule.setFromDate(null);
                         } else {
                             refundRule.setFromDate(fromDate.toString("yyyy-MM-dd HH:mm:ss"));
                             long diff = hotelCheckIn.getMillis() - fromDate.getMillis();

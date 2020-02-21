@@ -13,7 +13,7 @@ import java.util.List;
 public class HotelMap {
 
     private String currencyCode;// 币种，默认"CNY"
-    private List<Rooms> rooms;// 产品数据数组
+    private List<Room> rooms;// 产品数据数组
     private String timeZone;// 时区
 
 }

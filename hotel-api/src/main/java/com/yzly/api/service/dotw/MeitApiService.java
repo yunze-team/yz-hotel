@@ -155,14 +155,14 @@ public class MeitApiService {
                 List<RoomBookingInfo> rlist = bookingService.addRoomBookingByGetRoomsJson(jsonObject, hotelId, goodsSearchQuery.getCheckin(), goodsSearchQuery.getCheckout());
                 HotelMap hotelMap = new HotelMap();
                 hotelMap.setCurrencyCode(jsonObject.getString("currencyShort"));
-                List<Rooms> roomList = new ArrayList<>();
+                List<Room> roomList = new ArrayList<>();
                 HotelAdditionalInfo hotelAdditionalInfo = hotelInfoService.findOneById(hotelId);
                 for (RoomBookingInfo roomBookingInfo : rlist) {
                     Room room = meitService.assemblyMeitRoom(roomBookingInfo);
                     Rooms rooms = new Rooms();
                     rooms.setRoom(room);
                     // 组装进入房型列表数组
-                    roomList.add(rooms);
+                    roomList.add(room);
                 }
                 hotelMap.setRooms(roomList);
                 // 封装返回结果集

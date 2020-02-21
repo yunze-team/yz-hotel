@@ -1,5 +1,7 @@
 package com.yzly.core.domain.meit.dto;
 
+import com.alibaba.fastjson.annotation.JSONField;
+import com.alibaba.fastjson.serializer.SerializerFeature;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -16,9 +18,15 @@ public class RefundRule {
     private Integer percent;// 罚金比例
     private Integer nights;// 罚扣晚数
     private String refundDesc;// 退订规则描述
+
+    @JSONField(serialzeFeatures = SerializerFeature.WriteMapNullValue)
     private Integer maxHoursBeforeCheckIn;// 退订规则开始时间
     private Integer minHoursBeforeCheckIn;// 退订规则结束时间
+
+    @JSONField(serialize = false)
     private String fromDate;
+
+    @JSONField(serialize = false)
     private String toDate;
 
 }
