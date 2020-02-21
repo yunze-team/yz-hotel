@@ -319,6 +319,9 @@ public class DCMLHandler {
         String xmlResp = this.sendDotwString(doc);
         XMLSerializer xmlSerializer = new XMLSerializer();
         String resutStr = xmlSerializer.read(xmlResp).toString();
+        if (hlist.size() == 0) {
+            taskService.addRoomPrice(resutStr, goodsSearchQuery, hotelId);
+        }
         return resutStr;
     }
 

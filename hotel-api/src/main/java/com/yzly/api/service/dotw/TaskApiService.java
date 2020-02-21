@@ -45,7 +45,8 @@ public class TaskApiService {
             for (String hotelId : hotelIds) {
                 String resp = dcmlHandler.getRoomsByMeitQueryWithHotelId(hotelId, goodsSearchQuery);
                 log.info(resp);
-                taskService.addRoomPrice(resp, goodsSearchQuery, hotelId);
+                // 不需额外加入添加，在dcml中集成
+                //taskService.addRoomPrice(resp, goodsSearchQuery, hotelId);
             }
         }
     }

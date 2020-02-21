@@ -319,27 +319,54 @@ public class MeitService {
             refundRules.add(refundRule);
         } else {
             JSONArray cancelArray = cancellationRules.getJSONArray("rule");
-            for (int i = 0; i < cancelArray.size() - 1; i++) {
+            for (int i = 0; i < cancelArray.size(); i++) {
                 JSONObject rule = cancelArray.getJSONObject(i);
+                if (rule.getString("noShowPolicy") != null) {
+                    continue;
+                }
                 RefundRule refundRule = new RefundRule();
                 try {
-                    refundRule.setReturnable(true);
-                    refundRule.setRefundType(1);
+                    if (rule.getString("cancelRestricted") != null) {
+                        refundRule.setReturnable(false);
+                    } else {
+                        BigDecimal cancelCharge = new BigDecimal(rule.getJSONObject("cancelCharge").getString("#text"));
+                        if (cancelCharge.compareTo(new BigDecimal(0)) > 0) {
+                            refundRule.setReturnable(true);
+                            refundRule.setRefundType(1);
+                            refundRule.setFine(cancelCharge
+                                    .multiply(new BigDecimal(100)).setScale(0, RoundingMode.HALF_UP).intValue());
+                        } else {
+                            refundRule.setReturnable(true);
+                            refundRule.setRefundType(0);
+                        }
+                    }
                     DateTime hotelCheckIn = DateTime.parse(roomBookingInfo.getFromDate() + " " + room.getCheckInTime(), DateTimeFormat.forPattern("yyyy-MM-dd HH:mm"));
                     if (StringUtils.isNotEmpty(rule.getString("fromDate"))) {
-                        DateTime fromDate = DateTime.parse(rule.getString("fromDate"), DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss"));
-                        refundRule.setFromDate(fromDate.minusDays(2).toString("yyyy-MM-dd HH:mm:ss"));
-                        long maxCheckInTime = (hotelCheckIn.getMillis() - fromDate.getMillis()) % (1000 * 60 * 60 * 24) / (1000 * 60 * 60);
-                        Integer maxCheckIn = maxCheckInTime > 0 ? Integer.valueOf(String.valueOf(maxCheckInTime)) : 0;
-                        refundRule.setMaxHoursBeforeCheckIn(maxCheckIn);
+                        DateTime fromDate = DateTime.parse(rule.getString("fromDate"), DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss")).minusDays(2);
+                        if (fromDate.isBefore(System.currentTimeMillis())) {
+                            refundRule.setMaxHoursBeforeCheckIn(null);
+                        } else {
+                            refundRule.setFromDate(fromDate.toString("yyyy-MM-dd HH:mm:ss"));
+                            long diff = hotelCheckIn.getMillis() - fromDate.getMillis();
+                            long days = diff / (1000 * 24 * 60 * 60);
+                            long maxCheckInTime = (diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60) + days * 24;
+                            Integer maxCheckIn = maxCheckInTime > 0 ? Integer.valueOf(String.valueOf(maxCheckInTime)) : 0;
+                            refundRule.setMaxHoursBeforeCheckIn(maxCheckIn);
+                        }
+                    } else {
+                        refundRule.setMaxHoursBeforeCheckIn(null);
                     }
-                    DateTime toDate = DateTime.parse(rule.getString("toDate"), DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss"));
-                    refundRule.setToDate(toDate.minusDays(2).toString("yyyy-MM-dd HH:mm:ss"));
-                    long minCheckInTime = (hotelCheckIn.getMillis() - toDate.getMillis()) % (1000 * 60 * 60 * 24) / (1000 * 60 * 60);
-                    Integer minCheckIn = minCheckInTime > 0 ? Integer.valueOf(String.valueOf(minCheckInTime)) : 0;
-                    refundRule.setMinHoursBeforeCheckIn(minCheckIn);
-                    refundRule.setFine(new BigDecimal(rule.getJSONObject("cancelCharge").getString("#text"))
-                            .multiply(new BigDecimal(100)).setScale(0, RoundingMode.HALF_UP).intValue());
+                    if (StringUtils.isNotEmpty(rule.getString("toDate"))) {
+                        DateTime toDate = DateTime.parse(rule.getString("toDate"), DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss")).minusDays(2);
+                        refundRule.setToDate(toDate.toString("yyyy-MM-dd HH:mm:ss"));
+                        long diff = hotelCheckIn.getMillis() - toDate.getMillis();
+                        long days = diff / (1000 * 24 * 60 * 60);
+                        long minCheckInTime = (diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60) + days * 24;
+                        Integer minCheckIn = minCheckInTime > 0 ? Integer.valueOf(String.valueOf(minCheckInTime)) : 0;
+                        refundRule.setMinHoursBeforeCheckIn(minCheckIn);
+                    } else {
+                        refundRule.setMinHoursBeforeCheckIn(0);
+                    }
                 } catch (Exception e) {
                     log.error(e.getMessage());
                     refundRule.setReturnable(false);
