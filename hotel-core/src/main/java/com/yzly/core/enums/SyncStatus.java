@@ -9,5 +9,6 @@ package com.yzly.core.enums;
 public enum SyncStatus {
     UNSYNC,
     SYNCED,
-    RESYNC
+    RESYNC,
+    AVAILABLE
 }

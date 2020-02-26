@@ -134,6 +134,7 @@ public class MeitService {
             if (distributor != null) {
                 list.add(criteriaBuilder.equal(root.get("distributor").as(DistributorEnum.class), distributor));
             }
+            list.add(criteriaBuilder.equal(root.get("syncStatus").as(SyncStatus.class), SyncStatus.AVAILABLE));
             Predicate[] p = new Predicate[list.size()];
             return criteriaBuilder.and(list.toArray(p));
         }, pageable);
@@ -158,8 +159,9 @@ public class MeitService {
             mh.setLatitude(hotelInfo.getLatitude());
             mh.setRegionType(2);
             mlist.add(mh);
-            hs.setSyncStatus(SyncStatus.SYNCED);
-            hotelSyncListRepository.save(hs);
+            // 注释同步完成后修改状态的方法，不需修改状态
+//            hs.setSyncStatus(SyncStatus.SYNCED);
+//            hotelSyncListRepository.save(hs);
         }
         return mlist;
     }

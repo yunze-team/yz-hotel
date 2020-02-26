@@ -8,6 +8,8 @@ import com.yzly.core.domain.dotw.HotelRoomPriceXml;
 import com.yzly.core.domain.dotw.RoomPriceByDate;
 import com.yzly.core.domain.event.EventAttr;
 import com.yzly.core.domain.meit.dto.GoodsSearchQuery;
+import com.yzly.core.enums.DistributorEnum;
+import com.yzly.core.enums.SyncStatus;
 import com.yzly.core.repository.HotelManualSyncListRepository;
 import com.yzly.core.repository.HotelSyncListRepository;
 import com.yzly.core.repository.dotw.HotelRoomPriceXmlRepository;
@@ -17,12 +19,10 @@ import com.yzly.core.repository.event.EventAttrRepository;
 import lombok.extern.apachecommons.CommonsLog;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Example;
-import org.springframework.data.domain.ExampleMatcher;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.criteria.Predicate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -210,7 +210,14 @@ public class TaskService {
     public List<String> findSyncHotelIdsByAttr() {
         EventAttr attr = eventAttrRepository.findByEventType(MEIT_ROOM_PRICE_PULL_SIZE);
         Integer pullSize = Integer.valueOf(attr.getEventValue());
-        Page<HotelSyncList> hpage = hotelSyncListRepository.findAll(new PageRequest(0, pullSize));
+        Pageable pageable = new PageRequest(0, pullSize);
+        Page<HotelSyncList> hpage = hotelSyncListRepository.findAll((root, criteriaQuery, criteriaBuilder) -> {
+            List<Predicate> list = new ArrayList<>();
+            list.add(criteriaBuilder.equal(root.get("distributor").as(DistributorEnum.class), DistributorEnum.MEIT));
+            list.add(criteriaBuilder.equal(root.get("syncStatus").as(SyncStatus.class), SyncStatus.AVAILABLE));
+            Predicate[] p = new Predicate[list.size()];
+            return criteriaBuilder.and(list.toArray(p));
+        }, pageable);
         List<HotelSyncList> hlist = hpage.getContent();
         List<String> ids = new ArrayList<>();
         for (HotelSyncList h : hlist) {
