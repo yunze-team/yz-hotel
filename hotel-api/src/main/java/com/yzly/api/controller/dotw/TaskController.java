@@ -24,7 +24,7 @@ import java.util.List;
  * @desc
  **/
 @RestController
-@RequestMapping(value = "/task")
+@RequestMapping(value = "/api/task")
 @CommonsLog
 public class TaskController {
 

@@ -2,6 +2,7 @@ package com.yzly.api.controller.dotw;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.netflix.ribbon.proxy.annotation.Http;
 import com.yzly.api.common.DCMLHandler;
 import com.yzly.api.service.dotw.MeitApiService;
 import com.yzly.api.util.meit.MeitResultUtil;
@@ -19,6 +20,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -27,7 +30,7 @@ import java.util.List;
  * @desc
  **/
 @RestController
-@RequestMapping("/meit")
+@RequestMapping("/api/meit")
 @CommonsLog
 public class MeitApiController {
 
@@ -40,14 +43,36 @@ public class MeitApiController {
     private DCMLHandler dcmlHandler;
 
     /**
-     * 基础请求传递方法，负责将美团请求进行认证，并解密数据，记录日志
+     * 从request中获取body 通过getReader()获取
+     * @author syx
      * @param request
-     * @return
-     * @throws Exception
      */
-    private MeitResult baseRequestTrans(HttpServletRequest request) {
-        String encyptData = request.getParameter("param");
+    private String getBodyStringByReader(HttpServletRequest request){
+        BufferedReader bufferedReader = null;
+        StringBuilder sb = new StringBuilder();
+        try {
+            bufferedReader = request.getReader();
+            String line = "";
+            while ((line = bufferedReader.readLine()) != null) {
+                sb.append(line);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }finally {
+            if (bufferedReader!= null){
+                try {
+                    bufferedReader.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return sb.toString();
+    }
+
+    private MeitResult generateByRequest(HttpServletRequest request, String encyptData) {
         String traceId = request.getHeader("Request-Trace");
+        log.info("request traceId:" + traceId);
         MeitTraceLog traceLog = meitApiService.addTraceLog(traceId, encyptData, null, null);
         log.info("traceLog: " + JSONObject.toJSONString(traceLog));
         ResultEnum resultEnum = new AuthValidatorUtil().validate(request, secret);
@@ -56,6 +81,7 @@ public class MeitApiController {
         }
         try {
             String reqData = AESUtilUsingCommonDecodec.decrypt(encyptData);
+            log.info("meit req data:" + reqData);
 //            String reqData = encyptData;
             // 更新美团调用日志的解密数据
             meitApiService.addTraceLog(traceId, encyptData, reqData, traceLog);
@@ -68,6 +94,25 @@ public class MeitApiController {
             log.error(e.getMessage());
             return MeitResultUtil.generateResult(ResultEnum.FAIL, null);
         }
+    }
+
+    private MeitResult postRequestTrans(HttpServletRequest request) {
+        String body = this.getBodyStringByReader(request);
+        log.info("request body:" + body);
+        return this.generateByRequest(request, body);
+    }
+
+    /**
+     * 基础请求传递方法，负责将美团请求进行认证，并解密数据，记录日志
+     * @param request
+     * @return
+     * @throws Exception
+     */
+    private MeitResult baseRequestTrans(HttpServletRequest request) {
+        log.info("request paramter names:" + JSONObject.toJSONString(request.getParameterNames()));
+        String encyptData = request.getParameter("param");
+        log.info("request encyptData:" + encyptData);
+        return this.generateByRequest(request, encyptData);
     }
 
     /**
@@ -224,7 +269,7 @@ public class MeitApiController {
      */
     @PostMapping("/order_create")
     public Object orderCreate(HttpServletRequest request) {
-        MeitResult result = baseRequestTrans(request);
+        MeitResult result = postRequestTrans(request);
         if (!result.getSuccess()) {
             return baseResponseTrans(result);
         }
@@ -243,7 +288,7 @@ public class MeitApiController {
      */
     @PostMapping("/order_query")
     public Object orderQuery(HttpServletRequest request) {
-        MeitResult result = baseRequestTrans(request);
+        MeitResult result = postRequestTrans(request);
         if (!result.getSuccess()) {
             return baseResponseTrans(result);
         }
@@ -262,7 +307,7 @@ public class MeitApiController {
      */
     @PostMapping("/order_cancel")
     public Object orderCancel(HttpServletRequest request) {
-        MeitResult result = baseRequestTrans(request);
+        MeitResult result = postRequestTrans(request);
         if (!result.getSuccess()) {
             return baseResponseTrans(result);
         }

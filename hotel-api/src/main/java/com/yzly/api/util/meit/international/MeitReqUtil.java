@@ -59,14 +59,16 @@ public class MeitReqUtil {
         orderCreateParam.setOrderInfo(orderInfo);
         CreditCard creditCard = new CreditCard();
         JSONObject creditObject = reqData.getJSONObject("creditCard");
-        creditCard.setCreditCardNumber(creditObject.getString("creditCardNumber"));
-        creditCard.setHolderName(creditObject.getString("holderName"));
-        creditCard.setExpire(creditObject.getString("expire"));
-        creditCard.setCreditCardIdentifier(creditObject.getString("creditCardIdentifier"));
-        creditCard.setValidFrom(creditObject.getString("validFrom"));
-        creditCard.setValidTo(creditObject.getString("validTo"));
-        creditCard.setTimeZone(creditObject.getString("timeZone"));
-        orderCreateParam.setCreditCard(creditCard);
+        if (creditObject != null) {
+            creditCard.setCreditCardNumber(creditObject.getString("creditCardNumber"));
+            creditCard.setHolderName(creditObject.getString("holderName"));
+            creditCard.setExpire(creditObject.getString("expire"));
+            creditCard.setCreditCardIdentifier(creditObject.getString("creditCardIdentifier"));
+            creditCard.setValidFrom(creditObject.getString("validFrom"));
+            creditCard.setValidTo(creditObject.getString("validTo"));
+            creditCard.setTimeZone(creditObject.getString("timeZone"));
+            orderCreateParam.setCreditCard(creditCard);
+        }
         return orderCreateParam;
     }
 

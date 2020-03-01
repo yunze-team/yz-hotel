@@ -28,7 +28,7 @@ import java.util.List;
  * @desc
  **/
 @RestController
-@RequestMapping(value = "/test")
+@RequestMapping(value = "/api/test")
 @CommonsLog
 public class TestController {
     @Autowired

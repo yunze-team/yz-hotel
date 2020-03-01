@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @desc
  **/
 @RestController
-@RequestMapping(value = "/sys")
+@RequestMapping(value = "/api/sys")
 public class SystemController {
 
     @Autowired

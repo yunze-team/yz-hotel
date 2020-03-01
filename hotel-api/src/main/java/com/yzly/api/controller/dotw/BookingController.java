@@ -15,7 +15,7 @@ import java.util.Map;
  * @desc
  **/
 @RestController
-@RequestMapping("/booking")
+@RequestMapping("/api/booking")
 @CommonsLog
 public class BookingController {
 

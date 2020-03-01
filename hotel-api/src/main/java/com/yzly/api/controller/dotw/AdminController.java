@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @desc
  **/
 @RestController
-@RequestMapping("/admin")
+@RequestMapping("/api/admin")
 @CommonsLog
 public class AdminController {
 

@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @descw
  **/
 @RestController
-@RequestMapping(value = "/hotel")
+@RequestMapping(value = "/api/hotel")
 @CommonsLog
 public class HotelController {
 
