@@ -455,14 +455,18 @@ public class MeitService {
         for (int i = 0; i < guestArray.size(); i++) {
             String salutaionCode;
             String gender = guestArray.getJSONObject(i).getString("gender");
-            if (gender.toLowerCase().equals("male")) {
+            if (StringUtils.isEmpty(gender)) {
                 salutaionCode = "1328";
-            } else if (gender.toLowerCase().equals("female")) {
-                salutaionCode = "15134";
-            } else if (gender.toLowerCase().equals("child")) {
-                salutaionCode = "14632";
             } else {
-                salutaionCode = "3801";
+                if (gender.toLowerCase().equals("male")) {
+                    salutaionCode = "1328";
+                } else if (gender.toLowerCase().equals("female")) {
+                    salutaionCode = "15134";
+                } else if (gender.toLowerCase().equals("child")) {
+                    salutaionCode = "14632";
+                } else {
+                    salutaionCode = "3801";
+                }
             }
             Passenger passenger = new Passenger(salutaionCode,
                     guestArray.getJSONObject(i).getString("firstName"),
