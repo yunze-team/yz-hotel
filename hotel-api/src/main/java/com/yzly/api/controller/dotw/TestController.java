@@ -101,6 +101,19 @@ public class TestController {
         return result;
     }
 
+    @PostMapping("/order_cancel")
+    public Object orderCancel(@RequestBody String json) {
+        MeitResult result = baseRequestTrans(json);
+        if (!result.getSuccess()) {
+            return result;
+        }
+        JSONObject reqData = result.getReqData();
+        String orderId = reqData.getString("orderId");
+        Object data = meitApiService.cancelOrder(orderId);
+        result.setData(data);
+        return result;
+    }
+
     @PostMapping("/hotel_extend")
     public Object hotelExtend(@RequestBody String json) {
         MeitResult result = baseRequestTrans(json);

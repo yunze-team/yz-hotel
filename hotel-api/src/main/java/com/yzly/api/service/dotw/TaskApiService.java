@@ -43,10 +43,9 @@ public class TaskApiService {
             goodsSearchQuery.setCheckout(toDate);
             goodsSearchQuery.setCurrencyCode("CNY");
             for (String hotelId : hotelIds) {
-                String resp = dcmlHandler.getRoomsByMeitQueryWithHotelId(hotelId, goodsSearchQuery);
+                String resp = dcmlHandler.getRoomsByMeitQueryWithHotelId(hotelId, goodsSearchQuery, false);
                 log.info(resp);
-                // 不需额外加入添加，在dcml中集成
-                //taskService.addRoomPrice(resp, goodsSearchQuery, hotelId);
+                taskService.addRoomPrice(resp, goodsSearchQuery, hotelId);
             }
         }
     }

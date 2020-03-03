@@ -145,4 +145,7 @@ public class BookingOrderInfo {
     @Column
     private Integer roomNum;// 预定房间数量
 
+    @Column(length = 50)
+    private String orderId;
+
 }

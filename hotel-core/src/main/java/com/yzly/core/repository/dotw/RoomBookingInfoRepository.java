@@ -23,4 +23,6 @@ public interface RoomBookingInfoRepository extends MongoRepository<RoomBookingIn
 
     List<RoomBookingInfo> findAllByRoomTypeCode(String roomTypeCode);
 
+    RoomBookingInfo findByRoomTypeCodeAndAllocationDetails(String roomTypeCode, String allocationDetails);
+
 }

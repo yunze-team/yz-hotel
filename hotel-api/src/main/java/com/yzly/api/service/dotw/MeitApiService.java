@@ -206,6 +206,11 @@ public class MeitApiService {
         if (orderBookingInfo.getPenalty() != null) {
             orderResult.setPenalty(orderBookingInfo.getPenalty());
         }
+        BookingOrderInfo bookingOrderInfo = bookingService.getOneByOrderId(String.valueOf(orderBookingInfo.getOrderId()));
+        if (bookingOrderInfo.getOrderStatus().equals(OrderStatus.CONFIRMED)) {
+            List<String> confirmationNumbers = bookingService.buildConfirmationNumbersByOrders(bookingOrderInfo.getId());
+            orderResult.setConfirmationNumbers(confirmationNumbers);
+        }
         return orderResult;
     }
 

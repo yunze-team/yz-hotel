@@ -6,8 +6,12 @@ import com.alibaba.fastjson.JSONObject;
 import com.yzly.api.util.XmlTool;
 import com.yzly.core.domain.dotw.BookingOrderInfo;
 import com.yzly.core.domain.dotw.HotelRoomPriceXml;
+import com.yzly.core.domain.dotw.RoomBookingInfo;
+import com.yzly.core.domain.dotw.SubOrder;
 import com.yzly.core.domain.dotw.vo.Passenger;
 import com.yzly.core.domain.meit.dto.GoodsSearchQuery;
+import com.yzly.core.repository.dotw.RoomBookingInfoRepository;
+import com.yzly.core.repository.dotw.SubOrderRepository;
 import com.yzly.core.service.dotw.CodeService;
 import com.yzly.core.service.meit.TaskService;
 import com.yzly.core.util.PasswordEncryption;
@@ -51,6 +55,10 @@ public class DCMLHandler {
     private CodeService codeService;
     @Autowired
     private TaskService taskService;
+    @Autowired
+    private SubOrderRepository subOrderRepository;
+    @Autowired
+    private RoomBookingInfoRepository roomBookingInfoRepository;
 
     public Document generateBaseRequest() {
         Document doc = DocumentHelper.createDocument();
@@ -275,10 +283,12 @@ public class DCMLHandler {
      * @param goodsSearchQuery
      * @return
      */
-    public String getRoomsByMeitQueryWithHotelId(String hotelId, GoodsSearchQuery goodsSearchQuery) {
-        List<HotelRoomPriceXml> hlist = taskService.findPriceByQuery(goodsSearchQuery, hotelId);
-        if (hlist != null && hlist.size() > 0) {
-            return hlist.get(0).getXmlResp();
+    public String getRoomsByMeitQueryWithHotelId(String hotelId, GoodsSearchQuery goodsSearchQuery, boolean flag) {
+        if (flag) {
+            List<HotelRoomPriceXml> hlist = taskService.findPriceByQuery(goodsSearchQuery, hotelId);
+            if (hlist != null && hlist.size() > 0) {
+                return hlist.get(0).getXmlResp();
+            }
         }
         Document doc = generateBaseRequest();
         Element customer = doc.getRootElement();
@@ -308,10 +318,14 @@ public class DCMLHandler {
             room.addElement("passengerCountryOfResidence").setText("168");
             // add room type selected by meit query
             if (StringUtils.isNotEmpty(goodsSearchQuery.getRoomId()) && StringUtils.isNotEmpty(goodsSearchQuery.getRatePlanCode())) {
-                Element roomType = room.addElement("roomTypeSelected");
-                roomType.addElement("code").setText(goodsSearchQuery.getRoomId());
-                roomType.addElement("selectedRateBasis").setText("-1");
-                roomType.addElement("allocationDetails").setText(goodsSearchQuery.getRatePlanCode());
+                RoomBookingInfo roomBookingInfo = roomBookingInfoRepository.findByRoomTypeCodeAndAllocationDetails(goodsSearchQuery.getRoomId(),
+                        goodsSearchQuery.getRatePlanCode());
+                if (roomBookingInfo != null) {
+                    Element roomType = room.addElement("roomTypeSelected");
+                    roomType.addElement("code").setText(goodsSearchQuery.getRoomId());
+                    roomType.addElement("selectedRateBasis").setText(roomBookingInfo.getRateBasisId());
+                    roomType.addElement("allocationDetails").setText(goodsSearchQuery.getRatePlanCode());
+                }
             }
         }
         bookingDetails.addElement("productId").setText(hotelId);
@@ -319,9 +333,10 @@ public class DCMLHandler {
         String xmlResp = this.sendDotwString(doc);
         XMLSerializer xmlSerializer = new XMLSerializer();
         String resutStr = xmlSerializer.read(xmlResp).toString();
-        if (hlist.size() == 0) {
-            taskService.addRoomPrice(resutStr, goodsSearchQuery, hotelId);
-        }
+        // 用户实时查询，不需缓存
+//        if (hlist.size() == 0) {
+//            taskService.addRoomPrice(resutStr, goodsSearchQuery, hotelId);
+//        }
         return resutStr;
     }
 
@@ -333,8 +348,12 @@ public class DCMLHandler {
     public List<JSONObject> getRoomsByMeitQuery(GoodsSearchQuery goodsSearchQuery) {
         List<JSONObject> jlist = new ArrayList<>();
         String[] hotelIds = goodsSearchQuery.getHotelIds().split(",");
+        boolean flag = false;
+        if (hotelIds.length > 1) {
+            flag = true;
+        }
         for (String hotelId : hotelIds) {
-            String resutStr = this.getRoomsByMeitQueryWithHotelId(hotelId, goodsSearchQuery);
+            String resutStr = this.getRoomsByMeitQueryWithHotelId(hotelId, goodsSearchQuery, flag);
             JSONObject res = JSON.parseObject(resutStr);
             jlist.add(res);
         }
@@ -513,21 +532,25 @@ public class DCMLHandler {
      * @return
      */
     public JSONObject cancelBooking(BookingOrderInfo orderInfo, String isConfirm) {
-        Document doc = generateBaseRequest();
-        Element customer = doc.getRootElement();
-        Element request = customer.addElement("request").addAttribute("command", "cancelbooking");
-        Element bookingDetails = request.addElement("bookingDetails");
-        bookingDetails.addElement("bookingType").setText("1");
-        bookingDetails.addElement("bookingCode").setText(orderInfo.getBookingCode());
-        bookingDetails.addElement("confirm").setText(isConfirm);
-        if (isConfirm.equals("yes")) {
-            Element testPricesAndAllocation = bookingDetails.addElement("testPricesAndAllocation");
-            Element service = testPricesAndAllocation.addElement("service").addAttribute("referencenumber", orderInfo.getBookingCode());
-            service.addElement("penaltyApplied").setText(orderInfo.getPenaltyApplied());
+        List<SubOrder> subOrders = subOrderRepository.findAllByOrderId(orderInfo.getId());
+        String resutStr = "";
+        for (SubOrder subOrder : subOrders) {
+            Document doc = generateBaseRequest();
+            Element customer = doc.getRootElement();
+            Element request = customer.addElement("request").addAttribute("command", "cancelbooking");
+            Element bookingDetails = request.addElement("bookingDetails");
+            bookingDetails.addElement("bookingType").setText("1");
+            bookingDetails.addElement("bookingCode").setText(subOrder.getBookingCode());
+            bookingDetails.addElement("confirm").setText(isConfirm);
+            if (isConfirm.equals("yes")) {
+                Element testPricesAndAllocation = bookingDetails.addElement("testPricesAndAllocation");
+                Element service = testPricesAndAllocation.addElement("service").addAttribute("referencenumber", subOrder.getBookingCode());
+                service.addElement("penaltyApplied").setText(subOrder.getPenaltyApplied());
+            }
+            String xmlResp = this.sendDotwString(doc);
+            XMLSerializer xmlSerializer = new XMLSerializer();
+            resutStr = xmlSerializer.read(xmlResp).toString();
         }
-        String xmlResp = this.sendDotwString(doc);
-        XMLSerializer xmlSerializer = new XMLSerializer();
-        String resutStr = xmlSerializer.read(xmlResp).toString();
         return JSON.parseObject(resutStr);
     }
 

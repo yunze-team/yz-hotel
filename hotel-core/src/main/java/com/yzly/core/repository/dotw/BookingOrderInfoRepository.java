@@ -16,4 +16,6 @@ public interface BookingOrderInfoRepository extends JpaRepository<BookingOrderIn
 
     BookingOrderInfo findByBookingCode(String bookingCode);
 
+    BookingOrderInfo findByOrderId(String orderId);
+
 }

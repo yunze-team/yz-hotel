@@ -5,10 +5,12 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.yzly.core.domain.dotw.BookingOrderInfo;
 import com.yzly.core.domain.dotw.RoomBookingInfo;
+import com.yzly.core.domain.dotw.SubOrder;
 import com.yzly.core.domain.dotw.enums.OrderStatus;
 import com.yzly.core.domain.dotw.vo.Passenger;
 import com.yzly.core.repository.dotw.BookingOrderInfoRepository;
 import com.yzly.core.repository.dotw.RoomBookingInfoRepository;
+import com.yzly.core.repository.dotw.SubOrderRepository;
 import lombok.extern.apachecommons.CommonsLog;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +32,26 @@ public class BookingService {
     private RoomBookingInfoRepository roomBookingInfoRepository;
     @Autowired
     private BookingOrderInfoRepository bookingOrderInfoRepository;
+    @Autowired
+    private SubOrderRepository subOrderRepository;
+
+    public BookingOrderInfo getOneByOrderId(String meitOrderId) {
+        return bookingOrderInfoRepository.findByOrderId(meitOrderId);
+    }
+
+    /**
+     * 根据总订单拼接房间确认号
+     * @param orderId
+     * @return
+     */
+    public List<String> buildConfirmationNumbersByOrders(Long orderId) {
+        List<String> rest = new ArrayList<>();
+        List<SubOrder> subOrders = subOrderRepository.findAllByOrderId(orderId);
+        for (SubOrder subOrder : subOrders) {
+            rest.add(subOrder.getBookingReferenceNumber());
+        }
+        return rest;
+    }
 
     public List<RoomBookingInfo> addRoomBookingByGetRoomsJson(JSONObject jsonObject, String hid, String fromDate, String toDate) {
         JSONObject hotelJson = jsonObject.getJSONObject("hotel");
@@ -110,7 +132,7 @@ public class BookingService {
             }
             RoomBookingInfo room = getRoomBookingByJson(rateJson, roomTypeJson, hid, fromDate, toDate);
             // 需要改造判断方法，根据roomtype和fromdate和todate判断唯一，如果有值，更新此值
-            RoomBookingInfo sroom = roomBookingInfoRepository.findByRoomTypeCodeAndFromDateAndToDate(room.getRoomTypeCode(), fromDate, toDate);
+            RoomBookingInfo sroom = roomBookingInfoRepository.findByRoomTypeCodeAndAllocationDetails(room.getRoomTypeCode(), room.getAllocationDetails());
             if (sroom != null) {
                 room.setId(sroom.getId());
             }
@@ -125,7 +147,7 @@ public class BookingService {
                     continue;
                 }
                 RoomBookingInfo room = getRoomBookingByJson(rateJson, roomTypeJson, hid, fromDate, toDate);
-                RoomBookingInfo sroom = roomBookingInfoRepository.findByRoomTypeCodeAndFromDateAndToDate(room.getRoomTypeCode(), fromDate, toDate);
+                RoomBookingInfo sroom = roomBookingInfoRepository.findByRoomTypeCodeAndAllocationDetails(room.getRoomTypeCode(), room.getAllocationDetails());
                 if (sroom != null) {
                     room.setId(sroom.getId());
                 }
@@ -180,7 +202,45 @@ public class BookingService {
      */
     public BookingOrderInfo updateBookingByJSON(JSONObject jsonObject, BookingOrderInfo orderInfo) {
         orderInfo.setConfirmationText(jsonObject.getString("confirmationText"));
-        JSONObject bookingJson = jsonObject.getJSONObject("bookings").getJSONObject("booking");
+        JSONObject bookingJson = null;
+        JSONArray bookingArray = null;
+        try {
+            bookingJson = jsonObject.getJSONObject("bookings").getJSONObject("booking");
+        } catch (Exception e) {
+            bookingArray = jsonObject.getJSONObject("bookings").getJSONArray("booking");
+        }
+//        orderInfo.setPaymentGuaranteedBy(bookingJson.getString("paymentGuaranteedBy"));
+//        orderInfo.setServicePrice(bookingJson.getString("servicePrice"));
+//        orderInfo.setServicePriceValue(bookingJson.getJSONObject("servicePrice").getString("#text"));
+//        orderInfo.setBookingReferenceNumber(bookingJson.getString("bookingReferenceNumber"));
+//        orderInfo.setPrice(bookingJson.getString("price"));
+//        orderInfo.setPriceValue(bookingJson.getJSONObject("price").getString("#text"));
+//        orderInfo.setVoucher(bookingJson.getString("voucher"));
+//        orderInfo.setBookingStatus(bookingJson.getString("bookingStatus"));
+//        orderInfo.setEmergencyContacts(bookingJson.getString("emergencyContacts"));
+//        orderInfo.setBookingCode(bookingJson.getString("bookingCode"));
+//        orderInfo.setMealsPrice(bookingJson.getString("mealsPrice"));
+//        orderInfo.setMealsPriceValue(bookingJson.getJSONObject("mealsPrice").getString("#text"));
+//        orderInfo.setType(bookingJson.getString("type"));
+        // 根据订单json保存子订单信息
+        if (bookingJson != null) {
+            orderInfo = this.generateSubOrder(bookingJson, orderInfo);
+        } else if (bookingArray != null) {
+            for (int i = 0; i < bookingArray.size(); i++) {
+                JSONObject bookJson = bookingArray.getJSONObject(i);
+                orderInfo = this.generateSubOrder(bookJson, orderInfo);
+            }
+        }
+        orderInfo.setReturnedCode(jsonObject.getString("returnedCode"));
+        orderInfo.setTariffNotes(jsonObject.getString("tariffNotes"));
+        orderInfo.setOrderStatus(OrderStatus.CONFIRMED);
+        return bookingOrderInfoRepository.save(orderInfo);
+    }
+
+    // 构建并保存子订单信息
+    private BookingOrderInfo generateSubOrder(JSONObject bookingJson, BookingOrderInfo bookingOrderInfo) {
+        SubOrder orderInfo = new SubOrder();
+        orderInfo.setOrderId(bookingOrderInfo.getId());
         orderInfo.setPaymentGuaranteedBy(bookingJson.getString("paymentGuaranteedBy"));
         orderInfo.setServicePrice(bookingJson.getString("servicePrice"));
         orderInfo.setServicePriceValue(bookingJson.getJSONObject("servicePrice").getString("#text"));
@@ -194,10 +254,10 @@ public class BookingService {
         orderInfo.setMealsPrice(bookingJson.getString("mealsPrice"));
         orderInfo.setMealsPriceValue(bookingJson.getJSONObject("mealsPrice").getString("#text"));
         orderInfo.setType(bookingJson.getString("type"));
-        orderInfo.setReturnedCode(jsonObject.getString("returnedCode"));
-        orderInfo.setTariffNotes(jsonObject.getString("tariffNotes"));
-        orderInfo.setOrderStatus(OrderStatus.CONFIRMED);
-        return bookingOrderInfoRepository.save(orderInfo);
+        subOrderRepository.save(orderInfo);
+        bookingOrderInfo.setPrice(bookingJson.getString("price"));
+        bookingOrderInfo.setPriceValue(bookingJson.getJSONObject("price").getString("#text"));
+        return bookingOrderInfo;
     }
 
     /**
@@ -212,6 +272,11 @@ public class BookingService {
                 getJSONObject("service").getJSONObject("cancellationPenalty").getJSONObject("charge");
         orderInfo.setPenaltyApplied(penaltyApplied.getString("#text"));
         orderInfo.setOrderStatus(OrderStatus.PRECANCLED);
+        List<SubOrder> subOrders = subOrderRepository.findAllByOrderId(orderInfo.getId());
+        for (SubOrder subOrder : subOrders) {
+            subOrder.setPenaltyApplied(penaltyApplied.getString("#text"));
+            subOrderRepository.save(subOrder);
+        }
         return bookingOrderInfoRepository.save(orderInfo);
     }
 

@@ -73,6 +73,8 @@ public class MeitService {
     private CurrencyRepository currencyRepository;
     @Autowired
     private MeitResultRepository meitResultRepository;
+    @Autowired
+    private SubOrderRepository subOrderRepository;
 
     private static final String MEIT_ROOM_PRICE_RATE = "MEIT_ROOM_PRICE_RATE";
 
@@ -456,7 +458,7 @@ public class MeitService {
             String salutaionCode;
             String gender = guestArray.getJSONObject(i).getString("gender");
             if (StringUtils.isEmpty(gender)) {
-                salutaionCode = "1328";
+                salutaionCode = "3801";
             } else {
                 if (gender.toLowerCase().equals("male")) {
                     salutaionCode = "1328";
@@ -475,15 +477,24 @@ public class MeitService {
             passenger.setSeq(Integer.valueOf(guestArray.getJSONObject(i).getString("seq")));
             plist.add(passenger);
         }
+        // 加入儿童信息
+        for (int i = 0; i < meitOrder.getNumberOfChildren(); i++) {
+            Passenger passenger = new Passenger("14632",
+                    "TBA",
+                    "TBA");
+            passenger.setRoomSeq(0);
+            passenger.setSeq(0);
+            plist.add(passenger);
+        }
         BookingOrderInfo bookingOrderInfo = bookingOrderInfoRepository.findByAllocationDetails(allocationDetails);
         if (bookingOrderInfo == null) {
             bookingOrderInfo = new BookingOrderInfo();
         }
-        List<RoomBookingInfo> roomBookingInfoList = roomBookingInfoRepository.findAllByRoomTypeCode(meitOrder.getRoomId());
-        if (roomBookingInfoList.size() == 0) {
+        RoomBookingInfo roomBookingInfo = roomBookingInfoRepository.findByRoomTypeCodeAndAllocationDetails(meitOrder.getRoomId(),
+                meitOrder.getRatePlanCode());
+        if (roomBookingInfo == null) {
             throw new Exception("room is null");
         }
-        RoomBookingInfo roomBookingInfo = roomBookingInfoList.get(0);
         bookingOrderInfo.setHotelId(roomBookingInfo.getHotelId());
         bookingOrderInfo.setRoomTypeCode(roomBookingInfo.getRoomTypeCode());
         bookingOrderInfo.setAllocationDetails(allocationDetails);
@@ -498,6 +509,7 @@ public class MeitService {
         bookingOrderInfo.setCurrency(currencyRepository.findByName(meitOrder.getCurrencyCode()).getCode());
         bookingOrderInfo.setOrderStatus(OrderStatus.SAVED);
         bookingOrderInfo.setRoomNum(meitOrder.getRoomNum());
+        bookingOrderInfo.setOrderId(String.valueOf(meitOrder.getOrderId()));
         return bookingOrderInfoRepository.save(bookingOrderInfo);
     }
 
@@ -510,7 +522,11 @@ public class MeitService {
     public MeitOrderBookingInfo updateOrderByBookingInfo(String orderId, BookingOrderInfo bookingOrderInfo) {
         MeitOrderBookingInfo meitOrder = meitOrderBookingInfoRepository.findByOrderId(Long.valueOf(orderId));
         meitOrder.setAgentOrderId(bookingOrderInfo.getBookingCode());
-        BigDecimal basePrice = new BigDecimal(bookingOrderInfo.getPriceValue());
+        List<SubOrder> subOrders = subOrderRepository.findAllByOrderId(bookingOrderInfo.getId());
+        BigDecimal basePrice = new BigDecimal(0);
+        for (SubOrder subOrder : subOrders) {
+            basePrice = basePrice.add(new BigDecimal(subOrder.getPriceValue()));
+        }
         // 获得酒店价格上浮利率
         EventAttr attr = eventAttrRepository.findByEventType(MEIT_ROOM_PRICE_RATE);
         Double priceRate = Double.valueOf(attr.getEventValue());
@@ -526,8 +542,7 @@ public class MeitService {
      * @return
      */
     public BookingOrderInfo getBookingByMeitOrder(String orderId) {
-        MeitOrderBookingInfo meitOrder = meitOrderBookingInfoRepository.findByOrderId(Long.valueOf(orderId));
-        return bookingOrderInfoRepository.findByBookingCode(meitOrder.getAgentOrderId());
+        return bookingOrderInfoRepository.findByOrderId(orderId);
     }
 
     /**
