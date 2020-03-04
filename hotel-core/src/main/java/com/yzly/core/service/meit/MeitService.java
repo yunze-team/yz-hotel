@@ -312,8 +312,11 @@ public class MeitService {
         room.setRoomName(roomBookingInfo.getName());
         room.setRatePlanCode(roomBookingInfo.getAllocationDetails());
         HotelAdditionalInfo hotelAdditionalInfo = hotelAdditionalInfoRepository.findOneByHotelId(roomBookingInfo.getHotelId());
-        room.setCheckInTime(hotelAdditionalInfo.getHotelCheckIn());
-        room.setCheckOutTime(hotelAdditionalInfo.getHotelCheckOut());
+        // 可能为空，判断一下
+        if (hotelAdditionalInfo != null) {
+            room.setCheckInTime(hotelAdditionalInfo.getHotelCheckIn());
+            room.setCheckOutTime(hotelAdditionalInfo.getHotelCheckOut());
+        }
         List<RefundRule> refundRules = new ArrayList<>();
         // 退订规则组装
         JSONObject cancellationRules = JSONObject.parseObject(roomBookingInfo.getCancellationRules());
