@@ -15,6 +15,7 @@ import com.yzly.core.domain.meit.dto.MeitResult;
 import com.yzly.core.domain.meit.dto.OrderCreateParam;
 import com.yzly.core.enums.meit.ResultEnum;
 import lombok.extern.apachecommons.CommonsLog;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
@@ -87,6 +88,7 @@ public class MeitApiController {
             meitApiService.addTraceLog(traceId, encyptData, reqData, traceLog);
             JSONObject req = JSON.parseObject(reqData);
             MeitResult res = MeitResultUtil.generateResult(ResultEnum.SUCCESS, null);
+            res.setLocalTraceId(MDC.get("TRACE_ID"));
             res.setReqData(req);
             res.setTraceId(traceId);
             return meitApiService.addMeitRes(res);
@@ -170,7 +172,7 @@ public class MeitApiController {
         int limit = reqData.getInteger("limit");
         Object data = meitApiService.syncHotelBasic(skip, limit);
         result.setData(data);
-        log.info(data);
+        log.debug(data);
         return baseResponseTrans(result);
     }
 
@@ -189,7 +191,7 @@ public class MeitApiController {
         String hotelIds = reqData.getString("hotelId");
         Object data = meitApiService.syncHotelExtend(hotelIds);
         result.setData(data);
-        log.info(data);
+        log.debug(data);
         return baseResponseTrans(result);
     }
 
@@ -208,7 +210,7 @@ public class MeitApiController {
         String hotelIds = reqData.getString("hotelId");
         Object data = meitApiService.syncRoomBasic(hotelIds);
         result.setData(data);
-        log.info(data);
+        log.debug(data);
         return baseResponseTrans(result);
     }
 
@@ -227,7 +229,7 @@ public class MeitApiController {
         String hotelIds = reqData.getString("hotelId");
         Object data = meitApiService.syncRoomExtend(hotelIds);
         result.setData(data);
-        log.info(data);
+        log.debug(data);
         return baseResponseTrans(result);
     }
 
@@ -258,7 +260,7 @@ public class MeitApiController {
         List<JSONObject> jlist = dcmlHandler.getRoomsByMeitQuery(goodsSearchQuery, true);
         Object data = meitApiService.syncGoodsSearch(jlist, goodsSearchQuery);
         result.setData(data);
-        log.info(data);
+        log.debug(data);
         return baseResponseTrans(result);
     }
 
@@ -277,7 +279,7 @@ public class MeitApiController {
         OrderCreateParam orderCreateParam = MeitReqUtil.buildOrderParam(reqData);
         Object data = meitApiService.createOrder(orderCreateParam);
         result.setData(data);
-        log.info(data);
+        log.debug(data);
         return baseResponseTrans(result);
     }
 
@@ -296,7 +298,7 @@ public class MeitApiController {
         String orderId = reqData.getString("orderId");
         Object data = meitApiService.orderQueryResult(orderId);
         result.setData(data);
-        log.info(data);
+        log.debug(data);
         return baseResponseTrans(result);
     }
 
@@ -317,7 +319,7 @@ public class MeitApiController {
 //        Object data = meitApiService.cancelOrder(orderId);
 //        Object data = meitApiService.cancelOrderManaul(orderId);
         result.setData(data);
-        log.info(data);
+        log.debug(data);
         return baseResponseTrans(result);
     }
 

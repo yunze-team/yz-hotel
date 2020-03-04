@@ -4,12 +4,10 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.yzly.api.util.XmlTool;
-import com.yzly.core.domain.dotw.BookingOrderInfo;
-import com.yzly.core.domain.dotw.HotelRoomPriceXml;
-import com.yzly.core.domain.dotw.RoomBookingInfo;
-import com.yzly.core.domain.dotw.SubOrder;
+import com.yzly.core.domain.dotw.*;
 import com.yzly.core.domain.dotw.vo.Passenger;
 import com.yzly.core.domain.meit.dto.GoodsSearchQuery;
+import com.yzly.core.repository.dotw.DotwXmlLogRepository;
 import com.yzly.core.repository.dotw.RoomBookingInfoRepository;
 import com.yzly.core.repository.dotw.SubOrderRepository;
 import com.yzly.core.service.dotw.CodeService;
@@ -21,6 +19,7 @@ import org.apache.commons.lang.StringUtils;
 import org.dom4j.Document;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -59,6 +58,8 @@ public class DCMLHandler {
     private SubOrderRepository subOrderRepository;
     @Autowired
     private RoomBookingInfoRepository roomBookingInfoRepository;
+    @Autowired
+    private DotwXmlLogRepository dotwXmlLogRepository;
 
     public Document generateBaseRequest() {
         Document doc = DocumentHelper.createDocument();
@@ -123,13 +124,23 @@ public class DCMLHandler {
     }
 
     public String sendDotwString(Document doc) {
-        log.info(doc.asXML());
+        String traceId = MDC.get("TRACE_ID");
+        DotwXmlLog xmlLog = new DotwXmlLog();
+        xmlLog.setTraceId(traceId);
+        xmlLog.setReqXml(doc.asXML());
+        log.info("发往dotw的报文：" + doc.asXML());
+        xmlLog = dotwXmlLogRepository.save(xmlLog);
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.TEXT_XML);
         HttpEntity<String> xmlEntity = new HttpEntity<>(doc.asXML(), headers);
         ResponseEntity<String> responseEntity = restTemplate.postForEntity("http://" + DOTWUrl, xmlEntity, String.class);
-        log.info(responseEntity);
+        log.info("接收dotw的返回报文：" + responseEntity);
+        xmlLog.setRespXml(responseEntity.getBody());
+        XMLSerializer xmlSerializer = new XMLSerializer();
+        String resutStr = xmlSerializer.read(responseEntity.getBody()).toString();
+        xmlLog.setRespData(JSONObject.parseObject(resutStr));
+        dotwXmlLogRepository.save(xmlLog);
         return responseEntity.getBody();
     }
 

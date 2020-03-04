@@ -55,4 +55,7 @@ public class MeitResult {
     @JSONField(serialize = false)
     private String resp;
 
+    @JSONField(serialize = false)
+    private String localTraceId;
+
 }

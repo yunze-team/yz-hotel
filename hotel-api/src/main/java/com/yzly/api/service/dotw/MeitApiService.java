@@ -147,7 +147,7 @@ public class MeitApiService {
                     continue;
                 }
             } else {
-                log.info("jsonObject" + jsonObject);
+                log.debug("jsonObject" + jsonObject);
                 String hotelId = jsonObject.getJSONObject("hotel").getString("@id");
                 List<RoomBookingInfo> rlist = bookingService.addRoomBookingByGetRoomsJson(jsonObject, hotelId, goodsSearchQuery.getCheckin(), goodsSearchQuery.getCheckout());
                 HotelMap hotelMap = new HotelMap();

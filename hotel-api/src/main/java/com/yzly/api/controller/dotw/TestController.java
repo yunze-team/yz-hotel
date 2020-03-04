@@ -16,6 +16,7 @@ import com.yzly.core.repository.dotw.RoomBookingInfoRepository;
 import com.yzly.core.util.SnowflakeIdWorker;
 import lombok.extern.apachecommons.CommonsLog;
 import org.joda.time.DateTime;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
@@ -71,6 +72,7 @@ public class TestController {
         res.setReqData(req);
         Long logId = new SnowflakeIdWorker(workId, datacenterId).nextId();
         res.setTraceId("YZ_" + logId);
+        res.setLocalTraceId(MDC.get("TRACE_ID"));
         return meitApiService.addMeitRes(res);
     }
 
