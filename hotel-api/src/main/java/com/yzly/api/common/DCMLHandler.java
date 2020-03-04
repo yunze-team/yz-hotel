@@ -284,8 +284,8 @@ public class DCMLHandler {
      * @return
      */
     public String getRoomsByMeitQueryWithHotelId(String hotelId, GoodsSearchQuery goodsSearchQuery, boolean flag) {
+        List<HotelRoomPriceXml> hlist = taskService.findPriceByQuery(goodsSearchQuery, hotelId);
         if (flag) {
-            List<HotelRoomPriceXml> hlist = taskService.findPriceByQuery(goodsSearchQuery, hotelId);
             if (hlist != null && hlist.size() > 0) {
                 return hlist.get(0).getXmlResp();
             }
@@ -334,9 +334,9 @@ public class DCMLHandler {
         XMLSerializer xmlSerializer = new XMLSerializer();
         String resutStr = xmlSerializer.read(xmlResp).toString();
         // 用户实时查询，不需缓存
-//        if (hlist.size() == 0) {
-//            taskService.addRoomPrice(resutStr, goodsSearchQuery, hotelId);
-//        }
+        if (hlist.size() == 0) {
+            taskService.addRoomPrice(resutStr, goodsSearchQuery, hotelId);
+        }
         return resutStr;
     }
 
@@ -345,10 +345,9 @@ public class DCMLHandler {
      * @param goodsSearchQuery
      * @return
      */
-    public List<JSONObject> getRoomsByMeitQuery(GoodsSearchQuery goodsSearchQuery) {
+    public List<JSONObject> getRoomsByMeitQuery(GoodsSearchQuery goodsSearchQuery, boolean flag) {
         List<JSONObject> jlist = new ArrayList<>();
         String[] hotelIds = goodsSearchQuery.getHotelIds().split(",");
-        boolean flag = false;
         if (hotelIds.length > 1) {
             flag = true;
         }

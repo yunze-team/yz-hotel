@@ -207,9 +207,11 @@ public class MeitApiService {
             orderResult.setPenalty(orderBookingInfo.getPenalty());
         }
         BookingOrderInfo bookingOrderInfo = bookingService.getOneByOrderId(String.valueOf(orderBookingInfo.getOrderId()));
-        if (bookingOrderInfo.getOrderStatus().equals(OrderStatus.CONFIRMED)) {
-            List<String> confirmationNumbers = bookingService.buildConfirmationNumbersByOrders(bookingOrderInfo.getId());
-            orderResult.setConfirmationNumbers(confirmationNumbers);
+        if (bookingOrderInfo != null) {
+            if (bookingOrderInfo.getOrderStatus().equals(OrderStatus.CONFIRMED)) {
+                List<String> confirmationNumbers = bookingService.buildConfirmationNumbersByOrders(bookingOrderInfo.getId());
+                orderResult.setConfirmationNumbers(confirmationNumbers);
+            }
         }
         return orderResult;
     }
@@ -239,6 +241,28 @@ public class MeitApiService {
         BookingOrderInfo finalOrder = bookingService.updateBookingByJSON(result, bookingOrderInfo);
         MeitOrderBookingInfo meitOrder = meitService.updateOrderByBookingInfo(orderId, finalOrder);
         return MeitResultUtil.generateResult(ResultEnum.SUCCESS, meitOrder);
+    }
+
+    public Object cancelOrderManaul(String orderId) {
+        OrderResult orderResult = new OrderResult();
+        MeitOrderBookingInfo meitOrder = meitService.getOrderByOrderId(orderId);
+        BookingOrderInfo orderInfo = meitService.getBookingByMeitOrder(orderId);
+        orderResult.setOrderId(meitOrder.getOrderId());
+        orderResult.setPartnerOrderId(meitOrder.getPartnerOrderId());
+        if (orderInfo == null || !orderInfo.getOrderStatus().equals(OrderStatus.CONFIRMED)) {
+            log.error("order is null or order status is not confirmed");
+            orderResult.setOrderStatus(PlatformOrderStatusEnum.CANCEL_FAIL);
+            return orderResult;
+        }
+        orderInfo = bookingService.preCancelOrderManual(orderInfo);
+        bookingService.updateBookingOrderStatus(orderInfo, OrderStatus.CANCELED);
+        Integer penalty = new BigDecimal(orderInfo.getPenaltyApplied()).
+                multiply(new BigDecimal(100)).setScale(0, RoundingMode.HALF_UP).intValue();
+        orderResult.setPenalty(penalty);
+        orderResult.setOrderStatus(PlatformOrderStatusEnum.CANCEL_SUCCESS);
+        // 更新美团订单的取消状态
+        meitService.updateCancelOrder(meitOrder, penalty);
+        return orderResult;
     }
 
     /**

@@ -255,7 +255,7 @@ public class MeitApiController {
         String currencyCode = reqData.getString("currencyCode");
         GoodsSearchQuery goodsSearchQuery = new GoodsSearchQuery(hotelIds, roomId, ratePlanCode, checkin, checkout,
                 roomNumber, numberOfAdults, numberOfChildren, childrenAges, currencyCode);
-        List<JSONObject> jlist = dcmlHandler.getRoomsByMeitQuery(goodsSearchQuery);
+        List<JSONObject> jlist = dcmlHandler.getRoomsByMeitQuery(goodsSearchQuery, true);
         Object data = meitApiService.syncGoodsSearch(jlist, goodsSearchQuery);
         result.setData(data);
         log.info(data);
@@ -305,7 +305,7 @@ public class MeitApiController {
      * @param request
      * @return
      */
-    @PostMapping("/order_cancel")
+    @PostMapping("/order_cancle")
     public Object orderCancel(HttpServletRequest request) {
         MeitResult result = postRequestTrans(request);
         if (!result.getSuccess()) {
@@ -313,7 +313,8 @@ public class MeitApiController {
         }
         JSONObject reqData = result.getReqData();
         String orderId = reqData.getString("orderId");
-        Object data = meitApiService.cancelOrder(orderId);
+//        Object data = meitApiService.cancelOrder(orderId);
+        Object data = meitApiService.cancelOrderManaul(orderId);
         result.setData(data);
         log.info(data);
         return baseResponseTrans(result);

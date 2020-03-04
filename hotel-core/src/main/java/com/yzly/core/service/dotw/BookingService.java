@@ -284,4 +284,15 @@ public class BookingService {
         return bookingOrderInfoRepository.findByAllocationDetails(allocation);
     }
 
+    public BookingOrderInfo preCancelOrderManual(BookingOrderInfo orderInfo) {
+        orderInfo.setPenaltyApplied("0");
+        orderInfo.setOrderStatus(OrderStatus.PRECANCLED);
+        List<SubOrder> subOrders = subOrderRepository.findAllByOrderId(orderInfo.getId());
+        for (SubOrder subOrder : subOrders) {
+            subOrder.setPenaltyApplied("0");
+            subOrderRepository.save(subOrder);
+        }
+        return bookingOrderInfoRepository.save(orderInfo);
+    }
+
 }
