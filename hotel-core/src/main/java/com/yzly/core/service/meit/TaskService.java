@@ -50,19 +50,36 @@ public class TaskService {
 
     private static final String MEIT_ROOM_PRICE_PULL_SIZE = "MEIT_ROOM_PRICE_PULL_SIZE";
 
+    private static final String DOTW_HOTEL_PULL_SIZE = "DOTW_HOTEL_PULL_SIZE";
+
     /**
      * 获得所有的需要手工同步的酒店ids
      * @return
      */
     public String getManualSyncHotelIds() {
         String ids = "";
-        List<HotelManualSyncList> hlist = hotelManualSyncListRepository.findAll();
+        EventAttr attr = eventAttrRepository.findByEventType(DOTW_HOTEL_PULL_SIZE);
+        Integer pullSize = Integer.valueOf(attr.getEventValue());
+        Pageable pageable = new PageRequest(0, pullSize);
+        Page<HotelSyncList> hpage = hotelSyncListRepository.findAll((root, criteriaQuery, criteriaBuilder) -> {
+            List<Predicate> list = new ArrayList<>();
+            list.add(criteriaBuilder.equal(root.get("distributor").as(DistributorEnum.class), DistributorEnum.MEIT));
+            list.add(criteriaBuilder.equal(root.get("syncStatus").as(SyncStatus.class), SyncStatus.AVAILABLE));
+            list.add(criteriaBuilder.equal(root.get("taskStatus").as(Integer.class), 0));
+            Predicate[] p = new Predicate[list.size()];
+            return criteriaBuilder.and(list.toArray(p));
+        }, pageable);
+        List<HotelSyncList> hlist = hpage.getContent();
+        log.info("getManualSyncHotelIds:" + hlist);
         for (int i = 0; i < hlist.size(); i++) {
             if (i != hlist.size() - 1) {
                 ids += hlist.get(i).getHotelId() + ",";
             } else {
                 ids += hlist.get(i).getHotelId();
             }
+            HotelSyncList hs = hlist.get(i);
+            hs.setTaskStatus(1);
+            hotelSyncListRepository.save(hs);
         }
         return ids;
     }

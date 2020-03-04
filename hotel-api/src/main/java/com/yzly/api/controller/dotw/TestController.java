@@ -13,9 +13,11 @@ import com.yzly.core.domain.meit.dto.MeitResult;
 import com.yzly.core.domain.meit.dto.OrderCreateParam;
 import com.yzly.core.enums.meit.ResultEnum;
 import com.yzly.core.repository.dotw.RoomBookingInfoRepository;
+import com.yzly.core.util.SnowflakeIdWorker;
 import lombok.extern.apachecommons.CommonsLog;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -37,6 +39,11 @@ public class TestController {
     private DCMLHandler dcmlHandler;
     @Autowired
     private MeitApiService meitApiService;
+
+    @Value("${snowflake.workId}")
+    private long workId;
+    @Value("${snowflake.datacenterId}")
+    private long datacenterId;
 
 //    @PostMapping("/booking")
 //    public Object testBooking(String allocationDetails) {
@@ -62,7 +69,9 @@ public class TestController {
         JSONObject req = JSON.parseObject(json);
         MeitResult res = MeitResultUtil.generateResult(ResultEnum.SUCCESS, null);
         res.setReqData(req);
-        return res;
+        Long logId = new SnowflakeIdWorker(workId, datacenterId).nextId();
+        res.setTraceId("YZ_" + logId);
+        return meitApiService.addMeitRes(res);
     }
 
     @PostMapping("/goods_search")
@@ -84,7 +93,7 @@ public class TestController {
         List<JSONObject> jlist = dcmlHandler.getRoomsByMeitQuery(goodsSearchQuery, false);
         Object data = meitApiService.syncGoodsSearch(jlist, goodsSearchQuery);
         result.setData(data);
-        return result;
+        return meitApiService.addMeitRes(result);
     }
 
 

@@ -1,7 +1,8 @@
 package com.yzly.core.repository.meit;
 
 import com.yzly.core.domain.meit.MeitTraceLog;
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.bson.types.ObjectId;
+import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
 /**
@@ -10,5 +11,5 @@ import org.springframework.stereotype.Repository;
  * @desc
  **/
 @Repository
-public interface MeitTraceLogRepository extends JpaRepository<MeitTraceLog, Long> {
+public interface MeitTraceLogRepository extends MongoRepository<MeitTraceLog, ObjectId> {
 }

@@ -54,4 +54,7 @@ public class HotelSyncList {
     @LastModifiedDate
     private Date updatedAt;
 
+    @Column
+    private Integer taskStatus;
+
 }
