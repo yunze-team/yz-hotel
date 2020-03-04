@@ -317,67 +317,74 @@ public class MeitService {
         List<RefundRule> refundRules = new ArrayList<>();
         // 退订规则组装
         JSONObject cancellationRules = JSONObject.parseObject(roomBookingInfo.getCancellationRules());
-        if (cancellationRules.getString("@count").equals("1")) {
-            RefundRule refundRule = new RefundRule();
-            refundRule.setReturnable(false);
-            refundRules.add(refundRule);
-        } else {
-            JSONArray cancelArray = cancellationRules.getJSONArray("rule");
-            for (int i = 0; i < cancelArray.size(); i++) {
-                JSONObject rule = cancelArray.getJSONObject(i);
-                if (rule.getString("noShowPolicy") != null) {
-                    continue;
-                }
-                RefundRule refundRule = new RefundRule();
-                try {
-                    if (rule.getString("cancelRestricted") != null) {
-                        refundRule.setReturnable(false);
-                    } else {
-                        BigDecimal cancelCharge = new BigDecimal(rule.getJSONObject("cancelCharge").getString("#text"));
-                        if (cancelCharge.compareTo(new BigDecimal(0)) > 0) {
-                            refundRule.setReturnable(true);
-                            refundRule.setRefundType(1);
-                            refundRule.setFine(cancelCharge
-                                    .multiply(new BigDecimal(100)).setScale(0, RoundingMode.HALF_UP).intValue());
-                        } else {
-                            refundRule.setReturnable(true);
-                            refundRule.setRefundType(0);
-                        }
-                    }
-                    DateTime hotelCheckIn = DateTime.parse(roomBookingInfo.getFromDate() + " " + room.getCheckInTime(), DateTimeFormat.forPattern("yyyy-MM-dd HH:mm"));
-                    if (StringUtils.isNotEmpty(rule.getString("fromDate"))) {
-                        DateTime fromDate = DateTime.parse(rule.getString("fromDate"), DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss")).minusDays(2).minusSeconds(1);
-                        if (i == 0 && fromDate.isBefore(System.currentTimeMillis())) {
-                            refundRule.setFromDate(null);
-                        } else {
-                            refundRule.setFromDate(fromDate.toString("yyyy-MM-dd HH:mm:ss"));
-                            long diff = hotelCheckIn.getMillis() - fromDate.getMillis();
-                            long days = diff / (1000 * 24 * 60 * 60);
-                            long maxCheckInTime = (diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60) + days * 24;
-                            Integer maxCheckIn = maxCheckInTime > 0 ? Integer.valueOf(String.valueOf(maxCheckInTime)) : 0;
-                            refundRule.setMaxHoursBeforeCheckIn(maxCheckIn);
-                        }
-                    } else {
-                        refundRule.setMaxHoursBeforeCheckIn(null);
-                    }
-                    if (StringUtils.isNotEmpty(rule.getString("toDate"))) {
-                        DateTime toDate = DateTime.parse(rule.getString("toDate"), DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss")).minusDays(2);
-                        refundRule.setToDate(toDate.toString("yyyy-MM-dd HH:mm:ss"));
-                        long diff = hotelCheckIn.getMillis() - toDate.getMillis();
-                        long days = diff / (1000 * 24 * 60 * 60);
-                        long minCheckInTime = (diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60) + days * 24;
-                        Integer minCheckIn = minCheckInTime > 0 ? Integer.valueOf(String.valueOf(minCheckInTime)) : 0;
-                        refundRule.setMinHoursBeforeCheckIn(minCheckIn);
-                    } else {
-                        refundRule.setMinHoursBeforeCheckIn(0);
-                    }
-                } catch (Exception e) {
-                    log.error(e.getMessage());
-                    refundRule.setReturnable(false);
-                }
-                refundRules.add(refundRule);
-            }
-        }
+        // 所有给美团的房型，都显示为不可取消
+        RefundRule refundRule = new RefundRule();
+        refundRule.setReturnable(false);
+        refundRule.setMaxHoursBeforeCheckIn(null);
+        refundRule.setMinHoursBeforeCheckIn(0);
+        refundRules.add(refundRule);
+        // 注释同步给美团按照dotw的取消规则封装的数据
+//        if (cancellationRules.getString("@count").equals("1")) {
+//            RefundRule refundRule = new RefundRule();
+//            refundRule.setReturnable(false);
+//            refundRules.add(refundRule);
+//        } else {
+//            JSONArray cancelArray = cancellationRules.getJSONArray("rule");
+//            for (int i = 0; i < cancelArray.size(); i++) {
+//                JSONObject rule = cancelArray.getJSONObject(i);
+//                if (rule.getString("noShowPolicy") != null) {
+//                    continue;
+//                }
+//                RefundRule refundRule = new RefundRule();
+//                try {
+//                    if (rule.getString("cancelRestricted") != null) {
+//                        refundRule.setReturnable(false);
+//                    } else {
+//                        BigDecimal cancelCharge = new BigDecimal(rule.getJSONObject("cancelCharge").getString("#text"));
+//                        if (cancelCharge.compareTo(new BigDecimal(0)) > 0) {
+//                            refundRule.setReturnable(true);
+//                            refundRule.setRefundType(1);
+//                            refundRule.setFine(cancelCharge
+//                                    .multiply(new BigDecimal(100)).setScale(0, RoundingMode.HALF_UP).intValue());
+//                        } else {
+//                            refundRule.setReturnable(true);
+//                            refundRule.setRefundType(0);
+//                        }
+//                    }
+//                    DateTime hotelCheckIn = DateTime.parse(roomBookingInfo.getFromDate() + " " + room.getCheckInTime(), DateTimeFormat.forPattern("yyyy-MM-dd HH:mm"));
+//                    if (StringUtils.isNotEmpty(rule.getString("fromDate"))) {
+//                        DateTime fromDate = DateTime.parse(rule.getString("fromDate"), DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss")).minusDays(2).minusSeconds(1);
+//                        if (i == 0 && fromDate.isBefore(System.currentTimeMillis())) {
+//                            refundRule.setFromDate(null);
+//                        } else {
+//                            refundRule.setFromDate(fromDate.toString("yyyy-MM-dd HH:mm:ss"));
+//                            long diff = hotelCheckIn.getMillis() - fromDate.getMillis();
+//                            long days = diff / (1000 * 24 * 60 * 60);
+//                            long maxCheckInTime = (diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60) + days * 24;
+//                            Integer maxCheckIn = maxCheckInTime > 0 ? Integer.valueOf(String.valueOf(maxCheckInTime)) : 0;
+//                            refundRule.setMaxHoursBeforeCheckIn(maxCheckIn);
+//                        }
+//                    } else {
+//                        refundRule.setMaxHoursBeforeCheckIn(null);
+//                    }
+//                    if (StringUtils.isNotEmpty(rule.getString("toDate"))) {
+//                        DateTime toDate = DateTime.parse(rule.getString("toDate"), DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss")).minusDays(2);
+//                        refundRule.setToDate(toDate.toString("yyyy-MM-dd HH:mm:ss"));
+//                        long diff = hotelCheckIn.getMillis() - toDate.getMillis();
+//                        long days = diff / (1000 * 24 * 60 * 60);
+//                        long minCheckInTime = (diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60) + days * 24;
+//                        Integer minCheckIn = minCheckInTime > 0 ? Integer.valueOf(String.valueOf(minCheckInTime)) : 0;
+//                        refundRule.setMinHoursBeforeCheckIn(minCheckIn);
+//                    } else {
+//                        refundRule.setMinHoursBeforeCheckIn(0);
+//                    }
+//                } catch (Exception e) {
+//                    log.error(e.getMessage());
+//                    refundRule.setReturnable(false);
+//                }
+//                refundRules.add(refundRule);
+//            }
+//        }
         room.setRefundRules(refundRules);
         return room;
     }
@@ -418,6 +425,11 @@ public class MeitService {
         orderBookingInfo.setOrderId(orderCreateParam.getOrderInfo().getOrderId());
         orderBookingInfo.setOrderStatus(PlatformOrderStatusEnum.BOOKING);
         orderBookingInfo.setActualTotalPrice(Integer.valueOf(orderCreateParam.getTotalPrice()));
+        RoomBookingInfo roomBookingInfo = roomBookingInfoRepository.findByRoomTypeCodeAndAllocationDetails(orderCreateParam.getRoomId(),
+                orderCreateParam.getRatePlanCode());
+        if (roomBookingInfo != null) {
+            orderBookingInfo.setRateBaseId(roomBookingInfo.getRateBasisId());
+        }
         orderBookingInfo = meitOrderBookingInfoRepository.save(orderBookingInfo);
         return orderBookingInfo;
     }
@@ -521,6 +533,8 @@ public class MeitService {
      */
     public MeitOrderBookingInfo updateOrderByBookingInfo(String orderId, BookingOrderInfo bookingOrderInfo) {
         MeitOrderBookingInfo meitOrder = meitOrderBookingInfoRepository.findByOrderId(Long.valueOf(orderId));
+        meitOrder.setOrderAvailable("0");
+        meitOrder.setDotwOrderId(bookingOrderInfo.getId());
         meitOrder.setAgentOrderId(bookingOrderInfo.getBookingCode());
         List<SubOrder> subOrders = subOrderRepository.findAllByOrderId(bookingOrderInfo.getId());
         BigDecimal basePrice = new BigDecimal(0);
@@ -532,6 +546,27 @@ public class MeitService {
         Double priceRate = Double.valueOf(attr.getEventValue());
         BigDecimal totalPrice = basePrice.multiply(new BigDecimal(100)).multiply(new BigDecimal(1 + priceRate));
         meitOrder.setActualTotalPrice(totalPrice.setScale(0, RoundingMode.HALF_UP).intValue());
+        meitOrder.setOrderStatus(PlatformOrderStatusEnum.BOOK_SUCCESS);
+        return meitOrderBookingInfoRepository.save(meitOrder);
+    }
+
+    /**
+     * 根据房间确认号和总金额更新美团订单
+     * @param orderId
+     * @param confirmNumbers
+     * @param totalPrice
+     * @return
+     */
+    public MeitOrderBookingInfo updateOrderByManual(String orderId, String confirmNumbers, String totalPrice) {
+        MeitOrderBookingInfo meitOrder = meitOrderBookingInfoRepository.findByOrderId(Long.valueOf(orderId));
+        meitOrder.setOrderAvailable("1");
+        BigDecimal basePrice = new BigDecimal(totalPrice);
+        // 获得酒店价格上浮利率
+        EventAttr attr = eventAttrRepository.findByEventType(MEIT_ROOM_PRICE_RATE);
+        Double priceRate = Double.valueOf(attr.getEventValue());
+        BigDecimal totalP = basePrice.multiply(new BigDecimal(100)).multiply(new BigDecimal(1 + priceRate));
+        meitOrder.setActualTotalPrice(totalP.setScale(0, RoundingMode.HALF_UP).intValue());
+        meitOrder.setConfirmationNumbers(confirmNumbers);
         meitOrder.setOrderStatus(PlatformOrderStatusEnum.BOOK_SUCCESS);
         return meitOrderBookingInfoRepository.save(meitOrder);
     }

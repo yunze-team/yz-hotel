@@ -313,8 +313,9 @@ public class MeitApiController {
         }
         JSONObject reqData = result.getReqData();
         String orderId = reqData.getString("orderId");
+        Object data = meitApiService.cancelOrderJudge(orderId);
 //        Object data = meitApiService.cancelOrder(orderId);
-        Object data = meitApiService.cancelOrderManaul(orderId);
+//        Object data = meitApiService.cancelOrderManaul(orderId);
         result.setData(data);
         log.info(data);
         return baseResponseTrans(result);

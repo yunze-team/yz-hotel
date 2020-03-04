@@ -23,10 +23,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author lazyb
@@ -206,12 +203,17 @@ public class MeitApiService {
         if (orderBookingInfo.getPenalty() != null) {
             orderResult.setPenalty(orderBookingInfo.getPenalty());
         }
-        BookingOrderInfo bookingOrderInfo = bookingService.getOneByOrderId(String.valueOf(orderBookingInfo.getOrderId()));
-        if (bookingOrderInfo != null) {
-            if (bookingOrderInfo.getOrderStatus().equals(OrderStatus.CONFIRMED)) {
-                List<String> confirmationNumbers = bookingService.buildConfirmationNumbersByOrders(bookingOrderInfo.getId());
-                orderResult.setConfirmationNumbers(confirmationNumbers);
+        if (orderBookingInfo.getOrderAvailable().equals("0")) {
+            BookingOrderInfo bookingOrderInfo = bookingService.getOneById(String.valueOf(orderBookingInfo.getDotwOrderId()));
+            if (bookingOrderInfo != null) {
+                if (bookingOrderInfo.getOrderStatus().equals(OrderStatus.CONFIRMED)) {
+                    List<String> confirmationNumbers = bookingService.buildConfirmationNumbersByOrders(bookingOrderInfo.getId());
+                    orderResult.setConfirmationNumbers(confirmationNumbers);
+                }
             }
+        } else {
+            List<String> confirmationNumbers = Arrays.asList(orderBookingInfo.getConfirmationNumbers().split(","));
+            orderResult.setConfirmationNumbers(confirmationNumbers);
         }
         return orderResult;
     }
@@ -234,35 +236,76 @@ public class MeitApiService {
         JSONObject result = dcmlHandler.confirmBookingByOrder(bookingOrderInfo);
         if (!dcmlHandler.judgeResult(result)) {
             bookingService.updateBookingOrderStatus(bookingOrderInfo, OrderStatus.FAILED);
-            meitService.updateOrderFail(orderId);
+            //meitService.updateOrderFail(orderId);
             return MeitResultUtil.generateResult(ResultEnum.FAIL, null);
         }
         // 获得结果，更新order
         BookingOrderInfo finalOrder = bookingService.updateBookingByJSON(result, bookingOrderInfo);
-        MeitOrderBookingInfo meitOrder = meitService.updateOrderByBookingInfo(orderId, finalOrder);
+        //MeitOrderBookingInfo meitOrder = meitService.updateOrderByBookingInfo(orderId, finalOrder);
+        return MeitResultUtil.generateResult(ResultEnum.SUCCESS, null);
+    }
+
+    /**
+     * 手动完成美团订单
+     * @param orderId
+     * @param totalPrice
+     * @param confirmNumbers
+     * @return
+     */
+    public MeitResult finishOrderManual(String orderId, String totalPrice, String confirmNumbers) {
+        MeitOrderBookingInfo meitOrder = meitService.updateOrderByManual(orderId, confirmNumbers, totalPrice);
         return MeitResultUtil.generateResult(ResultEnum.SUCCESS, meitOrder);
     }
 
-    public Object cancelOrderManaul(String orderId) {
+    /**
+     * 手工同步dotw成功订单到美团订单
+     * @param meitOrderId
+     * @param dotwOrderId
+     * @return
+     */
+    public MeitResult syncDotwOrderToMeit(String meitOrderId, String dotwOrderId) {
+        BookingOrderInfo dotwOrder = bookingService.getOneById(dotwOrderId);
+        MeitOrderBookingInfo meitOrder = meitService.updateOrderByBookingInfo(meitOrderId, dotwOrder);
+        return MeitResultUtil.generateResult(ResultEnum.SUCCESS, meitOrder);
+    }
+
+    private Object cancelOrderManaul(String orderId) {
         OrderResult orderResult = new OrderResult();
         MeitOrderBookingInfo meitOrder = meitService.getOrderByOrderId(orderId);
-        BookingOrderInfo orderInfo = meitService.getBookingByMeitOrder(orderId);
+        //BookingOrderInfo orderInfo = meitService.getBookingByMeitOrder(orderId);
+//        BookingOrderInfo orderInfo = bookingService.getOneById(String.valueOf(meitOrder.getDotwOrderId()));
         orderResult.setOrderId(meitOrder.getOrderId());
         orderResult.setPartnerOrderId(meitOrder.getPartnerOrderId());
-        if (orderInfo == null || !orderInfo.getOrderStatus().equals(OrderStatus.CONFIRMED)) {
-            log.error("order is null or order status is not confirmed");
-            orderResult.setOrderStatus(PlatformOrderStatusEnum.CANCEL_FAIL);
-            return orderResult;
-        }
-        orderInfo = bookingService.preCancelOrderManual(orderInfo);
-        bookingService.updateBookingOrderStatus(orderInfo, OrderStatus.CANCELED);
-        Integer penalty = new BigDecimal(orderInfo.getPenaltyApplied()).
-                multiply(new BigDecimal(100)).setScale(0, RoundingMode.HALF_UP).intValue();
-        orderResult.setPenalty(penalty);
+//        if (orderInfo == null || !orderInfo.getOrderStatus().equals(OrderStatus.CONFIRMED)) {
+//            log.error("order is null or order status is not confirmed");
+//            orderResult.setOrderStatus(PlatformOrderStatusEnum.CANCEL_FAIL);
+//            return orderResult;
+//        }
+//        orderInfo = bookingService.preCancelOrderManual(orderInfo);
+//        bookingService.updateBookingOrderStatus(orderInfo, OrderStatus.CANCELED);
+//        Integer penalty = new BigDecimal(orderInfo.getPenaltyApplied()).
+//                multiply(new BigDecimal(100)).setScale(0, RoundingMode.HALF_UP).intValue();
+        orderResult.setPenalty(0);
         orderResult.setOrderStatus(PlatformOrderStatusEnum.CANCEL_SUCCESS);
         // 更新美团订单的取消状态
-        meitService.updateCancelOrder(meitOrder, penalty);
+        meitService.updateCancelOrder(meitOrder, 0);
         return orderResult;
+    }
+
+    /**
+     * 通过美团的order_available来判断是否发往dotw取消订单
+     * @param orderId
+     * @return
+     */
+    public Object cancelOrderJudge(String orderId) {
+        Object rest;
+        MeitOrderBookingInfo meitOrder = meitService.getOrderByOrderId(orderId);
+        if (meitOrder.getOrderAvailable().equals("0")) {
+           rest = cancelOrder(orderId);
+        } else {
+            rest = cancelOrderManaul(orderId);
+        }
+        return rest;
     }
 
     /**
@@ -270,10 +313,11 @@ public class MeitApiService {
      * @param orderId
      * @return
      */
-    public Object cancelOrder(String orderId) {
+    private Object cancelOrder(String orderId) {
         OrderResult orderResult = new OrderResult();
         MeitOrderBookingInfo meitOrder = meitService.getOrderByOrderId(orderId);
-        BookingOrderInfo orderInfo = meitService.getBookingByMeitOrder(orderId);
+//        BookingOrderInfo orderInfo = meitService.getBookingByMeitOrder(orderId);
+        BookingOrderInfo orderInfo = bookingService.getOneById(String.valueOf(meitOrder.getDotwOrderId()));
         orderResult.setOrderId(meitOrder.getOrderId());
         orderResult.setPartnerOrderId(meitOrder.getPartnerOrderId());
         if (orderInfo == null || !orderInfo.getOrderStatus().equals(OrderStatus.CONFIRMED)) {

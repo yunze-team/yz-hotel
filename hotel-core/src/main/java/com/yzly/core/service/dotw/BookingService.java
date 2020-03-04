@@ -295,4 +295,8 @@ public class BookingService {
         return bookingOrderInfoRepository.save(orderInfo);
     }
 
+    public BookingOrderInfo getOneById(String id) {
+        return bookingOrderInfoRepository.findOne(Long.valueOf(id));
+    }
+
 }

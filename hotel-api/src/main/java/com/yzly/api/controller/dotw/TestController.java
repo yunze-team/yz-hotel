@@ -109,7 +109,17 @@ public class TestController {
         }
         JSONObject reqData = result.getReqData();
         String orderId = reqData.getString("orderId");
-        Object data = meitApiService.cancelOrder(orderId);
+        Object data = meitApiService.cancelOrderJudge(orderId);
+        result.setData(data);
+        return result;
+    }
+
+    @PostMapping("/order_query")
+    public Object orderQuery(@RequestBody String json) {
+        MeitResult result = baseRequestTrans(json);
+        JSONObject reqData = result.getReqData();
+        String orderId = reqData.getString("orderId");
+        Object data = meitApiService.orderQueryResult(orderId);
         result.setData(data);
         return result;
     }

@@ -108,4 +108,13 @@ public class MeitOrderBookingInfo {
     @LastModifiedDate
     private Date updatedAt;
 
+    @Column
+    private Long dotwOrderId;// 保存dotw_booking_info表的id数值
+
+    @Column(length = 20)
+    private String rateBaseId;// 下单时的ratebase
+
+    @Column(length = 10)
+    private String orderAvailable;// 表示订单是否确认，0已确认已下单，1未确认，没有去dotw真实下单
+
 }
