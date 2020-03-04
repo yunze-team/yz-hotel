@@ -250,4 +250,10 @@ public class TaskService {
         hotelRoomPriceXmlRepository.deleteAll();
     }
 
+    public void delRoomPriceXmlList(List<HotelRoomPriceXml> hlist) {
+        for (HotelRoomPriceXml h : hlist) {
+            hotelRoomPriceXmlRepository.delete(h);
+        }
+    }
+
 }

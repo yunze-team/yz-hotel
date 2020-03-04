@@ -1,6 +1,7 @@
 package com.yzly.api.service.dotw;
 
 import com.yzly.api.common.DCMLHandler;
+import com.yzly.core.domain.dotw.HotelRoomPriceXml;
 import com.yzly.core.domain.meit.dto.GoodsSearchQuery;
 import com.yzly.core.repository.event.EventAttrRepository;
 import com.yzly.core.service.meit.TaskService;
@@ -42,7 +43,14 @@ public class TaskApiService {
             goodsSearchQuery.setCheckin(fromDate);
             goodsSearchQuery.setCheckout(toDate);
             goodsSearchQuery.setCurrencyCode("CNY");
+            goodsSearchQuery.setNumberOfAdults(2);
+            goodsSearchQuery.setNumberOfChildren(0);
+            goodsSearchQuery.setRoomNumber(1);
             for (String hotelId : hotelIds) {
+                List<HotelRoomPriceXml> hlist = taskService.findPriceByQuery(goodsSearchQuery, hotelId);
+                if (hlist != null) {
+                    taskService.delRoomPriceXmlList(hlist);
+                }
                 String resp = dcmlHandler.getRoomsByMeitQueryWithHotelId(hotelId, goodsSearchQuery, false);
                 log.info(resp);
                 taskService.addRoomPrice(resp, goodsSearchQuery, hotelId);

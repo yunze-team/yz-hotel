@@ -154,7 +154,7 @@ public class TaskController {
         Runnable runnable = () -> {
             try {
                 // 在重新拉取数据之前，清空30天价格表数据
-                taskService.delAllRoomPriceXml();
+//                taskService.delAllRoomPriceXml();
                 // 重新拉取30天价格数据
                 taskApiService.syncDotwRoomPrice();
             } catch (Exception e) {
