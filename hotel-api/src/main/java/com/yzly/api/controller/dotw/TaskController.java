@@ -187,4 +187,23 @@ public class TaskController {
         return "SUCCESS";
     }
 
+    /**
+     * 删除mongo中缓存的所有user_hotel_price_xml数据，提示查询效率
+     * @return
+     */
+    @GetMapping("/del_all_user_price")
+    public Object delAllUserPriceCache() {
+        Runnable runnable = () -> {
+            try {
+                log.info("del all user price.");
+                taskService.delAllUserPrice();
+            } catch (Exception e) {
+                log.error(e.getMessage());
+            }
+        };
+        Thread thread = new Thread(runnable);
+        thread.start();
+        return "SUCCESS";
+    }
+
 }

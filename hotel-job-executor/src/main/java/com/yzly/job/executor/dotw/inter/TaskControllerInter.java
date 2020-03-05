@@ -36,4 +36,7 @@ public interface TaskControllerInter {
     @GetMapping("/api/task/del_all_room_booking_info")
     String delAllRoomBookingInfo();
 
+    @GetMapping("/api/task/del_all_user_price")
+    String delAllUserPrice();
+
 }

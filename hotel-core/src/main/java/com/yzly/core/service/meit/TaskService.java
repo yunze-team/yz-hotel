@@ -6,16 +6,14 @@ import com.yzly.core.domain.HotelManualSyncList;
 import com.yzly.core.domain.HotelSyncList;
 import com.yzly.core.domain.dotw.HotelRoomPriceXml;
 import com.yzly.core.domain.dotw.RoomPriceByDate;
+import com.yzly.core.domain.dotw.UserHotelRoomPriceXml;
 import com.yzly.core.domain.event.EventAttr;
 import com.yzly.core.domain.meit.dto.GoodsSearchQuery;
 import com.yzly.core.enums.DistributorEnum;
 import com.yzly.core.enums.SyncStatus;
 import com.yzly.core.repository.HotelManualSyncListRepository;
 import com.yzly.core.repository.HotelSyncListRepository;
-import com.yzly.core.repository.dotw.HotelRoomPriceXmlRepository;
-import com.yzly.core.repository.dotw.RateBasisRepository;
-import com.yzly.core.repository.dotw.RoomBookingInfoRepository;
-import com.yzly.core.repository.dotw.RoomPriceByDateRepository;
+import com.yzly.core.repository.dotw.*;
 import com.yzly.core.repository.event.EventAttrRepository;
 import lombok.extern.apachecommons.CommonsLog;
 import org.apache.commons.lang.StringUtils;
@@ -50,10 +48,16 @@ public class TaskService {
     private HotelSyncListRepository hotelSyncListRepository;
     @Autowired
     private RoomBookingInfoRepository roomBookingInfoRepository;
+    @Autowired
+    private UserHotelRoomPriceXmlRepository userHotelRoomPriceXmlRepository;
 
     private static final String MEIT_ROOM_PRICE_PULL_SIZE = "MEIT_ROOM_PRICE_PULL_SIZE";
 
     private static final String DOTW_HOTEL_PULL_SIZE = "DOTW_HOTEL_PULL_SIZE";
+
+    public void delAllUserPrice() {
+        userHotelRoomPriceXmlRepository.deleteAll();
+    }
 
     /**
      * 清空所有的dotw_room_booking_info缓存
@@ -203,6 +207,25 @@ public class TaskService {
         return hotelRoomPriceXml;
     }
 
+    private UserHotelRoomPriceXml generateUserPrcieByQuery(String resp, GoodsSearchQuery goodsSearchQuery, String hotelId) {
+        UserHotelRoomPriceXml hotelRoomPriceXml = new UserHotelRoomPriceXml();
+        hotelRoomPriceXml.setHotelId(hotelId);
+        hotelRoomPriceXml.setFromDate(goodsSearchQuery.getCheckin());
+        hotelRoomPriceXml.setToDate(goodsSearchQuery.getCheckout());
+        hotelRoomPriceXml.setCurrency(goodsSearchQuery.getCurrencyCode());
+        hotelRoomPriceXml.setNumberOfAdults(goodsSearchQuery.getNumberOfAdults() == null ? "2" : String.valueOf(goodsSearchQuery.getNumberOfAdults()));
+        hotelRoomPriceXml.setRoomNumber(goodsSearchQuery.getRoomNumber() == null ? "1" : String.valueOf(goodsSearchQuery.getRoomNumber()));
+        String childrenNum = goodsSearchQuery.getNumberOfChildren() == null ? "0" : String.valueOf(goodsSearchQuery.getNumberOfChildren());
+        hotelRoomPriceXml.setNumberOfChildren(childrenNum);
+        if (!childrenNum.equals("0")) {
+            hotelRoomPriceXml.setChildrenAges(goodsSearchQuery.getChildrenAges());
+        }
+        if (StringUtils.isNotEmpty(resp)) {
+            hotelRoomPriceXml.setXmlResp(resp);
+        }
+        return hotelRoomPriceXml;
+    }
+
     /**
      * 通过美团查询参数和dotw返回xml结果来保存房型价格数据
      * @param resp
@@ -213,6 +236,11 @@ public class TaskService {
     public HotelRoomPriceXml addRoomPrice(String resp, GoodsSearchQuery goodsSearchQuery, String hotelId) {
         HotelRoomPriceXml hotelRoomPriceXml = this.generatePriceXmlByGoodsSearchQuery(resp, goodsSearchQuery, hotelId);
         return hotelRoomPriceXmlRepository.insert(hotelRoomPriceXml);
+    }
+
+    public UserHotelRoomPriceXml addUserRoomPrice(String resp, GoodsSearchQuery goodsSearchQuery, String hotelId) {
+        UserHotelRoomPriceXml hotelRoomPriceXml = this.generateUserPrcieByQuery(resp, goodsSearchQuery, hotelId);
+        return userHotelRoomPriceXmlRepository.insert(hotelRoomPriceXml);
     }
 
     /**
@@ -228,6 +256,15 @@ public class TaskService {
                 .withIgnoreCase().withIgnoreNullValues();
         Example<HotelRoomPriceXml> priceXmlExample = Example.of(hotelRoomPriceXml, exampleMatcher);
         return hotelRoomPriceXmlRepository.findAll(priceXmlExample);
+    }
+
+    public List<UserHotelRoomPriceXml> findUserPriceByQuery(GoodsSearchQuery goodsSearchQuery, String hotelId) {
+        UserHotelRoomPriceXml hotelRoomPriceXml = this.generateUserPrcieByQuery(null, goodsSearchQuery, hotelId);
+        ExampleMatcher exampleMatcher = ExampleMatcher.matching()
+                .withIgnorePaths("id", "xmlResp")
+                .withIgnoreCase().withIgnoreNullValues();
+        Example<UserHotelRoomPriceXml> priceXmlExample = Example.of(hotelRoomPriceXml, exampleMatcher);
+        return userHotelRoomPriceXmlRepository.findAll(priceXmlExample);
     }
 
     /**

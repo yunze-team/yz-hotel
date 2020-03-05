@@ -300,14 +300,17 @@ public class DCMLHandler {
      * @return
      */
     public String getRoomsByMeitQueryWithHotelId(String hotelId, GoodsSearchQuery goodsSearchQuery, boolean flag) {
-        List<HotelRoomPriceXml> hlist = new ArrayList<>();
         if (flag) {
             log.info("taskService mongodb read start.");
-            hlist = taskService.findPriceByQuery(goodsSearchQuery, hotelId);
-            log.info("taskService mongodb read end.");
+            List<HotelRoomPriceXml> hlist = taskService.findPriceByQuery(goodsSearchQuery, hotelId);
             if (hlist != null && hlist.size() > 0) {
                 return hlist.get(0).getXmlResp();
             }
+            List<UserHotelRoomPriceXml> ulist = taskService.findUserPriceByQuery(goodsSearchQuery, hotelId);
+            if (ulist != null && ulist.size() > 0) {
+                return ulist.get(0).getXmlResp();
+            }
+            log.info("taskService mongodb read end.");
         }
         Document doc = generateBaseRequest();
         Element customer = doc.getRootElement();
@@ -354,9 +357,8 @@ public class DCMLHandler {
         String resutStr = xmlSerializer.read(xmlResp).toString();
         // 用户实时查询，不需缓存
         if (flag) {
-            if (hlist.size() == 0) {
-                taskService.addRoomPrice(resutStr, goodsSearchQuery, hotelId);
-            }
+//            taskService.addRoomPrice(resutStr, goodsSearchQuery, hotelId);
+            taskService.addUserRoomPrice(resutStr, goodsSearchQuery, hotelId);
         }
         return resutStr;
     }
