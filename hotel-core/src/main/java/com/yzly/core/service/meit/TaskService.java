@@ -14,6 +14,7 @@ import com.yzly.core.repository.HotelManualSyncListRepository;
 import com.yzly.core.repository.HotelSyncListRepository;
 import com.yzly.core.repository.dotw.HotelRoomPriceXmlRepository;
 import com.yzly.core.repository.dotw.RateBasisRepository;
+import com.yzly.core.repository.dotw.RoomBookingInfoRepository;
 import com.yzly.core.repository.dotw.RoomPriceByDateRepository;
 import com.yzly.core.repository.event.EventAttrRepository;
 import lombok.extern.apachecommons.CommonsLog;
@@ -47,10 +48,19 @@ public class TaskService {
     private EventAttrRepository eventAttrRepository;
     @Autowired
     private HotelSyncListRepository hotelSyncListRepository;
+    @Autowired
+    private RoomBookingInfoRepository roomBookingInfoRepository;
 
     private static final String MEIT_ROOM_PRICE_PULL_SIZE = "MEIT_ROOM_PRICE_PULL_SIZE";
 
     private static final String DOTW_HOTEL_PULL_SIZE = "DOTW_HOTEL_PULL_SIZE";
+
+    /**
+     * 清空所有的dotw_room_booking_info缓存
+     */
+    public void delAllRoomBookInfo() {
+        roomBookingInfoRepository.deleteAll();
+    }
 
     /**
      * 获得所有的需要手工同步的酒店ids

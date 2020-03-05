@@ -33,4 +33,7 @@ public interface TaskControllerInter {
     @GetMapping("/api/task/sync_price_xml")
     String syncRoomPriceXmlByDate(@RequestParam("offset") int offset);
 
+    @GetMapping("/api/task/del_all_room_booking_info")
+    String delAllRoomBookingInfo();
+
 }

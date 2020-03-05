@@ -281,6 +281,7 @@ public class MeitService {
      * @return
      */
     public Room assemblyMeitRoom(RoomBookingInfo roomBookingInfo) {
+        log.debug("assembly meit room start.");
         Room room = new Room();
         Breakfast breakfast = new Breakfast();
         // 判断房型是否还有早餐
@@ -319,7 +320,7 @@ public class MeitService {
         }
         List<RefundRule> refundRules = new ArrayList<>();
         // 退订规则组装
-        JSONObject cancellationRules = JSONObject.parseObject(roomBookingInfo.getCancellationRules());
+        //JSONObject cancellationRules = JSONObject.parseObject(roomBookingInfo.getCancellationRules());
         // 所有给美团的房型，都显示为不可取消
         RefundRule refundRule = new RefundRule();
         refundRule.setReturnable(false);
@@ -389,6 +390,7 @@ public class MeitService {
 //            }
 //        }
         room.setRefundRules(refundRules);
+        log.debug("assembly meit room end.");
         return room;
     }
 

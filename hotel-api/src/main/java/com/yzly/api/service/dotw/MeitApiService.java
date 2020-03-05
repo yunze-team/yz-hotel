@@ -137,6 +137,7 @@ public class MeitApiService {
      * @return
      */
     public Object syncGoodsSearch(List<JSONObject> jlist, GoodsSearchQuery goodsSearchQuery) {
+        log.info("sync goods search start.");
         Map<String, Map> res = new HashMap<>();
         Map<String, HotelMap> data = new HashMap<>();
         for (JSONObject jsonObject : jlist) {
@@ -149,11 +150,13 @@ public class MeitApiService {
             } else {
                 log.debug("jsonObject" + jsonObject);
                 String hotelId = jsonObject.getJSONObject("hotel").getString("@id");
+                log.debug("bookingService addRoomBooking start.");
                 List<RoomBookingInfo> rlist = bookingService.addRoomBookingByGetRoomsJson(jsonObject, hotelId, goodsSearchQuery.getCheckin(), goodsSearchQuery.getCheckout());
+                log.debug("bookingService addRoomBooking end.");
                 HotelMap hotelMap = new HotelMap();
                 hotelMap.setCurrencyCode(jsonObject.getString("currencyShort"));
                 List<Room> roomList = new ArrayList<>();
-                HotelAdditionalInfo hotelAdditionalInfo = hotelInfoService.findOneById(hotelId);
+                //HotelAdditionalInfo hotelAdditionalInfo = hotelInfoService.findOneById(hotelId);
                 for (RoomBookingInfo roomBookingInfo : rlist) {
                     Room room = meitService.assemblyMeitRoom(roomBookingInfo);
                     Rooms rooms = new Rooms();
@@ -167,6 +170,7 @@ public class MeitApiService {
             }
         }
         res.put("hotelMap", data);
+        log.info("sync goods search end.");
         return res;
     }
 

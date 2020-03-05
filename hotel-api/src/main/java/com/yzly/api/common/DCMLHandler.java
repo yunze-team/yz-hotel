@@ -10,6 +10,7 @@ import com.yzly.core.domain.meit.dto.GoodsSearchQuery;
 import com.yzly.core.repository.dotw.DotwXmlLogRepository;
 import com.yzly.core.repository.dotw.RoomBookingInfoRepository;
 import com.yzly.core.repository.dotw.SubOrderRepository;
+import com.yzly.core.repository.event.EventAttrRepository;
 import com.yzly.core.service.dotw.CodeService;
 import com.yzly.core.service.meit.TaskService;
 import com.yzly.core.util.PasswordEncryption;
@@ -60,6 +61,10 @@ public class DCMLHandler {
     private RoomBookingInfoRepository roomBookingInfoRepository;
     @Autowired
     private DotwXmlLogRepository dotwXmlLogRepository;
+    @Autowired
+    private EventAttrRepository eventAttrRepository;
+
+    private final static String FORCE_READ_CACHE_PRICE = "FORCE_READ_CACHE_PRICE";
 
     public Document generateBaseRequest() {
         Document doc = DocumentHelper.createDocument();
@@ -295,8 +300,11 @@ public class DCMLHandler {
      * @return
      */
     public String getRoomsByMeitQueryWithHotelId(String hotelId, GoodsSearchQuery goodsSearchQuery, boolean flag) {
-        List<HotelRoomPriceXml> hlist = taskService.findPriceByQuery(goodsSearchQuery, hotelId);
+        List<HotelRoomPriceXml> hlist = new ArrayList<>();
         if (flag) {
+            log.info("taskService mongodb read start.");
+            hlist = taskService.findPriceByQuery(goodsSearchQuery, hotelId);
+            log.info("taskService mongodb read end.");
             if (hlist != null && hlist.size() > 0) {
                 return hlist.get(0).getXmlResp();
             }
@@ -345,8 +353,10 @@ public class DCMLHandler {
         XMLSerializer xmlSerializer = new XMLSerializer();
         String resutStr = xmlSerializer.read(xmlResp).toString();
         // 用户实时查询，不需缓存
-        if (hlist.size() == 0) {
-            taskService.addRoomPrice(resutStr, goodsSearchQuery, hotelId);
+        if (flag) {
+            if (hlist.size() == 0) {
+                taskService.addRoomPrice(resutStr, goodsSearchQuery, hotelId);
+            }
         }
         return resutStr;
     }
@@ -356,10 +366,14 @@ public class DCMLHandler {
      * @param goodsSearchQuery
      * @return
      */
-    public List<JSONObject> getRoomsByMeitQuery(GoodsSearchQuery goodsSearchQuery, boolean flag) {
+    public List<JSONObject> getRoomsByMeitQuery(GoodsSearchQuery goodsSearchQuery) {
+        boolean flag = false;
         List<JSONObject> jlist = new ArrayList<>();
         String[] hotelIds = goodsSearchQuery.getHotelIds().split(",");
         if (hotelIds.length > 1) {
+            flag = true;
+        }
+        if (eventAttrRepository.findByEventType(FORCE_READ_CACHE_PRICE).getEventValue().equals("Y")) {
             flag = true;
         }
         for (String hotelId : hotelIds) {

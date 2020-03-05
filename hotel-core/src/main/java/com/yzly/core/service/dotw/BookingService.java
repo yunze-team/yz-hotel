@@ -122,6 +122,7 @@ public class BookingService {
     }
 
     public List<RoomBookingInfo> getRoomBaseInfoByJson(JSONObject roomTypeJson, String hid, String fromDate, String toDate) {
+        log.debug("getRoomBaseInfo start.");
         JSONObject rateBaseJson = roomTypeJson.getJSONObject("rateBases");
         List<RoomBookingInfo> rlist = new ArrayList<>();
         if (rateBaseJson.getString("@count").equals("1")) {
@@ -132,7 +133,9 @@ public class BookingService {
             }
             RoomBookingInfo room = getRoomBookingByJson(rateJson, roomTypeJson, hid, fromDate, toDate);
             // 需要改造判断方法，根据roomtype和fromdate和todate判断唯一，如果有值，更新此值
+            log.debug("findroomtypecode start.");
             RoomBookingInfo sroom = roomBookingInfoRepository.findByRoomTypeCodeAndAllocationDetails(room.getRoomTypeCode(), room.getAllocationDetails());
+            log.debug("findroomtypecode end.");
             if (sroom != null) {
                 room.setId(sroom.getId());
             }
@@ -147,7 +150,9 @@ public class BookingService {
                     continue;
                 }
                 RoomBookingInfo room = getRoomBookingByJson(rateJson, roomTypeJson, hid, fromDate, toDate);
+                log.debug("findroomtypecode start.");
                 RoomBookingInfo sroom = roomBookingInfoRepository.findByRoomTypeCodeAndAllocationDetails(room.getRoomTypeCode(), room.getAllocationDetails());
+                log.debug("findroomtypecode end.");
                 if (sroom != null) {
                     room.setId(sroom.getId());
                 }
@@ -155,6 +160,7 @@ public class BookingService {
                 rlist.add(room);
             }
         }
+        log.debug("getRoomBaseInfo end.");
         return rlist;
     }
 

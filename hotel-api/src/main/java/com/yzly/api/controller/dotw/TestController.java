@@ -92,7 +92,7 @@ public class TestController {
         String currencyCode = reqData.getString("currencyCode");
         GoodsSearchQuery goodsSearchQuery = new GoodsSearchQuery(hotelIds, roomId, ratePlanCode, checkin, checkout,
                 roomNumber, numberOfAdults, numberOfChildren, childrenAges, currencyCode);
-        List<JSONObject> jlist = dcmlHandler.getRoomsByMeitQuery(goodsSearchQuery, false);
+        List<JSONObject> jlist = dcmlHandler.getRoomsByMeitQuery(goodsSearchQuery);
         Object data = meitApiService.syncGoodsSearch(jlist, goodsSearchQuery);
         result.setData(data);
         return meitApiService.addMeitRes(result);

@@ -168,4 +168,23 @@ public class TaskController {
         return "SUCCESS";
     }
 
+    /**
+     * 删除mongo中缓存的所有room_booking_info数据，提示查询效率
+     * @return
+     */
+    @GetMapping("/del_all_room_booking_info")
+    public Object delAllRoomBookingCache() {
+        Runnable runnable = () -> {
+            try {
+                log.info("del all room booking info.");
+                taskService.delAllRoomBookInfo();
+            } catch (Exception e) {
+                log.error(e.getMessage());
+            }
+        };
+        Thread thread = new Thread(runnable);
+        thread.start();
+        return "SUCCESS";
+    }
+
 }
