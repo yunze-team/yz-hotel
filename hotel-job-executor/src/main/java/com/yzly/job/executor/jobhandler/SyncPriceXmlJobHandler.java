@@ -24,7 +24,7 @@ public class SyncPriceXmlJobHandler extends IJobHandler {
     @Override
     public ReturnT<String> execute(String param) throws Exception {
         XxlJobLogger.log("sync price xml job execute start.");
-        String result = taskControllerInter.syncRoomPriceXmlByDate();
+        String result = taskControllerInter.syncRoomPriceXmlByDate(Integer.valueOf(param));
         XxlJobLogger.log("sync price xml job result: " + JSONObject.toJSONString(result));
         return ReturnT.SUCCESS;
     }

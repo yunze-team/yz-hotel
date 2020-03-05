@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
@@ -150,13 +151,14 @@ public class TaskController {
      * @return
      */
     @GetMapping("/sync_price_xml")
-    public Object syncRoomPriceXmlByDate() {
+    public Object syncRoomPriceXmlByDate(@RequestParam("offset") int offset) {
         Runnable runnable = () -> {
             try {
                 // 在重新拉取数据之前，清空30天价格表数据
 //                taskService.delAllRoomPriceXml();
                 // 重新拉取30天价格数据
-                taskApiService.syncDotwRoomPrice();
+                log.info("offset:" + offset);
+                taskApiService.syncDotwRoomPrice(offset);
             } catch (Exception e) {
                 log.error(e.getMessage());
             }

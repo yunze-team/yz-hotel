@@ -33,10 +33,12 @@ public class TaskApiService {
     /**
      * 按照酒店同步列表的数据，同步30天的房型价格
      */
-    public void syncDotwRoomPrice() {
+    public void syncDotwRoomPrice(int offset) {
         List<String> hotelIds = taskService.findSyncHotelIdsByAttr();
         Integer days = Integer.valueOf(eventAttrRepository.findByEventType(MEIT_ROOM_PRICE_PULL_DAY).getEventValue());
-        for (int i = 0; i < days; i++) {
+        int startDays = offset * days;
+        int endDays = days + startDays;
+        for (int i = startDays; i < endDays; i++) {
             String fromDate = DateTime.now().plusDays(i).toString("yyyy-MM-dd");
             String toDate = DateTime.now().plusDays(i).plusDays(1).toString("yyyy-MM-dd");
             GoodsSearchQuery goodsSearchQuery = new GoodsSearchQuery();
@@ -52,7 +54,7 @@ public class TaskApiService {
                     taskService.delRoomPriceXmlList(hlist);
                 }
                 String resp = dcmlHandler.getRoomsByMeitQueryWithHotelId(hotelId, goodsSearchQuery, false);
-                log.info(resp);
+                log.debug(resp);
                 taskService.addRoomPrice(resp, goodsSearchQuery, hotelId);
             }
         }

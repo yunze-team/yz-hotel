@@ -2,6 +2,7 @@ package com.yzly.job.executor.dotw.inter;
 
 import org.springframework.cloud.netflix.feign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 /**
  * @author lazyb
@@ -30,6 +31,6 @@ public interface TaskControllerInter {
     String generateRoomPriceExcel();
 
     @GetMapping("/api/task/sync_price_xml")
-    String syncRoomPriceXmlByDate();
+    String syncRoomPriceXmlByDate(@RequestParam("offset") int offset);
 
 }
