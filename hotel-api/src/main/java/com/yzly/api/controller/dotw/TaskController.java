@@ -206,4 +206,43 @@ public class TaskController {
         return "SUCCESS";
     }
 
+    /**
+     * 删除mongo中的dotw_xml_log数据
+     * @return
+     */
+    @GetMapping("/del_dotw_xml_log")
+    public Object delAllDotwXmlLog() {
+        Runnable runnable = () -> {
+            try {
+                log.info("del all dotw xml log.");
+                taskService.delAllDotwXmlLog();
+            } catch (Exception e) {
+                log.error(e.getMessage());
+            }
+        };
+        Thread thread = new Thread(runnable);
+        thread.start();
+        return "SUCCESS";
+    }
+
+    /**
+     * 删除mongo中的meitlog相关数据
+     * @param days
+     * @return
+     */
+    @GetMapping("/del_meit_log")
+    public Object delMeitLogByDays(@RequestParam("days") int days) {
+        Runnable runnable = () -> {
+            try {
+                log.info("del meit log.");
+                taskService.delMeitLogByDays(days);
+            } catch (Exception e) {
+                log.error(e.getMessage());
+            }
+        };
+        Thread thread = new Thread(runnable);
+        thread.start();
+        return "SUCCESS";
+    }
+
 }

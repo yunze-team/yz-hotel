@@ -8,21 +8,27 @@ import com.yzly.core.domain.dotw.HotelRoomPriceXml;
 import com.yzly.core.domain.dotw.RoomPriceByDate;
 import com.yzly.core.domain.dotw.UserHotelRoomPriceXml;
 import com.yzly.core.domain.event.EventAttr;
+import com.yzly.core.domain.meit.MeitTraceLog;
 import com.yzly.core.domain.meit.dto.GoodsSearchQuery;
+import com.yzly.core.domain.meit.dto.MeitResult;
 import com.yzly.core.enums.DistributorEnum;
 import com.yzly.core.enums.SyncStatus;
 import com.yzly.core.repository.HotelManualSyncListRepository;
 import com.yzly.core.repository.HotelSyncListRepository;
 import com.yzly.core.repository.dotw.*;
 import com.yzly.core.repository.event.EventAttrRepository;
+import com.yzly.core.repository.meit.MeitResultRepository;
+import com.yzly.core.repository.meit.MeitTraceLogRepository;
 import lombok.extern.apachecommons.CommonsLog;
 import org.apache.commons.lang.StringUtils;
+import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.criteria.Predicate;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -50,6 +56,12 @@ public class TaskService {
     private RoomBookingInfoRepository roomBookingInfoRepository;
     @Autowired
     private UserHotelRoomPriceXmlRepository userHotelRoomPriceXmlRepository;
+    @Autowired
+    private DotwXmlLogRepository dotwXmlLogRepository;
+    @Autowired
+    private MeitResultRepository meitResultRepository;
+    @Autowired
+    private MeitTraceLogRepository meitTraceLogRepository;
 
     private static final String MEIT_ROOM_PRICE_PULL_SIZE = "MEIT_ROOM_PRICE_PULL_SIZE";
 
@@ -57,6 +69,25 @@ public class TaskService {
 
     public void delAllUserPrice() {
         userHotelRoomPriceXmlRepository.deleteAll();
+    }
+
+    /**
+     * 按照参数保留天数，删除美团日志
+     * @param days
+     */
+    public void delMeitLogByDays(int days) {
+        Date day = DateTime.now().minusDays(days).toDate();
+        List<MeitResult> mlist = meitResultRepository.findAllByCreatedAtBefore(day);
+        List<MeitTraceLog> tlist = meitTraceLogRepository.findAllByCreatedAtBefore(day);
+        meitResultRepository.delete(mlist);
+        meitTraceLogRepository.delete(tlist);
+    }
+
+    /**
+     * 删除说有的dotw_xml_log日志
+     */
+    public void delAllDotwXmlLog() {
+        dotwXmlLogRepository.deleteAll();
     }
 
     /**

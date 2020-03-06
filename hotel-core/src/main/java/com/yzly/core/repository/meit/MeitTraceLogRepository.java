@@ -5,6 +5,9 @@ import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Date;
+import java.util.List;
+
 /**
  * @author lazyb
  * @create 2019/12/20
@@ -12,4 +15,7 @@ import org.springframework.stereotype.Repository;
  **/
 @Repository
 public interface MeitTraceLogRepository extends MongoRepository<MeitTraceLog, ObjectId> {
+
+    List<MeitTraceLog> findAllByCreatedAtBefore(Date day);
+
 }

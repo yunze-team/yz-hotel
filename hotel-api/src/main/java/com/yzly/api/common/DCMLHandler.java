@@ -27,6 +27,8 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
@@ -50,6 +52,12 @@ public class DCMLHandler {
     private String DOTWCompanyCode;
     @Value("${dotw.url}")
     private String DOTWUrl;
+    @Value("${dotw.connect-request.time-out}")
+    private int DotwConnectRequesTimeout;
+    @Value("${dotw.connect.time-out}")
+    private int DotwConnectTimeout;
+    @Value("${dotw.read.time-out}")
+    private int DotwReadTimeout;
 
     @Autowired
     private CodeService codeService;
@@ -128,6 +136,41 @@ public class DCMLHandler {
         return doc;
     }
 
+    public String sendDotwQueryString(Document doc) {
+        String traceId = MDC.get("TRACE_ID");
+        DotwXmlLog xmlLog = new DotwXmlLog();
+        xmlLog.setTraceId(traceId);
+        xmlLog.setReqXml(doc.asXML());
+        log.info("发往dotw的报文：" + doc.asXML());
+        xmlLog = dotwXmlLogRepository.save(xmlLog);
+        // 设置到dotw的超时时间
+        HttpComponentsClientHttpRequestFactory httpRequestFactory = new HttpComponentsClientHttpRequestFactory();
+        httpRequestFactory.setConnectionRequestTimeout(DotwConnectRequesTimeout);
+        httpRequestFactory.setConnectTimeout(DotwConnectTimeout);
+        httpRequestFactory.setReadTimeout(DotwReadTimeout);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.TEXT_XML);
+        HttpEntity<String> xmlEntity = new HttpEntity<>(doc.asXML(), headers);
+        RestTemplate restTemplate = new RestTemplate(httpRequestFactory);
+        ResponseEntity<String> responseEntity = null;
+        try {
+            responseEntity = restTemplate.postForEntity("http://" + DOTWUrl, xmlEntity, String.class);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
+        log.info("接收dotw的返回报文：" + responseEntity);
+        if (responseEntity != null) {
+            xmlLog.setRespXml(responseEntity.getBody());
+            XMLSerializer xmlSerializer = new XMLSerializer();
+            String resutStr = xmlSerializer.read(responseEntity.getBody()).toString();
+            xmlLog.setRespData(JSONObject.parseObject(resutStr));
+            dotwXmlLogRepository.save(xmlLog);
+            return responseEntity.getBody();
+        } else {
+            return "<?xml version=\"1.0\" encoding=\"UTF-8\"?><result><request><successful>FALSE</successful></request></result>";
+        }
+    }
+
     public String sendDotwString(Document doc) {
         String traceId = MDC.get("TRACE_ID");
         DotwXmlLog xmlLog = new DotwXmlLog();
@@ -135,10 +178,10 @@ public class DCMLHandler {
         xmlLog.setReqXml(doc.asXML());
         log.info("发往dotw的报文：" + doc.asXML());
         xmlLog = dotwXmlLogRepository.save(xmlLog);
-        RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.TEXT_XML);
         HttpEntity<String> xmlEntity = new HttpEntity<>(doc.asXML(), headers);
+        RestTemplate restTemplate = new RestTemplate();
         ResponseEntity<String> responseEntity = restTemplate.postForEntity("http://" + DOTWUrl, xmlEntity, String.class);
         log.info("接收dotw的返回报文：" + responseEntity);
         xmlLog.setRespXml(responseEntity.getBody());
@@ -352,7 +395,7 @@ public class DCMLHandler {
         }
         bookingDetails.addElement("productId").setText(hotelId);
         // 这一块可做改动，需要缓存数据并提前查询
-        String xmlResp = this.sendDotwString(doc);
+        String xmlResp = this.sendDotwQueryString(doc);
         XMLSerializer xmlSerializer = new XMLSerializer();
         String resutStr = xmlSerializer.read(xmlResp).toString();
         // 用户实时查询，不需缓存

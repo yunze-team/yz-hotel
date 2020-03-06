@@ -39,4 +39,10 @@ public interface TaskControllerInter {
     @GetMapping("/api/task/del_all_user_price")
     String delAllUserPrice();
 
+    @GetMapping("/api/task/del_dotw_xml_log")
+    String delAllDotwLog();
+
+    @GetMapping("/api/task/del_meit_log")
+    String delMeitLogByDays(@RequestParam("days") int days);
+
 }
