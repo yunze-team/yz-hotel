@@ -569,7 +569,7 @@ public class MeitService {
         // 获得酒店价格上浮利率
         EventAttr attr = eventAttrRepository.findByEventType(MEIT_ROOM_PRICE_RATE);
         Double priceRate = Double.valueOf(attr.getEventValue());
-        BigDecimal totalP = basePrice.multiply(new BigDecimal(100)).multiply(new BigDecimal(1 + priceRate));
+        BigDecimal totalP = basePrice.multiply(new BigDecimal(1 + priceRate));
         meitOrder.setActualTotalPrice(totalP.setScale(0, RoundingMode.HALF_UP).intValue());
         meitOrder.setConfirmationNumbers(confirmNumbers);
         meitOrder.setOrderStatus(PlatformOrderStatusEnum.BOOK_SUCCESS);

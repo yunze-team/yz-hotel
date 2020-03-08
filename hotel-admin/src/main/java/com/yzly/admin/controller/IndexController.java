@@ -107,4 +107,19 @@ public class IndexController {
         return "room_price";
     }
 
+    @RequestMapping("/index/meit_order")
+    public String meitOrder() {
+        return "meit_order";
+    }
+
+    @RequestMapping("/index/dotw_order")
+    public String dotwOrder() {
+        return "dotw_order";
+    }
+
+    @RequestMapping("/index/event")
+    public String pageEvent() {
+        return "event_attr";
+    }
+
 }

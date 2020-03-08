@@ -1,5 +1,6 @@
 package com.yzly.admin.controller.dotw;
 
+import com.yzly.core.domain.dotw.BookingOrderInfo;
 import com.yzly.core.domain.dotw.OrderDetailInfo;
 import com.yzly.core.domain.dotw.query.OrderDetailInfoQuery;
 import com.yzly.core.service.dotw.OrderDetailInfoViewService;
@@ -27,4 +28,14 @@ public class OrderInfoController {
         resMap.put("rows", orderDetailInfos.getContent());
         return resMap;
     }
+
+    @GetMapping("/dotw/order")
+    public Map<String, Object> getPageOrder(int page, int rows, OrderDetailInfoQuery orderDetailInfoQuery) {
+        Map<String, Object> resMap = new HashMap<>();
+        Page<BookingOrderInfo> bpage = orderDetailInfoViewService.findAllByPageQuery(page, rows, orderDetailInfoQuery);
+        resMap.put("total", bpage.getTotalElements());
+        resMap.put("rows", bpage.getContent());
+        return resMap;
+    }
+
 }

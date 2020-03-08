@@ -16,6 +16,7 @@ import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -229,22 +230,36 @@ public class BookingService {
 //        orderInfo.setMealsPriceValue(bookingJson.getJSONObject("mealsPrice").getString("#text"));
 //        orderInfo.setType(bookingJson.getString("type"));
         // 根据订单json保存子订单信息
+        String referenceNumber = "";
+        String price = "";
+        String priceValue = "";
         if (bookingJson != null) {
-            orderInfo = this.generateSubOrder(bookingJson, orderInfo);
+            SubOrder subOrder = this.generateSubOrder(bookingJson, orderInfo);
+            referenceNumber = subOrder.getBookingReferenceNumber();
+            price = subOrder.getPrice();
+            priceValue = subOrder.getPriceValue();
         } else if (bookingArray != null) {
+            BigDecimal priceB = new BigDecimal(0);
             for (int i = 0; i < bookingArray.size(); i++) {
                 JSONObject bookJson = bookingArray.getJSONObject(i);
-                orderInfo = this.generateSubOrder(bookJson, orderInfo);
+                SubOrder subOrder = this.generateSubOrder(bookJson, orderInfo);
+                referenceNumber = referenceNumber + subOrder.getBookingReferenceNumber() + ",";
+                price = price + subOrder.getPrice() + ",";
+                priceB.add(new BigDecimal(subOrder.getPriceValue()));
             }
+            priceValue = priceB.toString();
         }
         orderInfo.setReturnedCode(jsonObject.getString("returnedCode"));
         orderInfo.setTariffNotes(jsonObject.getString("tariffNotes"));
+        orderInfo.setBookingReferenceNumber(referenceNumber);
         orderInfo.setOrderStatus(OrderStatus.CONFIRMED);
+        orderInfo.setPrice(price);
+        orderInfo.setPriceValue(priceValue);
         return bookingOrderInfoRepository.save(orderInfo);
     }
 
     // 构建并保存子订单信息
-    private BookingOrderInfo generateSubOrder(JSONObject bookingJson, BookingOrderInfo bookingOrderInfo) {
+    private SubOrder generateSubOrder(JSONObject bookingJson, BookingOrderInfo bookingOrderInfo) {
         SubOrder orderInfo = new SubOrder();
         orderInfo.setOrderId(bookingOrderInfo.getId());
         orderInfo.setPaymentGuaranteedBy(bookingJson.getString("paymentGuaranteedBy"));
@@ -260,10 +275,7 @@ public class BookingService {
         orderInfo.setMealsPrice(bookingJson.getString("mealsPrice"));
         orderInfo.setMealsPriceValue(bookingJson.getJSONObject("mealsPrice").getString("#text"));
         orderInfo.setType(bookingJson.getString("type"));
-        subOrderRepository.save(orderInfo);
-        bookingOrderInfo.setPrice(bookingJson.getString("price"));
-        bookingOrderInfo.setPriceValue(bookingJson.getJSONObject("price").getString("#text"));
-        return bookingOrderInfo;
+        return subOrderRepository.save(orderInfo);
     }
 
     /**

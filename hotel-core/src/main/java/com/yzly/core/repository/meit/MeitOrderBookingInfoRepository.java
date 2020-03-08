@@ -1,6 +1,9 @@
 package com.yzly.core.repository.meit;
 
 import com.yzly.core.domain.meit.MeitOrderBookingInfo;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -17,5 +20,7 @@ public interface MeitOrderBookingInfoRepository extends JpaRepository<MeitOrderB
     List<MeitOrderBookingInfo> findAllByOrderId(Long orderId);
 
     MeitOrderBookingInfo findByOrderId(Long orderId);
+
+    Page<MeitOrderBookingInfo> findAll(Specification<MeitOrderBookingInfo> list, Pageable pageable);
 
 }

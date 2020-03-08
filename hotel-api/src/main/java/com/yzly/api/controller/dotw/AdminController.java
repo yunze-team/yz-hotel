@@ -76,4 +76,14 @@ public class AdminController {
         return result;
     }
 
+    /**
+     * 取消订单
+     * @param orderId
+     * @return
+     */
+    @PostMapping("/cancel_order")
+    public Object cancelMeitOrder(String orderId) {
+        return meitApiService.cancelOrderJudge(orderId);
+    }
+
 }
