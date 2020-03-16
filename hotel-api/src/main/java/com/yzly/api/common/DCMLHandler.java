@@ -142,7 +142,7 @@ public class DCMLHandler {
         xmlLog.setTraceId(traceId);
         xmlLog.setReqXml(doc.asXML());
         log.info("发往dotw的报文：" + doc.asXML());
-        xmlLog = dotwXmlLogRepository.save(xmlLog);
+        //xmlLog = dotwXmlLogRepository.save(xmlLog);
         // 设置到dotw的超时时间
         HttpComponentsClientHttpRequestFactory httpRequestFactory = new HttpComponentsClientHttpRequestFactory();
         httpRequestFactory.setConnectionRequestTimeout(DotwConnectRequesTimeout);
@@ -164,7 +164,7 @@ public class DCMLHandler {
             XMLSerializer xmlSerializer = new XMLSerializer();
             String resutStr = xmlSerializer.read(responseEntity.getBody()).toString();
             xmlLog.setRespData(JSONObject.parseObject(resutStr));
-            dotwXmlLogRepository.save(xmlLog);
+            //dotwXmlLogRepository.save(xmlLog);
             return responseEntity.getBody();
         } else {
             return "<?xml version=\"1.0\" encoding=\"UTF-8\"?><result><request><successful>FALSE</successful></request></result>";
@@ -177,7 +177,7 @@ public class DCMLHandler {
         xmlLog.setTraceId(traceId);
         xmlLog.setReqXml(doc.asXML());
         log.info("发往dotw的报文：" + doc.asXML());
-        xmlLog = dotwXmlLogRepository.save(xmlLog);
+        //xmlLog = dotwXmlLogRepository.save(xmlLog);
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.TEXT_XML);
         HttpEntity<String> xmlEntity = new HttpEntity<>(doc.asXML(), headers);
@@ -188,7 +188,7 @@ public class DCMLHandler {
         XMLSerializer xmlSerializer = new XMLSerializer();
         String resutStr = xmlSerializer.read(responseEntity.getBody()).toString();
         xmlLog.setRespData(JSONObject.parseObject(resutStr));
-        dotwXmlLogRepository.save(xmlLog);
+        //dotwXmlLogRepository.save(xmlLog);
         return responseEntity.getBody();
     }
 

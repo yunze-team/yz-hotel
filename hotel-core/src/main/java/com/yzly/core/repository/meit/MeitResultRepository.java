@@ -18,4 +18,6 @@ public interface MeitResultRepository extends MongoRepository<MeitResult, Object
 
     List<MeitResult> findAllByCreatedAtBefore(Date day);
 
+    void deleteAllByCreatedAtBefore(Date day);
+
 }

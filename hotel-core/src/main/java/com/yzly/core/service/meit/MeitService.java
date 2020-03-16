@@ -122,6 +122,17 @@ public class MeitService {
         return meitResultRepository.save(meitResult);
     }
 
+    public void syncMeitCityToHotel(List<String> ids) {
+        for (String hotelId: ids) {
+            HotelInfo hotelInfo = hotelInfoRepository.findByDotwHotelCode(hotelId);
+            List<MeitCity> mc = meitCityRepository.findAllByNameENLike("%" + hotelInfo.getCity().replaceAll(" ", "") + "%");
+            if (mc.size() > 0) {
+                hotelInfo.setMeitCityId(mc.get(0).getCityId());
+            }
+            hotelInfoRepository.save(hotelInfo);
+        }
+    }
+
     /**
      * 按照分销商分页查询出酒店基础数据
      * @param page
@@ -147,10 +158,14 @@ public class MeitService {
         for (HotelSyncList hs : hpage.getContent()) {
             HotelInfo hotelInfo = hotelInfoRepository.findByDotwHotelCode(hs.getHotelId());
             MeitHotel mh = new MeitHotel();
-            List<MeitCity> mc = meitCityRepository.findAllByNameENLike("%" + hotelInfo.getCity().replaceAll(" ", "") + "%");
-            mh.setHotelId(hs.getHotelId());
-            if (mc.size() > 0) {
-                mh.setCityId(Integer.valueOf(mc.get(0).getCityId()));
+            if (StringUtils.isNotEmpty(hotelInfo.getMeitCityId())) {
+                mh.setCityId(Integer.valueOf(hotelInfo.getMeitCityId()));
+            } else {
+                List<MeitCity> mc = meitCityRepository.findAllByNameENLike(hotelInfo.getCity().replaceAll(" ", "") + "%");
+                mh.setHotelId(hs.getHotelId());
+                if (mc.size() > 0) {
+                    mh.setCityId(Integer.valueOf(mc.get(0).getCityId()));
+                }
             }
             mh.setNameCn(hotelInfo.getHotelNameCn());
             mh.setNameEn(hotelInfo.getHotelName());

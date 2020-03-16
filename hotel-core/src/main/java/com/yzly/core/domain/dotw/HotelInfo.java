@@ -91,6 +91,9 @@ public class HotelInfo {
     @Column(length = 20)
     private String syncRoomPriceDate;
 
+    @Column(length = 20)
+    private String meitCityId;
+
     @Column(nullable = false, updatable = false, name = "created_at")
     @Temporal(TemporalType.TIMESTAMP)
     @CreatedDate

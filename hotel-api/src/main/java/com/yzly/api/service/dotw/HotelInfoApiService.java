@@ -8,6 +8,7 @@ import com.yzly.core.domain.dotw.RoomBookingInfo;
 import com.yzly.core.domain.dotw.query.HotelQuery;
 import com.yzly.core.service.dotw.BookingService;
 import com.yzly.core.service.dotw.HotelInfoService;
+import com.yzly.core.service.meit.MeitService;
 import com.yzly.core.service.meit.TaskService;
 import lombok.extern.apachecommons.CommonsLog;
 import org.apache.commons.lang.StringUtils;
@@ -36,6 +37,8 @@ public class HotelInfoApiService {
     private BookingService bookingService;
     @Autowired
     private TaskService taskService;
+    @Autowired
+    private MeitService meitService;
 
     public void syncBasicData() {
         try {
@@ -211,6 +214,7 @@ public class HotelInfoApiService {
 //        if (hotelInfoService.judgeHotelAdditionalAndRoomType(ids)) {
 //            return;
 //        }
+        meitService.syncMeitCityToHotel(ids);
         String fromDate = DateTime.now().toString("yyyy-MM-dd");
         String toDate = DateTime.now().plusDays(1).toString("yyyy-MM-dd");
         JSONObject jsonObject = dcmlHandler.searchHotelInfoById(ids, fromDate, toDate);

@@ -18,4 +18,6 @@ public interface MeitTraceLogRepository extends MongoRepository<MeitTraceLog, Ob
 
     List<MeitTraceLog> findAllByCreatedAtBefore(Date day);
 
+    void deleteAllByCreatedAtBefore(Date day);
+
 }

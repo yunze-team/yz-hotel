@@ -77,10 +77,10 @@ public class TaskService {
      */
     public void delMeitLogByDays(int days) {
         Date day = DateTime.now().minusDays(days).toDate();
-        List<MeitResult> mlist = meitResultRepository.findAllByCreatedAtBefore(day);
-        List<MeitTraceLog> tlist = meitTraceLogRepository.findAllByCreatedAtBefore(day);
-        meitResultRepository.delete(mlist);
-        meitTraceLogRepository.delete(tlist);
+//        List<MeitResult> mlist = meitResultRepository.findAllByCreatedAtBefore(day);
+//        List<MeitTraceLog> tlist = meitTraceLogRepository.findAllByCreatedAtBefore(day);
+        meitResultRepository.deleteAllByCreatedAtBefore(day);
+        meitTraceLogRepository.deleteAllByCreatedAtBefore(day);
     }
 
     /**
