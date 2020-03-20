@@ -210,11 +210,11 @@ public class HotelInfoApiService {
      */
     public void pullHotelAndRoomsInfoByIds(String hotelIds) {
         List<String> ids = Arrays.asList(hotelIds.split(","));
-        // 判断本地酒店附属信息和房型信息缓存是否存在，如果存在，则不去dotw查询
-//        if (hotelInfoService.judgeHotelAdditionalAndRoomType(ids)) {
-//            return;
-//        }
         meitService.syncMeitCityToHotel(ids);
+        // 判断本地酒店附属信息和房型信息缓存是否存在，如果存在，则不去dotw查询
+        if (hotelInfoService.judgeHotelAdditionalAndRoomType(ids)) {
+            return;
+        }
         String fromDate = DateTime.now().toString("yyyy-MM-dd");
         String toDate = DateTime.now().plusDays(1).toString("yyyy-MM-dd");
         JSONObject jsonObject = dcmlHandler.searchHotelInfoById(ids, fromDate, toDate);
