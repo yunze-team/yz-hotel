@@ -79,6 +79,8 @@ public class MeitService {
     private SubOrderRepository subOrderRepository;
     @Autowired
     private RoomPriceDateXmlRepository roomPriceDateXmlRepository;
+    @Autowired
+    private HotelPriceByDateRepository hotelPriceByDateRepository;
 
     private static final String MEIT_ROOM_PRICE_RATE = "MEIT_ROOM_PRICE_RATE";
 
@@ -292,6 +294,88 @@ public class MeitService {
         img.setImageOrigin(image.getString("url"));
         img.setImageType(imageType);
         return img;
+    }
+
+    public List<Room> assemblyMeitRoomCache(HotelPriceByDate hotelPriceByDate) {
+        log.debug("assembly meit room cache start.");
+        List<Room> rlist = new ArrayList<>();
+        JSONObject roomPriceJson = hotelPriceByDate.getRoomPriceJson();
+        Object roomTypeOb = roomPriceJson.getObject("roomType", Object.class);
+        if (roomTypeOb instanceof ArrayList) {
+            JSONArray roomTypeArray = JSONArray.parseArray(JSON.toJSONString(roomTypeOb));
+            for (int i = 0; i < roomTypeArray.size(); i++) {
+                JSONObject roomTypeObject = roomTypeArray.getJSONObject(i);
+                rlist.addAll(executeRoomTypeJson(roomTypeObject, hotelPriceByDate.getHotelCode(),
+                        hotelPriceByDate.getFromDate(), hotelPriceByDate.getToDate()));
+            }
+        } else {
+            JSONObject roomTypeObject = JSONObject.parseObject(JSON.toJSONString(roomTypeOb));
+            rlist.addAll(executeRoomTypeJson(roomTypeObject, hotelPriceByDate.getHotelCode(),
+                    hotelPriceByDate.getFromDate(), hotelPriceByDate.getToDate()));
+        }
+        return rlist;
+    }
+
+    private List<Room> executeRoomTypeJson(JSONObject roomTypeJson, String hotelId, String fromDate, String toDate) {
+        List<Room> rlist = new ArrayList<>();
+        JSONObject rateBasesObject = roomTypeJson;
+        String roomName = rateBasesObject.getString("name");
+        String roomTypeCOde = rateBasesObject.getString("@roomtypecode");
+        Object rateBases = rateBasesObject.getObject("rateBases", Object.class);
+        if (rateBases instanceof JSONObject) {
+            JSONObject rateJSON = ((JSONObject) rateBases).getJSONObject("rateBasis");
+            Room room = buildRoomPriceByJSON(rateJSON, hotelId, roomName, roomTypeCOde, fromDate, toDate);
+            rlist.add(room);
+        } else if (rateBases instanceof JSONArray) {
+            JSONArray rateArray = (JSONArray) rateBases;
+            for (int k = 0; k < rateArray.size(); k++) {
+                JSONObject rateJSON = rateArray.getJSONObject(k);
+                Room room = buildRoomPriceByJSON(rateJSON, hotelId, roomName, roomTypeCOde, fromDate, toDate);
+                rlist.add(room);
+            }
+        }
+        return rlist;
+    }
+
+    private Room buildRoomPriceByJSON(JSONObject rateJSON, String hotelId, String roomName,
+                                                  String roomTypeCode, String fromDate, String toDate) {
+        log.debug("assembly meit room cache start.");
+        Room room = new Room();
+        String rateBasisId = rateJSON.getString("@id");
+        // 判断房型是否还有早餐
+        Breakfast breakfast = new Breakfast();
+        if (!rateBasisId.equals("1331")) {
+            breakfast.setCount(0);
+        } else {
+            breakfast.setCount(2);
+        }
+        List<DayInfo> dayInfos = new ArrayList<>();
+        // 获得酒店价格上浮利率
+        EventAttr attr = eventAttrRepository.findByEventType(MEIT_ROOM_PRICE_RATE);
+        Double priceRate = Double.valueOf(attr.getEventValue());
+        DayInfo dayInfo = generateDayInfoByDate(fromDate, rateJSON.getString("total"), priceRate);
+        dayInfos.add(dayInfo);
+        room.setDayInfos(dayInfos);
+        room.setBreakfast(breakfast);
+        room.setRoomId(roomTypeCode);
+        room.setRoomName(roomName);
+        room.setRatePlanCode(rateBasisId);
+        HotelAdditionalInfo hotelAdditionalInfo = hotelAdditionalInfoRepository.findOneByHotelId(hotelId);
+        // 可能为空，判断一下
+        if (hotelAdditionalInfo != null) {
+            room.setCheckInTime(hotelAdditionalInfo.getHotelCheckIn());
+            room.setCheckOutTime(hotelAdditionalInfo.getHotelCheckOut());
+        }
+        List<RefundRule> refundRules = new ArrayList<>();
+        // 所有给美团的房型，都显示为不可取消
+        RefundRule refundRule = new RefundRule();
+        refundRule.setReturnable(false);
+        refundRule.setMaxHoursBeforeCheckIn(null);
+        refundRule.setMinHoursBeforeCheckIn(0);
+        refundRules.add(refundRule);
+        room.setRefundRules(refundRules);
+        log.debug("assembly meit room cache end.");
+        return room;
     }
 
     /**
@@ -686,6 +770,16 @@ public class MeitService {
             rMap.put(hotelId, roomList);
         }
         return rMap;
+    }
+
+    public Map<String, HotelPriceByDate> findHotelPriceByGoodsSearch(String hotelIds, String fromDate, String toDate) {
+        String[] hotelIdsArray = hotelIds.split(",");
+        Map<String, HotelPriceByDate> rmap = new HashMap<>();
+        for (String hotelId : hotelIdsArray) {
+            HotelPriceByDate hotelPriceByDate = hotelPriceByDateRepository.findByHotelCodeAndFromDateAndToDate(hotelId, fromDate, toDate);
+            rmap.put(hotelId, hotelPriceByDate);
+        }
+        return rmap;
     }
 
 }

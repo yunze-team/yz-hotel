@@ -4,10 +4,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.yzly.core.domain.HotelManualSyncList;
 import com.yzly.core.domain.HotelSyncList;
-import com.yzly.core.domain.dotw.HotelRoomPriceXml;
-import com.yzly.core.domain.dotw.RoomPriceByDate;
-import com.yzly.core.domain.dotw.RoomPriceDateXml;
-import com.yzly.core.domain.dotw.UserHotelRoomPriceXml;
+import com.yzly.core.domain.dotw.*;
 import com.yzly.core.domain.event.EventAttr;
 import com.yzly.core.domain.meit.MeitTraceLog;
 import com.yzly.core.domain.meit.dto.GoodsSearchQuery;
@@ -65,6 +62,8 @@ public class TaskService {
     private MeitTraceLogRepository meitTraceLogRepository;
     @Autowired
     private RoomPriceDateXmlRepository roomPriceDateXmlRepository;
+    @Autowired
+    private HotelPriceByDateRepository hotelPriceByDateRepository;
 
     private static final String MEIT_ROOM_PRICE_PULL_SIZE = "MEIT_ROOM_PRICE_PULL_SIZE";
 
@@ -130,6 +129,37 @@ public class TaskService {
             hotelSyncListRepository.save(hs);
         }
         return ids;
+    }
+
+    public void syncHotelPriceByDate(JSONObject priceObject, String fromDate, String toDate) {
+        Object hotelO = priceObject.getObject("hotels", Object.class);
+        log.info(priceObject);
+        if (hotelO instanceof JSONArray) {
+            JSONArray hotelArray = (JSONArray) hotelO;
+            for (int i = 0; i < hotelArray.size(); i++) {
+                JSONObject hotelObject = hotelArray.getJSONObject(i).getJSONObject("hotel");
+                String hotelId = hotelObject.getString("@hotelid");
+                JSONObject roomPriceJson = hotelObject.getJSONObject("rooms").getJSONObject("room");
+                executeHotelPriceJson(roomPriceJson, fromDate, toDate, hotelId);
+            }
+        } else if (hotelO instanceof JSONObject) {
+            JSONObject hotelObject = ((JSONObject) hotelO).getJSONObject("hotel");
+            String hotelId = hotelObject.getString("@hotelid");
+            JSONObject roomPriceJson = hotelObject.getJSONObject("rooms").getJSONObject("room");
+            executeHotelPriceJson(roomPriceJson, fromDate, toDate, hotelId);
+        }
+    }
+
+    public void executeHotelPriceJson(JSONObject roomPriceJson, String fromDate, String toDate, String hotelCode) {
+        HotelPriceByDate hotelPriceByDate = hotelPriceByDateRepository.findByHotelCodeAndFromDateAndToDate(hotelCode, fromDate, toDate);
+        if (hotelPriceByDate == null) {
+            hotelPriceByDate = new HotelPriceByDate();
+        }
+        hotelPriceByDate.setHotelCode(hotelCode);
+        hotelPriceByDate.setFromDate(fromDate);
+        hotelPriceByDate.setToDate(toDate);
+        hotelPriceByDate.setRoomPriceJson(roomPriceJson);
+        hotelPriceByDateRepository.save(hotelPriceByDate);
     }
 
     /**

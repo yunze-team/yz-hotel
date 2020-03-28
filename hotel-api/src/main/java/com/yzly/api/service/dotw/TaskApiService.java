@@ -77,8 +77,13 @@ public class TaskApiService {
             for (String hotelId : hotelIds) {
                 List<String> hotelIdArray = new ArrayList<>();
                 hotelIdArray.add(hotelId);
-                JSONObject priceObject = dcmlHandler.searchHotelPriceByID(hotelIdArray, fromDate, toDate);
-                taskService.syncRoomPriceByDate(priceObject, fromDate, toDate);
+                try {
+                    JSONObject priceObject = dcmlHandler.searchHotelPriceByID(hotelIdArray, fromDate, toDate);
+                    taskService.syncHotelPriceByDate(priceObject, fromDate, toDate);
+                } catch (Exception e) {
+                    log.error(e.getMessage());
+                    continue;
+                }
             }
         }
     }

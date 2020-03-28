@@ -3,10 +3,7 @@ package com.yzly.api.service.dotw;
 import com.alibaba.fastjson.JSONObject;
 import com.yzly.api.common.DCMLHandler;
 import com.yzly.api.util.meit.MeitResultUtil;
-import com.yzly.core.domain.dotw.BookingOrderInfo;
-import com.yzly.core.domain.dotw.HotelAdditionalInfo;
-import com.yzly.core.domain.dotw.RoomBookingInfo;
-import com.yzly.core.domain.dotw.RoomPriceDateXml;
+import com.yzly.core.domain.dotw.*;
 import com.yzly.core.domain.dotw.enums.OrderStatus;
 import com.yzly.core.domain.meit.MeitOrderBookingInfo;
 import com.yzly.core.domain.meit.MeitTraceLog;
@@ -154,7 +151,7 @@ public class MeitApiService {
             List<JSONObject> jlist = dcmlHandler.getRoomsByMeitQuery(goodsSearchQuery);
             data = syncGoodsSearch(jlist, goodsSearchQuery);
         } else {
-            data = syncGoodsSearchCash(goodsSearchQuery);
+            data = syncGoodsSearchCache(goodsSearchQuery);
         }
         return data;
     }
@@ -164,29 +161,23 @@ public class MeitApiService {
      * @param goodsSearchQuery
      * @return
      */
-    public Object syncGoodsSearchCash(GoodsSearchQuery goodsSearchQuery) {
-        log.info("sync goods search cash start.");
-        Map<String, List<RoomPriceDateXml>> roomMap = meitService.findAllByGoodsSearch(goodsSearchQuery.getHotelIds(),
+    public Object syncGoodsSearchCache(GoodsSearchQuery goodsSearchQuery) {
+        log.info("sync goods search cache start.");
+        Map<String, HotelPriceByDate> priceMap = meitService.findHotelPriceByGoodsSearch(goodsSearchQuery.getHotelIds(),
                 goodsSearchQuery.getCheckin(), goodsSearchQuery.getCheckout());
         Map<String, Map> res = new HashMap<>();
         Map<String, HotelMap> data = new HashMap<>();
-        for (String hotelId : roomMap.keySet()) {
-            List<RoomPriceDateXml> rlist = roomMap.get(hotelId);
-            List<Room> roomList = new ArrayList<>();
+        for (String hotelId : priceMap.keySet()) {
             HotelMap hotelMap = new HotelMap();
             hotelMap.setCurrencyCode("CNY");
-            for (RoomPriceDateXml priceDateXml : rlist) {
-                Room room = meitService.assemblyMeitRoomCash(priceDateXml);
-                Rooms rooms = new Rooms();
-                rooms.setRoom(room);
-                roomList.add(room);
-            }
+            HotelPriceByDate hotelPriceByDate = priceMap.get(hotelId);
+            List<Room> roomList = meitService.assemblyMeitRoomCache(hotelPriceByDate);
             hotelMap.setRooms(roomList);
             // 封装返回结果集
             data.put(hotelId, hotelMap);
         }
         res.put("hotelMap", data);
-        log.info("sync goods search cash end.");
+        log.info("sync goods search cache end.");
         return res;
     }
 
