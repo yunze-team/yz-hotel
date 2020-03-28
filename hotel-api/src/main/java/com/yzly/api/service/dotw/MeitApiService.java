@@ -6,6 +6,7 @@ import com.yzly.api.util.meit.MeitResultUtil;
 import com.yzly.core.domain.dotw.BookingOrderInfo;
 import com.yzly.core.domain.dotw.HotelAdditionalInfo;
 import com.yzly.core.domain.dotw.RoomBookingInfo;
+import com.yzly.core.domain.dotw.RoomPriceDateXml;
 import com.yzly.core.domain.dotw.enums.OrderStatus;
 import com.yzly.core.domain.meit.MeitOrderBookingInfo;
 import com.yzly.core.domain.meit.MeitTraceLog;
@@ -18,6 +19,9 @@ import com.yzly.core.service.dotw.HotelInfoService;
 import com.yzly.core.service.meit.MeitService;
 import lombok.extern.apachecommons.CommonsLog;
 import org.apache.commons.lang.StringUtils;
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -129,6 +133,61 @@ public class MeitApiService {
         Map<String, List> data = new HashMap<>();
         data.put("roomTypeExtModelList", hlist);
         return data;
+    }
+
+    /**
+     * 美团产品搜索路由
+     * @param goodsSearchQuery
+     * @return
+     */
+    public Object syncGoodsSearchRoute(GoodsSearchQuery goodsSearchQuery) {
+        String[] hotelIdsArray = goodsSearchQuery.getHotelIds().split(",");
+        Object data = null;
+        DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy-MM-dd");
+        DateTime fromDate = DateTime.parse(goodsSearchQuery.getCheckin(), formatter);
+        DateTime toDate = DateTime.parse(goodsSearchQuery.getCheckout(), formatter);
+        boolean flag = false;
+        if (!toDate.minusDays(1).isEqual(fromDate)) {
+            flag = true;
+        }
+        if (hotelIdsArray.length == 1 || flag) {
+            List<JSONObject> jlist = dcmlHandler.getRoomsByMeitQuery(goodsSearchQuery);
+            data = syncGoodsSearch(jlist, goodsSearchQuery);
+        } else {
+            data = syncGoodsSearchCash(goodsSearchQuery);
+        }
+        return data;
+    }
+
+    /**
+     * 美团产品搜索结果按缓存同步
+     * @param goodsSearchQuery
+     * @return
+     */
+    public Object syncGoodsSearchCash(GoodsSearchQuery goodsSearchQuery) {
+        log.info("sync goods search cash start.");
+        Map<String, List<RoomPriceDateXml>> roomMap = meitService.findAllByGoodsSearch(goodsSearchQuery.getHotelIds(),
+                goodsSearchQuery.getCheckin(), goodsSearchQuery.getCheckout());
+        Map<String, Map> res = new HashMap<>();
+        Map<String, HotelMap> data = new HashMap<>();
+        for (String hotelId : roomMap.keySet()) {
+            List<RoomPriceDateXml> rlist = roomMap.get(hotelId);
+            List<Room> roomList = new ArrayList<>();
+            HotelMap hotelMap = new HotelMap();
+            hotelMap.setCurrencyCode("CNY");
+            for (RoomPriceDateXml priceDateXml : rlist) {
+                Room room = meitService.assemblyMeitRoomCash(priceDateXml);
+                Rooms rooms = new Rooms();
+                rooms.setRoom(room);
+                roomList.add(room);
+            }
+            hotelMap.setRooms(roomList);
+            // 封装返回结果集
+            data.put(hotelId, hotelMap);
+        }
+        res.put("hotelMap", data);
+        log.info("sync goods search cash end.");
+        return res;
     }
 
     /**

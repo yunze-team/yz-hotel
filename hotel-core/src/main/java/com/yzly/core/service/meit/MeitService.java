@@ -38,7 +38,9 @@ import javax.persistence.criteria.Predicate;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author lazyb
@@ -75,6 +77,8 @@ public class MeitService {
     private MeitResultRepository meitResultRepository;
     @Autowired
     private SubOrderRepository subOrderRepository;
+    @Autowired
+    private RoomPriceDateXmlRepository roomPriceDateXmlRepository;
 
     private static final String MEIT_ROOM_PRICE_RATE = "MEIT_ROOM_PRICE_RATE";
 
@@ -291,6 +295,50 @@ public class MeitService {
     }
 
     /**
+     * 通过pricedataxml缓存封装美团room视图
+     * @param priceDateXml
+     * @return
+     */
+    public Room assemblyMeitRoomCash(RoomPriceDateXml priceDateXml) {
+        log.debug("assembly meit room cash start.");
+        Room room = new Room();
+        Breakfast breakfast = new Breakfast();
+        // 判断房型是否还有早餐
+        if (!priceDateXml.getRateBasisId().equals("1331")) {
+            breakfast.setCount(0);
+        } else {
+            breakfast.setCount(2);
+        }
+        List<DayInfo> dayInfos = new ArrayList<>();
+        // 获得酒店价格上浮利率
+        EventAttr attr = eventAttrRepository.findByEventType(MEIT_ROOM_PRICE_RATE);
+        Double priceRate = Double.valueOf(attr.getEventValue());
+        DayInfo dayInfo = generateDayInfoByDate(priceDateXml.getFromDate(), priceDateXml.getTotal(), priceRate);
+        dayInfos.add(dayInfo);
+        room.setDayInfos(dayInfos);
+        room.setBreakfast(breakfast);
+        room.setRoomId(priceDateXml.getRoomTypeCode());
+        room.setRoomName(priceDateXml.getRoomName());
+        room.setRatePlanCode(priceDateXml.getRateBasisId());
+        HotelAdditionalInfo hotelAdditionalInfo = hotelAdditionalInfoRepository.findOneByHotelId(priceDateXml.getHotelCode());
+        // 可能为空，判断一下
+        if (hotelAdditionalInfo != null) {
+            room.setCheckInTime(hotelAdditionalInfo.getHotelCheckIn());
+            room.setCheckOutTime(hotelAdditionalInfo.getHotelCheckOut());
+        }
+        List<RefundRule> refundRules = new ArrayList<>();
+        // 所有给美团的房型，都显示为不可取消
+        RefundRule refundRule = new RefundRule();
+        refundRule.setReturnable(false);
+        refundRule.setMaxHoursBeforeCheckIn(null);
+        refundRule.setMinHoursBeforeCheckIn(0);
+        refundRules.add(refundRule);
+        room.setRefundRules(refundRules);
+        log.debug("assembly meit room cash end.");
+        return room;
+    }
+
+    /**
      * 通过roombookinginfo实体封装美团room视图
      * @param roomBookingInfo
      * @return
@@ -415,6 +463,17 @@ public class MeitService {
         BigDecimal finalPrice = basePrice.multiply(new BigDecimal(100)).multiply(new BigDecimal(1 + priceRate));
         dayInfo.setBasePrice(finalPrice.setScale(0, RoundingMode.HALF_UP).intValue());
         dayInfo.setDate(date.getString("@datetime"));
+        dayInfo.setStatus(1);
+        dayInfo.setCounts(1);
+        return dayInfo;
+    }
+
+    private DayInfo generateDayInfoByDate(String fromDate, String total, Double priceRate) {
+        DayInfo dayInfo = new DayInfo();
+        BigDecimal basePrice = new BigDecimal(total);
+        BigDecimal finalPrice = basePrice.multiply(new BigDecimal(100)).multiply(new BigDecimal(1 + priceRate));
+        dayInfo.setBasePrice(finalPrice.setScale(0, RoundingMode.HALF_UP).intValue());
+        dayInfo.setDate(fromDate);
         dayInfo.setStatus(1);
         dayInfo.setCounts(1);
         return dayInfo;
@@ -610,6 +669,23 @@ public class MeitService {
         meitOrder.setPenalty(penalty);
         meitOrder.setOrderStatus(PlatformOrderStatusEnum.CANCEL_SUCCESS);
         return meitOrderBookingInfoRepository.save(meitOrder);
+    }
+
+    /**
+     * 按照酒店ids和日期，给出缓存的房型价格缓存数据
+     * @param hotelIds
+     * @param fromDate
+     * @param toDate
+     * @return
+     */
+    public Map<String, List<RoomPriceDateXml>> findAllByGoodsSearch(String hotelIds, String fromDate, String toDate) {
+        String[] hotelIdsArray = hotelIds.split(",");
+        Map<String, List<RoomPriceDateXml>> rMap = new HashMap<>();
+        for (String hotelId : hotelIdsArray) {
+            List<RoomPriceDateXml> roomList = roomPriceDateXmlRepository.findAllByHotelCodeAndFromDateAndToDate(hotelId, fromDate, toDate);
+            rMap.put(hotelId, roomList);
+        }
+        return rMap;
     }
 
 }

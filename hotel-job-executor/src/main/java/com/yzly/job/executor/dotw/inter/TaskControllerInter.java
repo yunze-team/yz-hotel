@@ -45,4 +45,7 @@ public interface TaskControllerInter {
     @GetMapping("/api/task/del_meit_log")
     String delMeitLogByDays(@RequestParam("days") int days);
 
+    @GetMapping("/api/task/sync_price_date")
+    String syncRoomPriceXmlCache(@RequestParam("offset") int offset);
+
 }

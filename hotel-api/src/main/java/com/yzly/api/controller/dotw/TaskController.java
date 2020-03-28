@@ -127,6 +127,22 @@ public class TaskController {
     }
 
     /**
+     * 使用search_hotel方法，缓存房型价格数据
+     * @param offset
+     * @return
+     */
+    @GetMapping("/sync_price_date")
+    public Object syncRoomPriceListByDate(@RequestParam("offset") int offset) {
+        Runnable runnable = () -> {
+            log.info("offset:" + offset);
+            taskApiService.syncDotwHotelPrice(offset);
+        };
+        Thread thread = new Thread(runnable);
+        thread.start();
+        return "SUCCESS";
+    }
+
+    /**
      * 抽取room_price表中的数据，并生成30天房价excel
      * @return
      */

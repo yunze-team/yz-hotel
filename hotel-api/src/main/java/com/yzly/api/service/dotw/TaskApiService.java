@@ -1,5 +1,6 @@
 package com.yzly.api.service.dotw;
 
+import com.alibaba.fastjson.JSONObject;
 import com.yzly.api.common.DCMLHandler;
 import com.yzly.core.domain.dotw.HotelRoomPriceXml;
 import com.yzly.core.domain.meit.dto.GoodsSearchQuery;
@@ -10,6 +11,7 @@ import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -56,6 +58,27 @@ public class TaskApiService {
                 String resp = dcmlHandler.getRoomsByMeitQueryWithHotelId(hotelId, goodsSearchQuery, false);
                 log.debug(resp);
                 taskService.addRoomPrice(resp, goodsSearchQuery, hotelId);
+            }
+        }
+    }
+
+    /**
+     * 使用search-hotels方法同步酒店的房型价格
+     * @param offset
+     */
+    public void syncDotwHotelPrice(int offset) {
+        List<String> hotelIds = taskService.findSyncHotelIdsByAttr();
+        Integer days = Integer.valueOf(eventAttrRepository.findByEventType(MEIT_ROOM_PRICE_PULL_DAY).getEventValue());
+        int startDays = offset * days;
+        int endDays = days + startDays;
+        for (int i = startDays; i < endDays; i++) {
+            String fromDate = DateTime.now().plusDays(i).toString("yyyy-MM-dd");
+            String toDate = DateTime.now().plusDays(i).plusDays(1).toString("yyyy-MM-dd");
+            for (String hotelId : hotelIds) {
+                List<String> hotelIdArray = new ArrayList<>();
+                hotelIdArray.add(hotelId);
+                JSONObject priceObject = dcmlHandler.searchHotelPriceByID(hotelIdArray, fromDate, toDate);
+                taskService.syncRoomPriceByDate(priceObject, fromDate, toDate);
             }
         }
     }

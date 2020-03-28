@@ -262,8 +262,7 @@ public class MeitApiController {
         String currencyCode = reqData.getString("currencyCode");
         GoodsSearchQuery goodsSearchQuery = new GoodsSearchQuery(hotelIds, roomId, ratePlanCode, checkin, checkout,
                 roomNumber, numberOfAdults, numberOfChildren, childrenAges, currencyCode);
-        List<JSONObject> jlist = dcmlHandler.getRoomsByMeitQuery(goodsSearchQuery);
-        Object data = meitApiService.syncGoodsSearch(jlist, goodsSearchQuery);
+        Object data = meitApiService.syncGoodsSearchRoute(goodsSearchQuery);
         result.setReqMethod("goods_search");
         result.setData(data);
         log.debug(data);

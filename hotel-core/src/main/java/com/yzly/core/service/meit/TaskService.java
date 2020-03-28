@@ -6,6 +6,7 @@ import com.yzly.core.domain.HotelManualSyncList;
 import com.yzly.core.domain.HotelSyncList;
 import com.yzly.core.domain.dotw.HotelRoomPriceXml;
 import com.yzly.core.domain.dotw.RoomPriceByDate;
+import com.yzly.core.domain.dotw.RoomPriceDateXml;
 import com.yzly.core.domain.dotw.UserHotelRoomPriceXml;
 import com.yzly.core.domain.event.EventAttr;
 import com.yzly.core.domain.meit.MeitTraceLog;
@@ -62,6 +63,8 @@ public class TaskService {
     private MeitResultRepository meitResultRepository;
     @Autowired
     private MeitTraceLogRepository meitTraceLogRepository;
+    @Autowired
+    private RoomPriceDateXmlRepository roomPriceDateXmlRepository;
 
     private static final String MEIT_ROOM_PRICE_PULL_SIZE = "MEIT_ROOM_PRICE_PULL_SIZE";
 
@@ -136,9 +139,27 @@ public class TaskService {
      * @param toDate
      */
     public void syncRoomPriceByDate(JSONObject priceObject, String fromDate, String toDate) {
-        JSONArray hotelArray = priceObject.getJSONArray("hotels");
-        for (int i = 0; i < hotelArray.size(); i++) {
-            JSONObject hotelObject = hotelArray.getJSONObject(i);
+        Object hotelO = priceObject.getObject("hotels", Object.class);
+        log.info(priceObject);
+        if (hotelO instanceof JSONArray) {
+            JSONArray hotelArray = (JSONArray) hotelO;
+            for (int i = 0; i < hotelArray.size(); i++) {
+                JSONObject hotelObject = hotelArray.getJSONObject(i).getJSONObject("hotel");
+                String hotelId = hotelObject.getString("@hotelid");
+                Object roomTypeObject = hotelObject.getJSONObject("rooms").getJSONObject("room").getObject("roomType", Object.class);
+                if (roomTypeObject instanceof JSONArray) {
+                    JSONArray roomTypeArray = (JSONArray) roomTypeObject;
+                    for (int j = 0; j < roomTypeArray.size(); j++) {
+                        JSONObject rateBasesObject = roomTypeArray.getJSONObject(j);
+                        executeRoomTypeJson(rateBasesObject, hotelId, fromDate, toDate);
+                    }
+                } else if (roomTypeObject instanceof JSONObject) {
+                    JSONObject roomTypeJson = (JSONObject) roomTypeObject;
+                    executeRoomTypeJson(roomTypeJson, hotelId, fromDate, toDate);
+                }
+            }
+        } else if (hotelO instanceof JSONObject) {
+            JSONObject hotelObject = ((JSONObject) hotelO).getJSONObject("hotel");
             String hotelId = hotelObject.getString("@hotelid");
             Object roomTypeObject = hotelObject.getJSONObject("rooms").getJSONObject("room").getObject("roomType", Object.class);
             if (roomTypeObject instanceof JSONArray) {
@@ -188,12 +209,14 @@ public class TaskService {
      * @param toDate
      * @return
      */
-    private RoomPriceByDate buildRoomPriceByJSON(JSONObject rateJSON, String hotelId, String roomName,
+    private RoomPriceDateXml buildRoomPriceByJSON(JSONObject rateJSON, String hotelId, String roomName,
                                                  String roomTypeCode, String fromDate, String toDate) {
         String rateBasis = rateBasisRepository.findByCode(rateJSON.getString("@id")).getName();
-        RoomPriceByDate roomPrice = roomPriceByDateRepository.findByRoomTypeCodeAndRateBasisAndFromDateAndToDate(roomTypeCode, rateBasis, fromDate, toDate);
+        String rateBasisId = rateJSON.getString("@id");
+        RoomPriceDateXml roomPrice = roomPriceDateXmlRepository.findByRoomTypeCodeAndRateBasisIdAndFromDateAndToDate(roomTypeCode, rateBasisId, fromDate, toDate);
+//        RoomPriceByDate roomPrice = roomPriceByDateRepository.findByRoomTypeCodeAndRateBasisAndFromDateAndToDate(roomTypeCode, rateBasis, fromDate, toDate);
         if (roomPrice == null) {
-            roomPrice = new RoomPriceByDate();
+            roomPrice = new RoomPriceDateXml();
         }
         roomPrice.setHotelCode(hotelId);
         roomPrice.setFromDate(fromDate);
@@ -202,7 +225,10 @@ public class TaskService {
         roomPrice.setRoomTypeCode(roomTypeCode);
         roomPrice.setTotal(rateJSON.getString("total"));
         roomPrice.setRateBasis(rateBasis);
-        return roomPriceByDateRepository.save(roomPrice);
+        roomPrice.setRateBasisId(rateBasisId);
+        roomPrice.setRateJson(rateJSON);
+//        return roomPriceByDateRepository.save(roomPrice);
+        return roomPriceDateXmlRepository.save(roomPrice);
     }
 
     /**
