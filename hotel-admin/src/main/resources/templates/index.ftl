@@ -22,7 +22,7 @@
 
             <div>
                 <h3>${now!}</h3>
-                <a href="http://127.0.0.1:8082/job-admin">定时任务调度平台</a>
+                <a href="http://39.98.58.246:8082/job-admin">定时任务调度平台</a>
             </div>
 
         </section>

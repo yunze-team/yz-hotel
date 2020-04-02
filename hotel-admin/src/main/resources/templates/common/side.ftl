@@ -56,7 +56,12 @@
                             <a href="/index/meit_order">
                               <i class="fa fa-circle-o"></i>  <span>订单管理</span>
                             </a>
-                        </li>i
+                        </li>
+                        <li id="meit_result">
+                            <a href="/index/meit_result">
+                                <i class="fa fa-circle-o"></i>  <span>美团请求日志查询</span>
+                            </a>
+                        </li>
                     </ul>
                 </li>
             <#--End-->

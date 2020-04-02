@@ -122,4 +122,9 @@ public class IndexController {
         return "event_attr";
     }
 
+    @RequestMapping("/index/meit_result")
+    public String meitResult() {
+        return "meit_result";
+    }
+
 }
