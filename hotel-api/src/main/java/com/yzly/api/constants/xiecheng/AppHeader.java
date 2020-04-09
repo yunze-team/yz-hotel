@@ -1,4 +1,4 @@
-package com.yzly.api.constants;
+package com.yzly.api.constants.xiecheng;
 
 
 import com.yzly.api.annotations.*;
@@ -12,27 +12,21 @@ import com.yzly.api.annotations.*;
  **/
 @Struct
 public class AppHeader {
-    @Data("PAGE_END")
     @Fields(length = 12, scale = 0)
     private String pageEnd;
 
-    @Data("CURRENT_NUM")
     @Fields(length = 12, scale = 0)
     private String currentNum;
 
-    @Data("PGUP_OR_PGDN")
     @Fields(length = 12, scale = 0)
     private String pgUpOrPgDn;
 
-    @Data("PAGE_START")
     @Fields(length = 12, scale = 0)
     private String pageStart;
 
-    @Data("TOTAL_NUM")
     @Fields(length = 12, scale = 0)
     private String totalNum;
 
-    @Data("TOTAL_FLAG")
     @Fields(length = 12, scale = 0)
     private String totalFlag;
 

@@ -1,6 +1,6 @@
 package com.yzly.api.util;
 
-import com.yzly.api.annotations.Data;
+import com.yzly.api.annotations.XMLData;
 
 import java.lang.reflect.Field;
 import java.time.LocalDate;
@@ -105,8 +105,8 @@ public class CommonUtil {
 
     public static String getElementName(Field field){
         String elementName = null;
-        if(field.isAnnotationPresent(Data.class)){
-            elementName = field.getAnnotation(Data.class).value();
+        if(field.isAnnotationPresent(XMLData.class)){
+            elementName = field.getAnnotation(XMLData.class).value();
         }
         if(elementName.equals("")){//
             field.setAccessible(true);

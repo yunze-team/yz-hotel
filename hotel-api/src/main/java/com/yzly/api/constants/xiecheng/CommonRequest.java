@@ -1,4 +1,4 @@
-package com.yzly.api.constants;/**
+package com.yzly.api.constants.xiecheng;/**
  * @Description:TODO
  * @Auther frank
  * version V1.0

@@ -2,8 +2,8 @@ package com.yzly.api.util;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.yzly.api.annotations.*;
 import com.yzly.api.annotations.Array;
+import com.yzly.api.annotations.*;
 import org.dom4j.Document;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
@@ -42,12 +42,12 @@ public class XmlUtils {
                 if(null != headerElements) {
                     for (Element headerElement : headerElements) {
                         for (Field headerField : headerFields) {
-                            if (headerField.isAnnotationPresent(Data.class) && headerField.isAnnotationPresent(Fields.class)) {
+                            if (headerField.isAnnotationPresent(XMLData.class) && headerField.isAnnotationPresent(Fields.class)) {
                                 initField(headerField, obj, headerElement);
                             }
                             headerField.setAccessible(true);
                             if(null != headerField.get(obj)) {
-                                if (headerField.isAnnotationPresent(Data.class) && headerField.get(obj).getClass().isAnnotationPresent(Array.class)) {
+                                if (headerField.isAnnotationPresent(XMLData.class) && headerField.get(obj).getClass().isAnnotationPresent(Array.class)) {
                                     initArray(headerField, obj, headerElement);
                                 }
                             }
@@ -60,7 +60,7 @@ public class XmlUtils {
 
     public static  void initField(Field field, Object object, Element element) throws IllegalAccessException{
         field.setAccessible(true);
-        if (element.attributeValue("name").equals(field.getAnnotation(Data.class).value())) {
+        if (element.attributeValue("name").equals(field.getAnnotation(XMLData.class).value())) {
             Element fieldElemnet = element.element("field");
             if (null != fieldElemnet && null != fieldElemnet.getStringValue()) {
                 field.set(object, fieldElemnet.getTextTrim());
@@ -88,7 +88,7 @@ public class XmlUtils {
                         Field[] dataFields = object.getClass().getDeclaredFields();
                         for (Element dataElement : dataElements) {
                             for (Field dataField : dataFields) {
-                                if (dataField.isAnnotationPresent(Data.class) && dataField.isAnnotationPresent(Fields.class)) {
+                                if (dataField.isAnnotationPresent(XMLData.class) && dataField.isAnnotationPresent(Fields.class)) {
                                     initField(dataField, object, dataElement);
                                 }
                             }

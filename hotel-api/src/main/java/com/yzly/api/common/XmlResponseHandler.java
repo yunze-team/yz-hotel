@@ -6,9 +6,9 @@ package com.yzly.api.common;/**
  **/
 
 
-import com.yzly.api.constants.XmlResponse;
+import com.yzly.api.constants.xiecheng.XmlResponse;
 import com.yzly.api.exception.YzException;
-import com.yzly.api.factories.XmlResponseFactory;
+import com.yzly.api.factories.xiecheng.XmlResponseFactory;
 import com.yzly.api.util.XmlUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

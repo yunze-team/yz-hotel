@@ -1,4 +1,4 @@
-package com.yzly.api.factories;/**
+package com.yzly.api.factories.xiecheng;/**
  * @Description:TODO
  * @Auther frank
  * version V1.0
@@ -7,10 +7,11 @@ package com.yzly.api.factories;/**
 
 
 
-import com.yzly.api.constants.*;
+import com.yzly.api.constants.xiecheng.AppHeader;
+import com.yzly.api.constants.xiecheng.XmlResponse;
 import com.yzly.api.exception.YzException;
 import com.yzly.api.models.*;
-import com.yzly.core.domain.jielv.Auth;
+import com.yzly.api.constants.xiecheng.Auth;
 
 import java.util.ArrayList;
 import java.util.List;

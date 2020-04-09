@@ -7,9 +7,9 @@ package com.yzly.api.common;
  **/
 
 import com.yzly.api.annotations.*;
-import com.yzly.api.constants.XmlRequest;
+import com.yzly.api.constants.xiecheng.XmlRequest;
 import com.yzly.api.exception.YzException;
-import com.yzly.api.factories.XmlRequestFactory;
+import com.yzly.api.factories.xiecheng.XmlRequestFactory;
 import com.yzly.api.models.Body;
 import com.yzly.api.util.CommonUtil;
 import com.yzly.api.util.XmlUtils;
@@ -64,7 +64,6 @@ public class XmlRequestHandler<T> {
         try {
             // 创建Document
             Document document = DocumentHelper.createDocument();
-
             // 创建一个根节点
             Element rootElement = document.addElement("soap:Envelope");
             Field[] fields = XmlRequest.getClass().getDeclaredFields();
@@ -74,7 +73,7 @@ public class XmlRequestHandler<T> {
                 }
             }
             String xml = document.asXML();
-            logger.debug("parse to XML---------------->" + xml);
+            logger.info("parse to XML---------------->" + xml);
             return xml;
         } catch (IllegalAccessException e) {
             logger.error(e.getMessage());
@@ -85,7 +84,7 @@ public class XmlRequestHandler<T> {
     private Element createHeader(Field field, Element rootElement, Object object) throws YzException, IllegalAccessException {
         String value = field.getAnnotation(Header.class).value().getValue();
         Element header = rootElement.addElement(value);
-        if(field.isAnnotationPresent(Data.class)) {
+        if(field.isAnnotationPresent(XMLData.class)) {
             createData(field, header, object);
         }
         return header;
@@ -149,7 +148,7 @@ public class XmlRequestHandler<T> {
         }
         Field[] fields = object.getClass().getDeclaredFields();
         for(Field field : fields) {
-            if(field.isAnnotationPresent(Data.class)) {
+            if(field.isAnnotationPresent(XMLData.class)) {
                 createData(field, struct, object);
             }
         }

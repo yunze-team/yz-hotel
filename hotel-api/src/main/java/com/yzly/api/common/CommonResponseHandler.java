@@ -6,13 +6,8 @@ package com.yzly.api.common;/**
  **/
 
 import com.alibaba.fastjson.JSONObject;
-import com.yzly.api.constants.*;
-import com.yzly.api.factories.CommonResponseFactory;
-import com.yzly.api.models.Result;
-import com.yzly.core.domain.jielv.Auth;
-
-import java.time.LocalDate;
-import java.time.LocalTime;
+import com.yzly.api.constants.xiecheng.*;
+import com.yzly.api.factories.xiecheng.CommonResponseFactory;
 
 /**
  *@ClassName CommonResponseHandler

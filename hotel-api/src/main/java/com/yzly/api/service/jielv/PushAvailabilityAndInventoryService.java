@@ -1,15 +1,14 @@
 package com.yzly.api.service.jielv;
 
 import com.yzly.api.common.XmlRequestHandler;
-import com.yzly.api.constants.AppHeader;
-import com.yzly.api.constants.CommonRequest;
-import com.yzly.api.constants.SendSerial;
-import com.yzly.api.constants.XmlRequest;
+import com.yzly.api.constants.xiecheng.AppHeader;
+import com.yzly.api.constants.xiecheng.CommonRequest;
+import com.yzly.api.constants.xiecheng.XmlRequest;
 import com.yzly.api.exception.YzException;
-import com.yzly.api.factories.CommonResquestFactory;
-import com.yzly.api.factories.XmlRequestFactory;
 import com.yzly.api.service.RestHttpService;
-import com.yzly.core.domain.jielv.Auth;
+import com.yzly.api.constants.xiecheng.Auth;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -18,6 +17,7 @@ public class PushAvailabilityAndInventoryService {
 
     @Autowired
     private RestHttpService restHttpService;
+    private static Logger logger = LoggerFactory.getLogger(PushAvailabilityAndInventoryService.class);
 
     public void PushAvailabilityAndInventory(){
         //组装报文
@@ -36,7 +36,7 @@ public class PushAvailabilityAndInventoryService {
             String xml = XmlRequestHandler.getInstance().parseToXml(xmlRequest);
 
 //            XmlRequest esbXmlRequest = XmlRequestFactory.getInstance().createXmlRequest(commonRequest,appHeader);
-            System.out.println("报文转义为：————————————》"+xml);
+            logger.debug("报文转义为：————————————》"+xml);
         } catch (YzException e) {
             e.printStackTrace();
         }

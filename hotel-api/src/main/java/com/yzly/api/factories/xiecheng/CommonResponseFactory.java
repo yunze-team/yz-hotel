@@ -1,4 +1,4 @@
-package com.yzly.api.factories;/**
+package com.yzly.api.factories.xiecheng;/**
  * @Description:TODO
  * @Auther frank
  * version V1.0
@@ -7,10 +7,10 @@ package com.yzly.api.factories;/**
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.yzly.api.constants.CommonRequest;
-import com.yzly.api.constants.CommonResponse;
-import com.yzly.api.constants.SendSerial;
-import com.yzly.api.constants.Serial;
+import com.yzly.api.constants.xiecheng.CommonRequest;
+import com.yzly.api.constants.xiecheng.CommonResponse;
+import com.yzly.api.constants.xiecheng.SendSerial;
+import com.yzly.api.constants.xiecheng.Serial;
 import com.yzly.api.exception.YzException;
 
 

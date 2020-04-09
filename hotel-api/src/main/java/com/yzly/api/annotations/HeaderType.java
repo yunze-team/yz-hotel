@@ -8,7 +8,6 @@ package com.yzly.api.annotations;
 public enum HeaderType{
     APPHEADER("app-header"),
     SYSHEADER("sys-header"),
-    LOCALHEADER("local-header"),
     BODY("body");
 
     private final String value;

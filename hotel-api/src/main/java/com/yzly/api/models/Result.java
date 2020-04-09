@@ -6,7 +6,6 @@ package com.yzly.api.models;/**
  **/
 
 
-import com.yzly.api.annotations.Data;
 import com.yzly.api.annotations.Fields;
 import com.yzly.api.annotations.Struct;
 
@@ -20,10 +19,8 @@ import com.yzly.api.annotations.Struct;
 @Struct
 public class Result {
 
-    @Data("RET_CODE")
     @Fields(length = 10)
     private String retCode;
-    @Data("RET_MSG")
     @Fields(length = 512)
     private String retMsg;
 

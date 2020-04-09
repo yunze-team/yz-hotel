@@ -5,6 +5,6 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 @Target({ElementType.FIELD, ElementType.TYPE})
-public @interface Data {
+public @interface XMLData {
     String value() default "";
 }

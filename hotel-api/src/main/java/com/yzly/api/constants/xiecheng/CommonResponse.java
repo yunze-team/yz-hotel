@@ -1,4 +1,4 @@
-package com.yzly.api.constants;
+package com.yzly.api.constants.xiecheng;
 
 public class CommonResponse<M extends Serial,T> {
 

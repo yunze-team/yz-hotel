@@ -1,12 +1,10 @@
-package com.yzly.api.factories;
+package com.yzly.api.factories.xiecheng;
 
 import com.alibaba.fastjson.JSON;
 import com.yzly.api.common.XmlResponseHandler;
-import com.yzly.api.constants.*;
+import com.yzly.api.constants.xiecheng.*;
 import com.yzly.api.exception.YzException;
 import com.yzly.api.models.Result;
-import com.yzly.core.domain.jielv.Auth;
-import org.springframework.util.StringUtils;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 

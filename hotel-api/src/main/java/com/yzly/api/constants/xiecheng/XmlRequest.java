@@ -1,19 +1,19 @@
-package com.yzly.api.constants;
+package com.yzly.api.constants.xiecheng;
 
 import com.yzly.api.annotations.*;
-import com.yzly.core.domain.jielv.Auth;
+import lombok.Data;
 
-@lombok.Data
+@Data
 public class XmlRequest {
     //系统头
     @Header(HeaderType.SYSHEADER)
-    @Data("SYS_HEAD")
+    @XMLData("SYS_HEAD")
     private Auth auth;
-    @Data("APP_HEAD")
     @Header(HeaderType.APPHEADER)
+    @XMLData("APP_HEAD")
     private AppHeader appHeader;
     @Header(HeaderType.BODY)
-    @com.yzly.api.annotations.Data
+    @XMLData
     private Object body;
 
 }

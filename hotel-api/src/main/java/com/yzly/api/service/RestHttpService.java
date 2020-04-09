@@ -4,10 +4,10 @@ package com.yzly.api.service;
 
 
 
-import com.yzly.api.constants.AppHeader;
-import com.yzly.api.constants.CommonRequest;
-import com.yzly.api.constants.CommonResponse;
-import com.yzly.api.constants.XmlResponse;
+import com.yzly.api.constants.xiecheng.AppHeader;
+import com.yzly.api.constants.xiecheng.CommonRequest;
+import com.yzly.api.constants.xiecheng.CommonResponse;
+import com.yzly.api.constants.xiecheng.XmlResponse;
 import com.yzly.api.exception.YzException;
 
 import java.util.Map;

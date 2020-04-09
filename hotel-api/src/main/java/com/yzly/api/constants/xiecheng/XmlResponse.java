@@ -1,4 +1,4 @@
-package com.yzly.api.constants;/**
+package com.yzly.api.constants.xiecheng;/**
  * @Description:TODO
  * @Auther frank
  * version V1.0
@@ -7,7 +7,6 @@ package com.yzly.api.constants;/**
 
 
 import com.yzly.api.annotations.*;
-import com.yzly.core.domain.jielv.Auth;
 import lombok.ToString;
 
 /**
@@ -23,13 +22,10 @@ public class XmlResponse {
 
     //系统头
     @Header(HeaderType.SYSHEADER)
-    @Data("Auth")
     private Auth auth;
-    @Data("APP_HEAD")
     @Header(HeaderType.APPHEADER)
     private AppHeader appHeader;
     @Header(HeaderType.BODY)
-    @Data
     private Object body;
 
     public XmlResponse() {
