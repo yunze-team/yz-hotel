@@ -18,6 +18,9 @@ import lombok.extern.apachecommons.CommonsLog;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -42,6 +45,9 @@ public class MeitApiController {
     private MeitApiService meitApiService;
     @Autowired
     private DCMLHandler dcmlHandler;
+
+    @Value("${meit.encrypt}")
+    private Boolean meitEncrypt;
 
     /**
      * 从request中获取body 通过getReader()获取
@@ -72,6 +78,13 @@ public class MeitApiController {
     }
 
     private MeitResult generateByRequest(HttpServletRequest request, String encyptData) {
+        // 判断请求有无加密
+        boolean isEncrypt = true;
+        String mtEncrypt = request.getHeader("MT-Encrypt");
+        // 请求不加密
+        if (mtEncrypt.equals("noaction")) {
+            isEncrypt = false;
+        }
         String traceId = request.getHeader("Request-Trace");
         log.info("request traceId:" + traceId);
         MeitTraceLog traceLog = meitApiService.addTraceLog(traceId, encyptData, null, null);
@@ -81,7 +94,12 @@ public class MeitApiController {
             return MeitResultUtil.generateResult(resultEnum, null);
         }
         try {
-            String reqData = AESUtilUsingCommonDecodec.decrypt(encyptData);
+            String reqData = "";
+            if (isEncrypt) {
+                reqData = AESUtilUsingCommonDecodec.decrypt(encyptData);
+            } else {
+                reqData = encyptData;
+            }
             log.info("meit req data:" + reqData);
 //            String reqData = encyptData;
             // 更新美团调用日志的解密数据
@@ -122,12 +140,19 @@ public class MeitApiController {
      * @param meitResult
      * @return
      */
-    private String baseResponseTrans(MeitResult meitResult) {
+    private ResponseEntity<Object> baseResponseTrans(MeitResult meitResult) {
+        HttpHeaders httpHeaders = new HttpHeaders();
         try {
-            String result = JSONObject.toJSONString(meitResult);
-            log.info(result);
-            meitApiService.addMeitRes(meitResult);
-            return AESUtilUsingCommonDecodec.encrypt(result);
+                String result = JSONObject.toJSONString(meitResult);
+                log.info(result);
+                meitApiService.addMeitRes(meitResult);
+                if (meitEncrypt) {
+                    return new ResponseEntity<Object>(AESUtilUsingCommonDecodec.encrypt(result), httpHeaders, HttpStatus.OK);
+                } else {
+                    httpHeaders.add("MT-Encrypt", "noaction");
+                    httpHeaders.add("Content-Encoding", "gzip");
+                    return new ResponseEntity<Object>(result, httpHeaders, HttpStatus.OK);
+                }
 //            return JSONObject.toJSONString(meitResult);
         } catch (Exception e) {
             log.error(e.getMessage());
