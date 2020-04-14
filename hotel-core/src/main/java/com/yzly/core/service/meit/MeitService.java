@@ -458,7 +458,7 @@ public class MeitService {
         room.setBreakfast(breakfast);
         room.setRoomId(roomBookingInfo.getRoomTypeCode());
         room.setRoomName(roomBookingInfo.getName());
-        room.setRatePlanCode(roomBookingInfo.getAllocationDetails());
+        room.setRatePlanCode(roomBookingInfo.getRoomTypeCode() + "R" + roomBookingInfo.getRateBasisId());
         HotelAdditionalInfo hotelAdditionalInfo = hotelAdditionalInfoRepository.findOneByHotelId(roomBookingInfo.getHotelId());
         // 可能为空，判断一下
         if (hotelAdditionalInfo != null) {
