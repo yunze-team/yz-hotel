@@ -21,6 +21,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -140,20 +141,23 @@ public class MeitApiController {
      * @param meitResult
      * @return
      */
-    private ResponseEntity<Object> baseResponseTrans(MeitResult meitResult) {
-        HttpHeaders httpHeaders = new HttpHeaders();
+    private ResponseEntity baseResponseTrans(MeitResult meitResult) {
         try {
                 String result = JSONObject.toJSONString(meitResult);
                 log.info(result);
                 meitApiService.addMeitRes(meitResult);
+                ResponseEntity resp;
                 if (meitEncrypt) {
-                    return new ResponseEntity<Object>(AESUtilUsingCommonDecodec.encrypt(result), httpHeaders, HttpStatus.OK);
+                    resp = ResponseEntity.ok().body(AESUtilUsingCommonDecodec.encrypt(result));
                 } else {
-                    httpHeaders.add("MT-Encrypt", "noaction");
-                    httpHeaders.add("Content-Encoding", "gzip");
-                    return new ResponseEntity<Object>(result, httpHeaders, HttpStatus.OK);
+                    HttpHeaders headers = new HttpHeaders();
+                    headers.add("Content-Type", "application/json");
+                    headers.add("MT-Encrypt", "noaction");
+                    resp = ResponseEntity.ok().headers(headers).
+                            body(result);
                 }
-//            return JSONObject.toJSONString(meitResult);
+                log.info(resp);
+                return resp;
         } catch (Exception e) {
             log.error(e.getMessage());
             return null;
@@ -171,7 +175,7 @@ public class MeitApiController {
     public Object hotelBasicTest(@RequestBody String json) {
         MeitResult result = baseRequestTransTest(json);
         if (!result.getSuccess()) {
-            return result;
+            return null;
         }
         JSONObject reqData = result.getReqData();
         int skip = reqData.getInteger("skip");
@@ -179,7 +183,7 @@ public class MeitApiController {
         Object data = meitApiService.syncHotelBasic(skip, limit);
         result.setReqMethod("hotel_basic");
         result.setData(data);
-        return result;
+        return baseResponseTrans(result);
     }
 
     /**
