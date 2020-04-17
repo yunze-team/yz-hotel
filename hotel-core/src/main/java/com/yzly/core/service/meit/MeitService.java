@@ -164,11 +164,11 @@ public class MeitService {
         for (HotelSyncList hs : hpage.getContent()) {
             HotelInfo hotelInfo = hotelInfoRepository.findByDotwHotelCode(hs.getHotelId());
             MeitHotel mh = new MeitHotel();
+            mh.setHotelId(hs.getHotelId());
             if (StringUtils.isNotEmpty(hotelInfo.getMeitCityId())) {
                 mh.setCityId(Integer.valueOf(hotelInfo.getMeitCityId()));
             } else {
                 List<MeitCity> mc = meitCityRepository.findAllByNameENLike(hotelInfo.getCity().replaceAll(" ", "") + "%");
-                mh.setHotelId(hs.getHotelId());
                 if (mc.size() > 0) {
                     mh.setCityId(Integer.valueOf(mc.get(0).getCityId()));
                 }
@@ -200,6 +200,9 @@ public class MeitService {
         for (String id : ids) {
             HotelAdditionalInfo info = hotelAdditionalInfoRepository.findOneByHotelId(id);
             MeitHotelExt hotelExt = new MeitHotelExt();
+            if (info == null) {
+                continue;
+            }
             if (StringUtils.isEmpty(info.getImages())) {
                 continue;
             }
