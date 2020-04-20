@@ -48,6 +48,7 @@ public class JLHandler {
         headMap.put("sign", sign);
         headMap.put("version", "3.0.0");
         JSONObject head = new JSONObject(headMap);
+        log.info("head:" + head);
         return head;
     }
 
@@ -55,9 +56,9 @@ public class JLHandler {
      * 城市查询
      * @return
      */
-    public String cityQuery() {
+    public String cityQuery(int pageIndex) {
         Map<String, Object> dataMap = new HashMap<>();
-        dataMap.put("pageIndex", 0);
+        dataMap.put("pageIndex", pageIndex);
         dataMap.put("pageSize", 100);
         JSONObject data = new JSONObject(dataMap);
         String res = sendGetRequest(generateRequestJsonHead(), data, "/api/city/queryCity.json?reqData={1}");
