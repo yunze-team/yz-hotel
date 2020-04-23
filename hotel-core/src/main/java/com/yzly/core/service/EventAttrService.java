@@ -52,4 +52,13 @@ public class EventAttrService {
         return eventAttrRepository.save(attr);
     }
 
+    /**
+     * 按照类别查找属性
+     * @param type
+     * @return
+     */
+    public EventAttr findByType(String type) {
+        return eventAttrRepository.findByEventType(type);
+    }
+
 }
