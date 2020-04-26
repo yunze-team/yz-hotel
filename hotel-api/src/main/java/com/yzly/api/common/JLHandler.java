@@ -2,7 +2,10 @@ package com.yzly.api.common;
 
 import com.alibaba.fastjson.JSONObject;
 import com.yzly.api.util.MD5Util;
+import com.yzly.core.domain.event.EventAttr;
+import com.yzly.core.service.EventAttrService;
 import lombok.extern.apachecommons.CommonsLog;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
@@ -35,6 +38,11 @@ public class JLHandler {
     @Value("${jl.read.time-out}")
     private int JLReadTimeout;
 
+    @Autowired
+    private EventAttrService eventAttrService;
+
+    private static final String JL_PAGE_SIZE = "JL_PAGE_SIZE";
+
     /**
      * 捷旅通用请求头部封装方法
      * @return
@@ -57,9 +65,10 @@ public class JLHandler {
      * @return
      */
     public String cityQuery(int pageIndex) {
+        EventAttr pageAttr = eventAttrService.findByType(JL_PAGE_SIZE);
         Map<String, Object> dataMap = new HashMap<>();
         dataMap.put("pageIndex", pageIndex);
-        dataMap.put("pageSize", 100);
+        dataMap.put("pageSize", Integer.valueOf(pageAttr.getEventValue()));
         JSONObject data = new JSONObject(dataMap);
         String res = sendGetRequest(generateRequestJsonHead(), data, "/api/city/queryCity.json?reqData={1}");
         return res;
