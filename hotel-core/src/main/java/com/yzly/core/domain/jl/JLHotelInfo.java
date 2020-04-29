@@ -18,8 +18,8 @@ import java.util.Date;
 @ToString
 @Entity
 @EntityListeners(AuditingEntityListener.class)
-@Table(name = "jl_hotel")
-public class JLHotel {
+@Table(name = "jl_hotel_info")
+public class JLHotelInfo {
 
     @Id
     @GeneratedValue

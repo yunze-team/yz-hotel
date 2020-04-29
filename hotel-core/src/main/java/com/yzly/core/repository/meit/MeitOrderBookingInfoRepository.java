@@ -1,6 +1,7 @@
 package com.yzly.core.repository.meit;
 
 import com.yzly.core.domain.meit.MeitOrderBookingInfo;
+import com.yzly.core.enums.meit.PlatformOrderStatusEnum;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -22,5 +23,8 @@ public interface MeitOrderBookingInfoRepository extends JpaRepository<MeitOrderB
     MeitOrderBookingInfo findByOrderId(Long orderId);
 
     Page<MeitOrderBookingInfo> findAll(Specification<MeitOrderBookingInfo> list, Pageable pageable);
+
+    List<MeitOrderBookingInfo> findAllByRoomIdAndRatePlanCodeAndCheckinAndCheckoutAndOrderStatus(
+            String RoomId, String ratePlanCode, String checkIn, String checkOut, PlatformOrderStatusEnum orderStatus);
 
 }

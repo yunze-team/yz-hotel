@@ -27,4 +27,10 @@ public class JLTestController {
         return jlHandler.cityQuery(page);
     }
 
+    @GetMapping("/hotel")
+    @ResponseBody
+    public Object hotelQuery(int country, int page) {
+        return jlHandler.queryHotelList(country, page);
+    }
+
 }

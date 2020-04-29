@@ -343,7 +343,7 @@ public class MeitApiController {
      * @param request
      * @return
      */
-    @PostMapping("/order_cancle")
+    @PostMapping("/order_cancl")
     public Object orderCancel(HttpServletRequest request) {
         MeitResult result = postRequestTrans(request);
         if (!result.getSuccess()) {

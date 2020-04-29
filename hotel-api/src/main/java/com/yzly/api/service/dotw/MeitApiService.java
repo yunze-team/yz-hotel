@@ -14,12 +14,14 @@ import com.yzly.core.enums.meit.ResultEnum;
 import com.yzly.core.service.dotw.BookingService;
 import com.yzly.core.service.dotw.HotelInfoService;
 import com.yzly.core.service.meit.MeitService;
+import com.yzly.core.util.SnowflakeIdWorker;
 import lombok.extern.apachecommons.CommonsLog;
 import org.apache.commons.lang.StringUtils;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -45,6 +47,13 @@ public class MeitApiService {
     private DCMLHandler dcmlHandler;
     @Autowired
     private HotelInfoApiService hotelInfoApiService;
+
+    @Value("${meit.booking.prod}")
+    private String meitOrderProd;
+    @Value("${snowflake.workId}")
+    private long workId;
+    @Value("${snowflake.datacenterId}")
+    private long datacenterId;
 
     /**
      * 添加美团调用日志记录
@@ -232,6 +241,19 @@ public class MeitApiService {
     public Object createOrder(OrderCreateParam orderCreateParam) {
         OrderResult orderResult = new OrderResult();
         MeitOrderBookingInfo orderBookingInfo = meitService.createMeitOrder(orderCreateParam);
+        // 如果判断是测试
+        if (meitOrderProd.equals("test")) {
+            if (meitService.judgeOrderTest(orderBookingInfo)) {
+                Long logId = new SnowflakeIdWorker(workId, datacenterId).nextId();
+                orderBookingInfo = meitService.updateOrderByManual(String.valueOf(orderBookingInfo.getOrderId()),
+                        String.valueOf(logId), orderBookingInfo.getTotalPrice());
+                List<String> confirmationNumbers = new ArrayList<>();
+                confirmationNumbers.add(orderBookingInfo.getConfirmationNumbers());
+                orderResult.setConfirmationNumbers(confirmationNumbers);
+            } else {
+                orderBookingInfo = meitService.updateOrderFail(String.valueOf(orderBookingInfo.getOrderId()));
+            }
+        }
         orderResult.setPartnerOrderId(orderBookingInfo.getPartnerOrderId());
         orderResult.setOrderId(orderBookingInfo.getOrderId());
         orderResult.setOrderStatus(orderBookingInfo.getOrderStatus());

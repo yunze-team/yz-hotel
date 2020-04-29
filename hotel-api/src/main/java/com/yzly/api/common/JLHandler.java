@@ -74,6 +74,17 @@ public class JLHandler {
         return res;
     }
 
+    public String queryHotelList(Integer countryId, Integer pageIndex) {
+        EventAttr pageAttr = eventAttrService.findByType(JL_PAGE_SIZE);
+        Map<String, Object> dataMap = new HashMap<>();
+        dataMap.put("countryId", countryId);
+        dataMap.put("pageIndex", pageIndex);
+        dataMap.put("pageSize", Integer.valueOf(pageAttr.getEventValue()));
+        JSONObject data = new JSONObject(dataMap);
+        String res = sendGetRequest(generateRequestJsonHead(), data, "/api/hotel/queryHotelList.json?reqData={1}");
+        return res;
+    }
+
     public String sendGetRequest(JSONObject head, JSONObject data, String url) {
         HttpComponentsClientHttpRequestFactory httpRequestFactory = new HttpComponentsClientHttpRequestFactory();
         httpRequestFactory.setConnectionRequestTimeout(JLConnectRequesTimeout);
