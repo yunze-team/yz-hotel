@@ -30,4 +30,14 @@ public class JLStaticController {
         return "SUCCESS";
     }
 
+    @GetMapping("/sync_hotel")
+    public Object syncHotel() {
+        Runnable runnable = () -> {
+            jlStaticApiService.syncJLHotel();
+        };
+        Thread thread = new Thread(runnable);
+        thread.start();
+        return "SUCCESS";
+    }
+
 }
