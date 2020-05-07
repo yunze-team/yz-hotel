@@ -79,4 +79,23 @@ public class JLHotelInfo {
     @LastModifiedDate
     private Date updatedAt;
 
+    public JLHotelInfo(Integer hotelId, Integer countryId, Integer stateId, Integer cityId,
+                       Integer star, String hotelNameCn, String hotelNameEn, String addressCn, String addressEn,
+                       String phone, String longitude, String latitude, Integer instantConfirmation, Integer sellType, String updateTime) {
+        this.hotelId = hotelId;
+        this.countryId = countryId;
+        this.stateId = stateId;
+        this.cityId = cityId;
+        this.star = star;
+        this.hotelNameCn = hotelNameCn;
+        this.hotelNameEn = hotelNameEn;
+        this.addressCn = addressCn;
+        this.addressEn = addressEn;
+        this.phone = phone;
+        this.longitude = longitude;
+        this.latitude = latitude;
+        this.instantConfirmation = instantConfirmation;
+        this.sellType = sellType;
+        this.updateTime = updateTime;
+    }
 }

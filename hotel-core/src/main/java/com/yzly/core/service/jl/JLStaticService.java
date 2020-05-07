@@ -4,8 +4,10 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.yzly.core.domain.event.EventAttr;
 import com.yzly.core.domain.jl.JLCity;
+import com.yzly.core.domain.jl.JLHotelInfo;
 import com.yzly.core.repository.event.EventAttrRepository;
 import com.yzly.core.repository.jl.JLCityRepository;
+import com.yzly.core.repository.jl.JLHotelInfoRepository;
 import lombok.extern.apachecommons.CommonsLog;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -24,6 +26,8 @@ public class JLStaticService {
     private JLCityRepository jlCityRepository;
     @Autowired
     private EventAttrRepository eventAttrRepository;
+    @Autowired
+    private JLHotelInfoRepository jlHotelInfoRepository;
 
     private static final String JL_CITY_PAGE = "JL_CITY_PAGE";
 
@@ -51,6 +55,31 @@ public class JLStaticService {
         EventAttr attr = eventAttrRepository.findByEventType(JL_CITY_PAGE);
         attr.setEventValue(String.valueOf(Integer.valueOf(attr.getEventValue()) + 1));
         eventAttrRepository.save(attr);
+    }
+
+    /**
+     * 根据返回的json存入hotel
+     * @param reJson
+     * @throws Exception
+     */
+    public void syncHotelByJson(JSONObject reJson) throws Exception {
+        JSONArray hotelArray = reJson.getJSONArray("hotels");
+        if (hotelArray.size() == 0) {
+            throw new Exception("hotel array is empty");
+        }
+        for (int i = 0; i < hotelArray.size(); i++) {
+            JSONObject hotelJson = hotelArray.getJSONObject(i);
+            JLHotelInfo jlHotelInfo = new JLHotelInfo(hotelJson.getInteger("hotelId"), hotelJson.getInteger("countryId"), hotelJson.getInteger("stateId"),
+                    hotelJson.getInteger("cityId"), hotelJson.getInteger("star"), hotelJson.getString("hotelNameCn"), hotelJson.getString("hotelNameEn"),
+                    hotelJson.getString("addressCn"), hotelJson.getString("addressEn"), hotelJson.getString("phone"), hotelJson.getString("longitude"),
+                    hotelJson.getString("latitude"), hotelJson.getInteger("instantConfirmation"), hotelJson.getInteger("sellType"), hotelJson.getString("updateTime"));
+            JLHotelInfo hotelInfo = jlHotelInfoRepository.findByHotelId(jlHotelInfo.getHotelId());
+            if (hotelInfo != null) {
+                continue;
+            }
+            jlHotelInfoRepository.save(jlHotelInfo);
+        }
+
     }
 
 }
