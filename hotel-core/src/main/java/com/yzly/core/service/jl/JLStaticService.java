@@ -30,6 +30,7 @@ public class JLStaticService {
     private JLHotelInfoRepository jlHotelInfoRepository;
 
     private static final String JL_CITY_PAGE = "JL_CITY_PAGE";
+    private static final String JL_HOTEL_PAGE = "JL_HOTEL_PAGE";
 
     /**
      * 按照返回的json存入city
@@ -79,7 +80,9 @@ public class JLStaticService {
             }
             jlHotelInfoRepository.save(jlHotelInfo);
         }
-
+        EventAttr attr = eventAttrRepository.findByEventType(JL_HOTEL_PAGE);
+        attr.setEventValue(String.valueOf(Integer.valueOf(attr.getEventValue()) + 1));
+        eventAttrRepository.save(attr);
     }
 
 }
