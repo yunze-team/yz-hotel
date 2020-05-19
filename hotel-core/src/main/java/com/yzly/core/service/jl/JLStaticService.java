@@ -4,9 +4,11 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.yzly.core.domain.event.EventAttr;
 import com.yzly.core.domain.jl.JLCity;
+import com.yzly.core.domain.jl.JLHotelDetail;
 import com.yzly.core.domain.jl.JLHotelInfo;
 import com.yzly.core.repository.event.EventAttrRepository;
 import com.yzly.core.repository.jl.JLCityRepository;
+import com.yzly.core.repository.jl.JLHotelDetailRepository;
 import com.yzly.core.repository.jl.JLHotelInfoRepository;
 import lombok.extern.apachecommons.CommonsLog;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +30,8 @@ public class JLStaticService {
     private EventAttrRepository eventAttrRepository;
     @Autowired
     private JLHotelInfoRepository jlHotelInfoRepository;
+    @Autowired
+    private JLHotelDetailRepository jlHotelDetailRepository;
 
     private static final String JL_CITY_PAGE = "JL_CITY_PAGE";
     private static final String JL_HOTEL_PAGE = "JL_HOTEL_PAGE";
@@ -83,6 +87,34 @@ public class JLStaticService {
         EventAttr attr = eventAttrRepository.findByEventType(JL_HOTEL_PAGE);
         attr.setEventValue(String.valueOf(Integer.valueOf(attr.getEventValue()) + 1));
         eventAttrRepository.save(attr);
+    }
+
+    /**
+     * 将酒店详细数据存入
+     * @param reJson
+     * @throws Exception
+     */
+    public JLHotelDetail syncHotelDetailByJson(JSONObject reJson) throws Exception {
+        JLHotelDetail jlHotelDetail = new JLHotelDetail();
+        JSONArray hotelDetailArray = reJson.getJSONArray("hotelDetailList");
+        if (hotelDetailArray.size() == 0) {
+            throw new Exception("hotel detail array is empty");
+        }
+        for (int i = 0; i < hotelDetailArray.size(); i++) {
+            JSONObject hotelDetailJson = hotelDetailArray.getJSONObject(i);
+            Integer hotelId = hotelDetailJson.getInteger("hotelId");
+            jlHotelDetail = jlHotelDetailRepository.findByHotelId(hotelId);
+            if (jlHotelDetail == null) {
+                jlHotelDetail = new JLHotelDetail();
+            }
+            jlHotelDetail.setHotelId(hotelDetailJson.getInteger("hotelId"));
+            jlHotelDetail.setHotelInfo(hotelDetailJson.getJSONObject("hotelInfo"));
+            jlHotelDetail.setRoomTypeList(hotelDetailJson.getJSONArray("roomTypeList"));
+            jlHotelDetail.setRateTypeList(hotelDetailJson.getJSONArray("rateTypeList"));
+            jlHotelDetail.setImageList(hotelDetailJson.getJSONArray("imageList"));
+            jlHotelDetailRepository.save(jlHotelDetail);
+        }
+        return jlHotelDetail;
     }
 
 }

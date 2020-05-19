@@ -5,6 +5,7 @@ import lombok.extern.apachecommons.CommonsLog;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**捷旅api-静态信息接口
@@ -38,6 +39,11 @@ public class JLStaticController {
         Thread thread = new Thread(runnable);
         thread.start();
         return "SUCCESS";
+    }
+
+    @GetMapping("/sync_hotel_detail")
+    public Object syncHotelDetail(@RequestParam Integer hotelId) {
+        return jlStaticApiService.syncJLHotelDetail(hotelId);
     }
 
 }

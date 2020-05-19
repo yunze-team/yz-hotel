@@ -3,6 +3,7 @@ package com.yzly.api.service.jl;
 import com.alibaba.fastjson.JSONObject;
 import com.yzly.api.common.JLHandler;
 import com.yzly.core.domain.event.EventAttr;
+import com.yzly.core.domain.jl.JLHotelDetail;
 import com.yzly.core.service.EventAttrService;
 import com.yzly.core.service.jl.JLStaticService;
 import lombok.extern.apachecommons.CommonsLog;
@@ -57,6 +58,20 @@ public class JLStaticApiService {
         } catch (Exception e) {
             log.error(e.getMessage());
         }
+    }
+
+    /**
+     * 获得酒店明细数据并存入
+     * @param hotelId
+     */
+    public JLHotelDetail syncJLHotelDetail(Integer hotelId) {
+        try {
+            JSONObject reJson = JSONObject.parseObject(jlHandler.queryHotelDetail(hotelId)).getJSONObject("result");
+            return jlStaticService.syncHotelDetailByJson(reJson);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
+        return null;
     }
 
 }

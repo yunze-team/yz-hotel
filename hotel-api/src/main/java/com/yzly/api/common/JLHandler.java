@@ -74,6 +74,12 @@ public class JLHandler {
         return res;
     }
 
+    /**
+     * 酒店列表查询
+     * @param countryId
+     * @param pageIndex
+     * @return
+     */
     public String queryHotelList(Integer countryId, Integer pageIndex) {
         EventAttr pageAttr = eventAttrService.findByType(JL_PAGE_SIZE);
         Map<String, Object> dataMap = new HashMap<>();
@@ -82,6 +88,20 @@ public class JLHandler {
         dataMap.put("pageSize", Integer.valueOf(pageAttr.getEventValue()));
         JSONObject data = new JSONObject(dataMap);
         String res = sendGetRequest(generateRequestJsonHead(), data, "/api/hotel/queryHotelList.json?reqData={1}");
+        return res;
+    }
+
+    /**
+     * 酒店明细查询
+     * @param hotelId
+     * @return
+     */
+    public String queryHotelDetail(Integer hotelId) {
+        Map<String, Object> dataMap = new HashMap<>();
+        dataMap.put("hotelId", hotelId);
+        dataMap.put("params", "1,2,3,4");
+        JSONObject data = new JSONObject(dataMap);
+        String res = sendGetRequest(generateRequestJsonHead(), data, "/api/hotel/queryHotelDetail.json?reqData={1}");
         return res;
     }
 
@@ -94,8 +114,11 @@ public class JLHandler {
         JSONObject reqJson = new JSONObject();
         reqJson.put("head", head);
         reqJson.put("data", data);
+        log.info("jl req:" + reqJson.toJSONString());
         ResponseEntity<String> responseEntity = restTemplate.getForEntity(JLApiUrl + url, String.class, reqJson.toJSONString());
-        return responseEntity.getBody();
+        String resp = responseEntity.getBody();
+        log.info("jl resp:" + resp);
+        return resp;
     }
 
 }
