@@ -117,4 +117,15 @@ public class JLStaticService {
         return jlHotelDetail;
     }
 
+    public Object syncHotelPriceByJson(JSONObject reJson) throws Exception {
+        JSONArray ratePlanArray = reJson.getJSONArray("hotelRatePlanList");
+        if (ratePlanArray.size() == 0) {
+            throw new Exception("hotel price array is empty");
+        }
+        for (int i = 0; i < ratePlanArray.size(); i++) {
+
+        }
+        return null;
+    }
+
 }

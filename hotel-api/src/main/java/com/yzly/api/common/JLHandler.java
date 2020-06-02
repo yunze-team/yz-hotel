@@ -105,6 +105,28 @@ public class JLHandler {
         return res;
     }
 
+    /**
+     * 按照默认请求参数获取酒店价格数据
+     * @param hotelId
+     * @param checkInDate
+     * @param checkOutDate
+     * @return
+     */
+    public String queryHotelPriceByDefault(Integer hotelId, String checkInDate, String checkOutDate, boolean abroad) {
+        Map<String, Object> dataMap = new HashMap<>();
+        dataMap.put("hotelId", hotelId);
+        dataMap.put("checkInDate", checkInDate);
+        dataMap.put("checkOutDate", checkOutDate);
+        JSONObject data = new JSONObject(dataMap);
+        String res = "";
+        if (!abroad) {
+            res = sendGetRequest(generateRequestJsonHead(), data, "/api/hotel/queryRatePlan.json?reqData={1}");
+        } else {
+            res = sendGetRequest(generateRequestJsonHead(), data, "/api/hotel/queryAbroadeRatePlan.json?reqData={1}");
+        }
+        return res;
+    }
+
     public String sendGetRequest(JSONObject head, JSONObject data, String url) {
         HttpComponentsClientHttpRequestFactory httpRequestFactory = new HttpComponentsClientHttpRequestFactory();
         httpRequestFactory.setConnectionRequestTimeout(JLConnectRequesTimeout);

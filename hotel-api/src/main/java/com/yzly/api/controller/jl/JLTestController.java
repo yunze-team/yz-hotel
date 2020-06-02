@@ -33,4 +33,10 @@ public class JLTestController {
         return jlHandler.queryHotelList(country, page);
     }
 
+    @GetMapping("/price")
+    @ResponseBody
+    public Object priceQuery(int hotelId, String checkInDate, String checkOutDate) {
+        return jlHandler.queryHotelPriceByDefault(hotelId, checkInDate, checkOutDate, false);
+    }
+
 }
