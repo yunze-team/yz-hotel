@@ -11,4 +11,7 @@ import org.springframework.stereotype.Repository;
  **/
 @Repository
 public interface JLBookingRuleRepository extends JpaRepository<JLBookingRule, Long> {
+
+    JLBookingRule findOneByBookingRuleId(String bookingRuleId);
+
 }

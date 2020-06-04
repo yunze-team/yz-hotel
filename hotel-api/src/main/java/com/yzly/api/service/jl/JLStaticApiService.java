@@ -74,4 +74,22 @@ public class JLStaticApiService {
         return null;
     }
 
+    /**
+     * 获得酒店每晚价格数据并存入
+     * @param hotelId
+     * @param checkInDate
+     * @param checkOutDate
+     * @return
+     */
+    public Object syncJLHotelPrice(Integer hotelId, String checkInDate, String checkOutDate) {
+        try {
+            JSONObject reJson = JSONObject.parseObject(jlHandler.
+                    queryHotelPriceByDefault(hotelId, checkInDate, checkOutDate, false)).getJSONObject("result");
+            return jlStaticService.syncHotelPriceByJson(reJson);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
+        return null;
+    }
+
 }

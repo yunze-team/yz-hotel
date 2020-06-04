@@ -21,6 +21,10 @@ public class JLStaticController {
     @Autowired
     private JLStaticApiService jlStaticApiService;
 
+    /**
+     * 同步城市
+     * @return
+     */
     @GetMapping("/sync_city")
     public Object syncCity() {
         Runnable runnable = () -> {
@@ -31,6 +35,10 @@ public class JLStaticController {
         return "SUCCESS";
     }
 
+    /**
+     * 同步酒店列表
+     * @return
+     */
     @GetMapping("/sync_hotel")
     public Object syncHotel() {
         Runnable runnable = () -> {
@@ -41,9 +49,27 @@ public class JLStaticController {
         return "SUCCESS";
     }
 
+    /**
+     * 同步酒店明细
+     * @param hotelId
+     * @return
+     */
     @GetMapping("/sync_hotel_detail")
     public Object syncHotelDetail(@RequestParam Integer hotelId) {
         return jlStaticApiService.syncJLHotelDetail(hotelId);
+    }
+
+    /**
+     * 同步酒店每晚价格
+     * @param hotelId
+     * @param checkInDate
+     * @param checkOutDate
+     * @return
+     */
+    @GetMapping("/sync_hotel_price")
+    public Object syncHotelPrice(@RequestParam Integer hotelId,
+                                 @RequestParam String checkInDate, @RequestParam String checkOutDate) {
+        return jlStaticApiService.syncJLHotelPrice(hotelId, checkInDate, checkOutDate);
     }
 
 }

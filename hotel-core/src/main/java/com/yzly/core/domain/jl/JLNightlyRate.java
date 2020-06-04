@@ -26,11 +26,14 @@ public class JLNightlyRate {
     @GeneratedValue
     private Long id;
 
+    @Column
+    private Integer hotelId;// 酒店编号
+
     @Column(length = 50)
     private String roomTypeId;// 房型编号
 
     @Column(length = 50)
-    private String RatePlankeyId;// 唯一产品编号
+    private String ratePlanKeyId;// 唯一产品编号
 
     @Column(length = 50)
     private String formulaTypen;// 配额类型

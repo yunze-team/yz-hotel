@@ -42,6 +42,12 @@ public class JLBookingRule {
     private Integer maxAmount;// 预定最多数量
 
     @Column
+    private Integer minDays;// 最少入住天数
+
+    @Column
+    private Integer maxDays;// 最多入住天数
+
+    @Column
     private Integer minAdvHours;// 最少提前预定时间
 
     @Column

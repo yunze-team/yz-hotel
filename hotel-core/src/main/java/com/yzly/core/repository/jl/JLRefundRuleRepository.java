@@ -11,4 +11,7 @@ import org.springframework.stereotype.Repository;
  **/
 @Repository
 public interface JLRefundRuleRepository extends JpaRepository<JLRefundRule, Long> {
+
+    JLRefundRule findOneByRefundRuleId(String refundRuleId);
+
 }
