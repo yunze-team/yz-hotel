@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @create 2020/4/20
  * @desc
  **/
-@RequestMapping("/api/jl")
+@RequestMapping("/api/jl/static")
 @RestController
 @CommonsLog
 public class JLStaticController {
