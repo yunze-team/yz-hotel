@@ -57,7 +57,10 @@ public class JLOrderInfo {
     private Integer orderStauts;// 订单状态，1：待确认，2：已确认，3：已拒单，4：已取消
 
     @Column
-    private Integer bookingMessage;// 预定信息，0:正常可以预订，1:产品问题，2:房量不够，3:价格不符，4:不满足预订规则，5:满房，99:其它
+    private Integer bookingCode;// 预定信息，0:正常可以预订，1:产品问题，2:房量不够，3:价格不符，4:不满足预订规则，5:满房，99:其它
+
+    @Column(length = 500)
+    private String bookingMsg;// 预定错误信息
 
     @Column(nullable = false, updatable = false, name = "created_at")
     @Temporal(TemporalType.TIMESTAMP)

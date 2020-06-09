@@ -1,8 +1,12 @@
 package com.yzly.api.common;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.yzly.api.util.MD5Util;
 import com.yzly.core.domain.event.EventAttr;
+import com.yzly.core.domain.jl.JLOrderInfo;
+import com.yzly.core.domain.jl.JLOrderRoomInfo;
 import com.yzly.core.service.EventAttrService;
 import lombok.extern.apachecommons.CommonsLog;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +17,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -124,6 +129,43 @@ public class JLHandler {
         } else {
             res = sendGetRequest(generateRequestJsonHead(), data, "/api/hotel/queryAbroadeRatePlan.json?reqData={1}");
         }
+        return res;
+    }
+
+    /**
+     * 根据用户上送的查询请求json串去获取酒店价格数据
+     * @param req
+     * @param abroad
+     * @return
+     */
+    public String queryHotelPriceByUser(JSONObject req, boolean abroad) {
+        String res = "";
+        if (!abroad) {
+            res = sendGetRequest(generateRequestJsonHead(), req, "/api/hotel/queryRatePlan.json?reqData={1}");
+        } else {
+            res = sendGetRequest(generateRequestJsonHead(), req, "/api/hotel/queryAbroadeRatePlan.json?reqData={1}");
+        }
+        return res;
+    }
+
+    /**
+     * 订单报价接口
+     * @param jlOrderInfo
+     * @param roomInfos
+     * @return
+     */
+    public String queryOrderPrice(JLOrderInfo jlOrderInfo, JSONArray roomInfos) {
+        Map<String, Object> dataMap = new HashMap<>();
+        dataMap.put("hotelId", jlOrderInfo.getHotelId());
+        dataMap.put("keyId", jlOrderInfo.getKeyId());
+        dataMap.put("checkInDate", jlOrderInfo.getCheckInDate());
+        dataMap.put("checkOutDate", jlOrderInfo.getCheckOutDate());
+        dataMap.put("nightlyPrices", jlOrderInfo.getNightlyPrices());
+        if (roomInfos != null) {
+            dataMap.put("roomGroups", roomInfos);
+        }
+        JSONObject data = new JSONObject(dataMap);
+        String res = sendGetRequest(generateRequestJsonHead(), data, "/api/hotel/queryOrderPrice.json?reqData={1}");
         return res;
     }
 
