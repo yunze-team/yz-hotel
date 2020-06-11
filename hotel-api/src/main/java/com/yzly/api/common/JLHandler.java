@@ -11,9 +11,14 @@ import com.yzly.core.service.EventAttrService;
 import lombok.extern.apachecommons.CommonsLog;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.HashMap;
@@ -165,7 +170,7 @@ public class JLHandler {
             dataMap.put("roomGroups", roomInfos);
         }
         JSONObject data = new JSONObject(dataMap);
-        String res = sendGetRequest(generateRequestJsonHead(), data, "/api/hotel/queryOrderPrice.json?reqData={1}");
+        String res = sendPostRequest(generateRequestJsonHead(), data, "/api/hotel/queryOrderPrice.json");
         return res;
     }
 
@@ -181,6 +186,26 @@ public class JLHandler {
         log.info("jl req:" + reqJson.toJSONString());
         ResponseEntity<String> responseEntity = restTemplate.getForEntity(JLApiUrl + url, String.class, reqJson.toJSONString());
         String resp = responseEntity.getBody();
+        log.info("jl resp:" + resp);
+        return resp;
+    }
+
+    public String sendPostRequest(JSONObject head, JSONObject data, String url) {
+        HttpComponentsClientHttpRequestFactory httpRequestFactory = new HttpComponentsClientHttpRequestFactory();
+        httpRequestFactory.setConnectionRequestTimeout(JLConnectRequesTimeout);
+        httpRequestFactory.setConnectTimeout(JLConnectTimeout);
+        httpRequestFactory.setReadTimeout(JLReadTimeout);
+        RestTemplate restTemplate = new RestTemplate(httpRequestFactory);
+        JSONObject reqJson = new JSONObject();
+        reqJson.put("head", head);
+        reqJson.put("data", data);
+        log.info("jl req:" + reqJson.toJSONString());
+        HttpHeaders headers = new HttpHeaders();
+        MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
+        map.add("reqData", reqJson.toJSONString());
+        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(map, headers);
+        ResponseEntity<String> response = restTemplate.postForEntity(JLApiUrl + url, request, String.class);
+        String resp = response.getBody();
         log.info("jl resp:" + resp);
         return resp;
     }
