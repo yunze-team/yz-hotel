@@ -6,8 +6,10 @@ import com.yzly.core.domain.jl.JLOrderInfo;
 import com.yzly.core.domain.jl.JLOrderRoomInfo;
 import com.yzly.core.repository.jl.JLOrderInfoRepository;
 import com.yzly.core.repository.jl.JLOrderRoomInfoRepository;
+import com.yzly.core.util.SnowflakeIdWorker;
 import lombok.extern.apachecommons.CommonsLog;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -25,6 +27,11 @@ public class JLOrderService {
     private JLOrderInfoRepository jlOrderInfoRepository;
     @Autowired
     private JLOrderRoomInfoRepository jlOrderRoomInfoRepository;
+
+    @Value("${snowflake.workId}")
+    private long workId;
+    @Value("${snowflake.datacenterId}")
+    private long datacenterId;
 
     /**
      * 根据预定json串保存预定单信息
@@ -76,6 +83,21 @@ public class JLOrderService {
             return roomArray;
         }
         return null;
+    }
+
+    /**
+     * 根据返回的预定消息更新预订单信息
+     * @param reJson
+     * @param jlOrderInfo
+     * @return
+     */
+    public JLOrderInfo finishPreOrderByJson(JSONObject reJson, JLOrderInfo jlOrderInfo) {
+        JSONObject orderPrice = reJson.getJSONObject("orderPrice");
+        JSONObject bookingMessage = orderPrice.getJSONObject("bookingMessage");
+        jlOrderInfo.setBookingCode(bookingMessage.getInteger("code"));
+        jlOrderInfo.setBookingMsg(bookingMessage.getString("message"));
+        jlOrderInfo.setCustomerOrderCode(String.valueOf(new SnowflakeIdWorker(workId, datacenterId).nextId()));
+        return jlOrderInfoRepository.save(jlOrderInfo);
     }
 
 }

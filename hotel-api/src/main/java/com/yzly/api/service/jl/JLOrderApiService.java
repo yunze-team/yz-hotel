@@ -33,7 +33,7 @@ public class JLOrderApiService {
         JSONArray roomArray = jlOrderService.getPreOrderRoomInfo(jlOrderInfo.getId());
         try {
             JSONObject reJson = JSONObject.parseObject(jlHandler.queryOrderPrice(jlOrderInfo, roomArray)).getJSONObject("result");
-            return reJson;
+            return jlOrderService.finishPreOrderByJson(reJson, jlOrderInfo);
         } catch (Exception e) {
             log.error(e.getMessage());
         }
