@@ -174,6 +174,13 @@ public class JLHandler {
         return res;
     }
 
+    /**
+     * 发送get方法到捷旅
+     * @param head
+     * @param data
+     * @param url
+     * @return
+     */
     public String sendGetRequest(JSONObject head, JSONObject data, String url) {
         HttpComponentsClientHttpRequestFactory httpRequestFactory = new HttpComponentsClientHttpRequestFactory();
         httpRequestFactory.setConnectionRequestTimeout(JLConnectRequesTimeout);
@@ -190,6 +197,13 @@ public class JLHandler {
         return resp;
     }
 
+    /**
+     * 发送post方法到捷旅
+     * @param head
+     * @param data
+     * @param url
+     * @return
+     */
     public String sendPostRequest(JSONObject head, JSONObject data, String url) {
         HttpComponentsClientHttpRequestFactory httpRequestFactory = new HttpComponentsClientHttpRequestFactory();
         httpRequestFactory.setConnectionRequestTimeout(JLConnectRequesTimeout);
