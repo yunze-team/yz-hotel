@@ -210,6 +210,21 @@ public class JLHandler {
     }
 
     /**
+     * 取消订单接口
+     * @param orderCode
+     * @param customerCode
+     * @return
+     */
+    public String cancelOrder(String orderCode, String customerCode) {
+        Map<String, Object> dataMap = new HashMap<>();
+        dataMap.put("orderCode", orderCode);
+        dataMap.put("customerOrderCode", customerCode);
+        JSONObject data = new JSONObject(dataMap);
+        String res = sendGetRequest(generateRequestJsonHead(), data, "/api/order/cancelOrder.json?reqData={1}");
+        return res;
+    }
+
+    /**
      * 发送get方法到捷旅
      * @param head
      * @param data
