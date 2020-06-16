@@ -1,6 +1,5 @@
 package com.yzly.api.common;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.yzly.api.util.MD5Util;
@@ -13,14 +12,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -171,6 +171,41 @@ public class JLHandler {
         }
         JSONObject data = new JSONObject(dataMap);
         String res = sendPostRequest(generateRequestJsonHead(), data, "/api/hotel/queryOrderPrice.json");
+        return res;
+    }
+
+    /**
+     * 创建订单接口
+     * @param jlOrderInfo
+     * @param jlOrderRoomInfos
+     * @return
+     */
+    public String createOrder(JLOrderInfo jlOrderInfo, List<JLOrderRoomInfo> jlOrderRoomInfos) {
+        Map<String, Object> dataMap = new HashMap<>();
+        dataMap.put("customerOrderCode", jlOrderInfo.getCustomerOrderCode());
+        dataMap.put("hotelId", jlOrderInfo.getHotelId());
+        dataMap.put("keyId", jlOrderInfo.getKeyId());
+        dataMap.put("checkInDate", jlOrderInfo.getCheckInDate());
+        dataMap.put("checkOutDate", jlOrderInfo.getCheckOutDate());
+        dataMap.put("nightlyPrices", jlOrderInfo.getNightlyPrices());
+        dataMap.put("totalPrice", jlOrderInfo.getTotalPrice());
+        if (!StringUtils.isEmpty(jlOrderInfo.getHotelRemark())) {
+            dataMap.put("hotelRemark", jlOrderInfo.getHotelRemark());
+        }
+        List<Object> rooms = new ArrayList<>();
+        for (JLOrderRoomInfo orderRoomInfo : jlOrderRoomInfos) {
+            Map<String, Object> room = new HashMap<>();
+            room.put("adults", orderRoomInfo.getAdults());
+            if (orderRoomInfo.getChildren() != null) {
+                room.put("children", orderRoomInfo.getChildren());
+                room.put("childAges", orderRoomInfo.getChildAges());
+            }
+            room.put("checkInPersions", JSONArray.parseArray(orderRoomInfo.getCheckInPersions()));
+            rooms.add(room);
+        }
+        dataMap.put("roomGroups", rooms);
+        JSONObject data = new JSONObject(dataMap);
+        String res = sendPostRequest(generateRequestJsonHead(), data, "/api/order/createOrder.json");
         return res;
     }
 

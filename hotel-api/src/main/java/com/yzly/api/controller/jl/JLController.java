@@ -53,4 +53,16 @@ public class JLController {
         return jlOrderApiService.preOrder(req);
     }
 
+    /**
+     * 下单
+     * @param json
+     * @return
+     */
+    @PostMapping("/order")
+    public Object order(@RequestBody String json) {
+        JSONObject req = JSON.parseObject(json);
+        String orderCode = req.getString("code");
+        return jlOrderApiService.finishOrder(orderCode);
+    }
+
 }

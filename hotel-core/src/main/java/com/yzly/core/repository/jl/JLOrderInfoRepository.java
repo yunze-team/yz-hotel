@@ -11,4 +11,7 @@ import org.springframework.stereotype.Repository;
  **/
 @Repository
 public interface JLOrderInfoRepository extends JpaRepository<JLOrderInfo, Long> {
+
+    JLOrderInfo findByCustomerOrderCode(String customerOrderCode);
+
 }

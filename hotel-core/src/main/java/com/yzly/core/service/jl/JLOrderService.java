@@ -97,7 +97,44 @@ public class JLOrderService {
         jlOrderInfo.setBookingCode(bookingMessage.getInteger("code"));
         jlOrderInfo.setBookingMsg(bookingMessage.getString("message"));
         jlOrderInfo.setCustomerOrderCode(String.valueOf(new SnowflakeIdWorker(workId, datacenterId).nextId()));
+        jlOrderInfo.setTotalPrice(sumOrderTotalPrice(jlOrderInfo.getNightlyPrices()));
         return jlOrderInfoRepository.save(jlOrderInfo);
+    }
+
+    /**
+     * 根据订单号获取下单房间数据
+     * @param orderCode
+     * @return
+     */
+    public List<JLOrderRoomInfo> getAllRoomByOrder(String orderCode) {
+        JLOrderInfo jlOrderInfo = jlOrderInfoRepository.findByCustomerOrderCode(orderCode);
+        return jlOrderRoomInfoRepository.findAllByJlOrderId(jlOrderInfo.getId());
+    }
+
+    /**
+     * 完成下单
+     * @param reJson
+     * @param jlOrderInfo
+     * @return
+     */
+    public JLOrderInfo finishOrderByJson(JSONObject reJson, JLOrderInfo jlOrderInfo) {
+        JSONObject createOrder = reJson.getJSONObject("createOrder");
+        jlOrderInfo.setOrderCode(createOrder.getString("orderCode"));
+        jlOrderInfo.setOrderStauts(createOrder.getInteger("orderStatus"));
+        return jlOrderInfoRepository.save(jlOrderInfo);
+    }
+
+    public JLOrderInfo getOrderByCode(String orderCode) {
+        return jlOrderInfoRepository.findByCustomerOrderCode(orderCode);
+    }
+
+    private Double sumOrderTotalPrice(String nightlyPrices) {
+        String[] prices = nightlyPrices.split("\\|");
+        Double totalPrice = new Double(0);
+        for (String price : prices) {
+            totalPrice += new Double(price);
+        }
+        return totalPrice;
     }
 
 }
