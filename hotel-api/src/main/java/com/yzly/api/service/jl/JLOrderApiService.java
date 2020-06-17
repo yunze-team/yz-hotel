@@ -60,4 +60,33 @@ public class JLOrderApiService {
         return null;
     }
 
+    /**
+     * 完成到捷旅的取消订单
+     * @param customerOrderCode
+     * @return
+     */
+    public Object cancelOrder(String customerOrderCode) {
+        JLOrderInfo jlOrderInfo = jlOrderService.getOrderByCode(customerOrderCode);
+        try {
+            JSONObject reJson = JSONObject.parseObject(jlHandler.cancelOrder(jlOrderInfo.getOrderCode(),
+                    jlOrderInfo.getCustomerOrderCode())).getJSONObject("result");
+            return jlOrderService.cancelOrderByJson(reJson, jlOrderInfo);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
+        return null;
+    }
+
+    /**
+     * 查询捷旅订单
+     * @param customerOrderCode
+     * @return
+     */
+    public Object queryOrder(String customerOrderCode) {
+        JLOrderInfo jlOrderInfo = jlOrderService.getOrderByCode(customerOrderCode);
+        JSONObject reJson = JSONObject.parseObject(jlHandler.queryOrder(jlOrderInfo.getOrderCode(),
+                jlOrderInfo.getCustomerOrderCode(), null, null)).getJSONObject("result");
+        return reJson;
+    }
+
 }

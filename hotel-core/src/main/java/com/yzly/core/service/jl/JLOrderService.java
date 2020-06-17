@@ -128,6 +128,21 @@ public class JLOrderService {
         return jlOrderInfoRepository.findByCustomerOrderCode(orderCode);
     }
 
+    /**
+     * 根据订单状态取消订单
+     * @param reJson
+     * @param jlOrderInfo
+     * @return
+     */
+    public JLOrderInfo cancelOrderByJson(JSONObject reJson, JLOrderInfo jlOrderInfo) {
+        Integer success = reJson.getInteger("successs");
+        if (success.equals(new Integer(0))) {
+            jlOrderInfo.setOrderStauts(4);// 更新为已取消状态
+            return jlOrderInfoRepository.save(jlOrderInfo);
+        }
+        return null;
+    }
+
     private Double sumOrderTotalPrice(String nightlyPrices) {
         String[] prices = nightlyPrices.split("\\|");
         Double totalPrice = new Double(0);

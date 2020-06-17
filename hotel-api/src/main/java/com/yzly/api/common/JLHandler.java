@@ -8,6 +8,7 @@ import com.yzly.core.domain.jl.JLOrderInfo;
 import com.yzly.core.domain.jl.JLOrderRoomInfo;
 import com.yzly.core.service.EventAttrService;
 import lombok.extern.apachecommons.CommonsLog;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -17,7 +18,6 @@ import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
-import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
@@ -189,7 +189,7 @@ public class JLHandler {
         dataMap.put("checkOutDate", jlOrderInfo.getCheckOutDate());
         dataMap.put("nightlyPrices", jlOrderInfo.getNightlyPrices());
         dataMap.put("totalPrice", jlOrderInfo.getTotalPrice());
-        if (!StringUtils.isEmpty(jlOrderInfo.getHotelRemark())) {
+        if (StringUtils.isNotEmpty(jlOrderInfo.getHotelRemark())) {
             dataMap.put("hotelRemark", jlOrderInfo.getHotelRemark());
         }
         List<Object> rooms = new ArrayList<>();
@@ -221,6 +221,27 @@ public class JLHandler {
         dataMap.put("customerOrderCode", customerCode);
         JSONObject data = new JSONObject(dataMap);
         String res = sendGetRequest(generateRequestJsonHead(), data, "/api/order/cancelOrder.json?reqData={1}");
+        return res;
+    }
+
+    /**
+     * 订单查询接口
+     * @param orcerCode
+     * @param customerCode
+     * @param createBegin
+     * @param createEnd
+     * @return
+     */
+    public String queryOrder(String orcerCode, String customerCode, String createBegin, String createEnd) {
+        Map<String, Object> dataMap = new HashMap<>();
+        dataMap.put("orderCode", orcerCode);
+        dataMap.put("customerOrderCode", customerCode);
+        if (StringUtils.isNotEmpty(createBegin) && StringUtils.isNotEmpty(createEnd)) {
+            dataMap.put("createBegin", createBegin);
+            dataMap.put("createEnd", createEnd);
+        }
+        JSONObject data = new JSONObject(dataMap);
+        String res = sendGetRequest(generateRequestJsonHead(), data, "/api/order/queryOrderDetail.json?reqData={1}");
         return res;
     }
 

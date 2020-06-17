@@ -6,10 +6,7 @@ import com.yzly.api.common.JLHandler;
 import com.yzly.api.service.jl.JLOrderApiService;
 import lombok.extern.apachecommons.CommonsLog;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * 捷旅订单相关
@@ -63,6 +60,26 @@ public class JLController {
         JSONObject req = JSON.parseObject(json);
         String orderCode = req.getString("code");
         return jlOrderApiService.finishOrder(orderCode);
+    }
+
+    /**
+     * 取消订单
+     * @param code
+     * @return
+     */
+    @GetMapping("/cancel")
+    public Object cancel(@RequestParam String code) {
+        return jlOrderApiService.cancelOrder(code);
+    }
+
+    /**
+     * 查询订单
+     * @param code
+     * @return
+     */
+    @GetMapping("/query")
+    public Object query(@RequestParam String code) {
+        return jlOrderApiService.queryOrder(code);
     }
 
 }
