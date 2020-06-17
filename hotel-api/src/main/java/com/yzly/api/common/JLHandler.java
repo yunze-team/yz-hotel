@@ -47,6 +47,8 @@ public class JLHandler {
     private int JLConnectTimeout;
     @Value("${jl.read.time-out}")
     private int JLReadTimeout;
+    @Value("${jl.order.api.url}")
+    private String JLOrderApiUrl;
 
     @Autowired
     private EventAttrService eventAttrService;
@@ -80,7 +82,7 @@ public class JLHandler {
         dataMap.put("pageIndex", pageIndex);
         dataMap.put("pageSize", Integer.valueOf(pageAttr.getEventValue()));
         JSONObject data = new JSONObject(dataMap);
-        String res = sendGetRequest(generateRequestJsonHead(), data, "/api/city/queryCity.json?reqData={1}");
+        String res = sendGetRequest(generateRequestJsonHead(), data, "/api/city/queryCity.json?reqData={1}", false);
         return res;
     }
 
@@ -97,7 +99,7 @@ public class JLHandler {
         dataMap.put("pageIndex", pageIndex);
         dataMap.put("pageSize", Integer.valueOf(pageAttr.getEventValue()));
         JSONObject data = new JSONObject(dataMap);
-        String res = sendGetRequest(generateRequestJsonHead(), data, "/api/hotel/queryHotelList.json?reqData={1}");
+        String res = sendGetRequest(generateRequestJsonHead(), data, "/api/hotel/queryHotelList.json?reqData={1}", false);
         return res;
     }
 
@@ -111,7 +113,7 @@ public class JLHandler {
         dataMap.put("hotelId", hotelId);
         dataMap.put("params", "1,2,3,4");
         JSONObject data = new JSONObject(dataMap);
-        String res = sendGetRequest(generateRequestJsonHead(), data, "/api/hotel/queryHotelDetail.json?reqData={1}");
+        String res = sendGetRequest(generateRequestJsonHead(), data, "/api/hotel/queryHotelDetail.json?reqData={1}", false);
         return res;
     }
 
@@ -130,9 +132,9 @@ public class JLHandler {
         JSONObject data = new JSONObject(dataMap);
         String res = "";
         if (!abroad) {
-            res = sendGetRequest(generateRequestJsonHead(), data, "/api/hotel/queryRatePlan.json?reqData={1}");
+            res = sendGetRequest(generateRequestJsonHead(), data, "/api/hotel/queryRatePlan.json?reqData={1}", false);
         } else {
-            res = sendGetRequest(generateRequestJsonHead(), data, "/api/hotel/queryAbroadeRatePlan.json?reqData={1}");
+            res = sendGetRequest(generateRequestJsonHead(), data, "/api/hotel/queryAbroadeRatePlan.json?reqData={1}", false);
         }
         return res;
     }
@@ -146,9 +148,9 @@ public class JLHandler {
     public String queryHotelPriceByUser(JSONObject req, boolean abroad) {
         String res = "";
         if (!abroad) {
-            res = sendGetRequest(generateRequestJsonHead(), req, "/api/hotel/queryRatePlan.json?reqData={1}");
+            res = sendGetRequest(generateRequestJsonHead(), req, "/api/hotel/queryRatePlan.json?reqData={1}", false);
         } else {
-            res = sendGetRequest(generateRequestJsonHead(), req, "/api/hotel/queryAbroadeRatePlan.json?reqData={1}");
+            res = sendGetRequest(generateRequestJsonHead(), req, "/api/hotel/queryAbroadeRatePlan.json?reqData={1}", false);
         }
         return res;
     }
@@ -170,7 +172,7 @@ public class JLHandler {
             dataMap.put("roomGroups", roomInfos);
         }
         JSONObject data = new JSONObject(dataMap);
-        String res = sendPostRequest(generateRequestJsonHead(), data, "/api/hotel/queryOrderPrice.json");
+        String res = sendPostRequest(generateRequestJsonHead(), data, "/api/hotel/queryOrderPrice.json", true);
         return res;
     }
 
@@ -205,7 +207,7 @@ public class JLHandler {
         }
         dataMap.put("roomGroups", rooms);
         JSONObject data = new JSONObject(dataMap);
-        String res = sendPostRequest(generateRequestJsonHead(), data, "/api/order/createOrder.json");
+        String res = sendPostRequest(generateRequestJsonHead(), data, "/api/order/createOrder.json", true);
         return res;
     }
 
@@ -220,7 +222,7 @@ public class JLHandler {
         dataMap.put("orderCode", orderCode);
         dataMap.put("customerOrderCode", customerCode);
         JSONObject data = new JSONObject(dataMap);
-        String res = sendGetRequest(generateRequestJsonHead(), data, "/api/order/cancelOrder.json?reqData={1}");
+        String res = sendGetRequest(generateRequestJsonHead(), data, "/api/order/cancelOrder.json?reqData={1}", true);
         return res;
     }
 
@@ -241,7 +243,7 @@ public class JLHandler {
             dataMap.put("createEnd", createEnd);
         }
         JSONObject data = new JSONObject(dataMap);
-        String res = sendGetRequest(generateRequestJsonHead(), data, "/api/order/queryOrderDetail.json?reqData={1}");
+        String res = sendGetRequest(generateRequestJsonHead(), data, "/api/order/queryOrderDetail.json?reqData={1}", true);
         return res;
     }
 
@@ -252,7 +254,7 @@ public class JLHandler {
      * @param url
      * @return
      */
-    public String sendGetRequest(JSONObject head, JSONObject data, String url) {
+    public String sendGetRequest(JSONObject head, JSONObject data, String url, boolean orderFlag) {
         HttpComponentsClientHttpRequestFactory httpRequestFactory = new HttpComponentsClientHttpRequestFactory();
         httpRequestFactory.setConnectionRequestTimeout(JLConnectRequesTimeout);
         httpRequestFactory.setConnectTimeout(JLConnectTimeout);
@@ -262,7 +264,11 @@ public class JLHandler {
         reqJson.put("head", head);
         reqJson.put("data", data);
         log.info("jl req:" + reqJson.toJSONString());
-        ResponseEntity<String> responseEntity = restTemplate.getForEntity(JLApiUrl + url, String.class, reqJson.toJSONString());
+        String requestUrl = JLApiUrl + url;
+        if (orderFlag) {
+            requestUrl = JLOrderApiUrl + url;
+        }
+        ResponseEntity<String> responseEntity = restTemplate.getForEntity(requestUrl, String.class, reqJson.toJSONString());
         String resp = responseEntity.getBody();
         log.info("jl resp:" + resp);
         return resp;
@@ -275,7 +281,7 @@ public class JLHandler {
      * @param url
      * @return
      */
-    public String sendPostRequest(JSONObject head, JSONObject data, String url) {
+    public String sendPostRequest(JSONObject head, JSONObject data, String url, boolean orderFlag) {
         HttpComponentsClientHttpRequestFactory httpRequestFactory = new HttpComponentsClientHttpRequestFactory();
         httpRequestFactory.setConnectionRequestTimeout(JLConnectRequesTimeout);
         httpRequestFactory.setConnectTimeout(JLConnectTimeout);
@@ -289,7 +295,11 @@ public class JLHandler {
         MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
         map.add("reqData", reqJson.toJSONString());
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(map, headers);
-        ResponseEntity<String> response = restTemplate.postForEntity(JLApiUrl + url, request, String.class);
+        String requestUrl = JLApiUrl + url;
+        if (orderFlag) {
+            requestUrl = JLOrderApiUrl + url;
+        }
+        ResponseEntity<String> response = restTemplate.postForEntity(requestUrl, request, String.class);
         String resp = response.getBody();
         log.info("jl resp:" + resp);
         return resp;
