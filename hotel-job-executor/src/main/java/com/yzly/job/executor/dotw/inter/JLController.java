@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 @FeignClient("yz-hotel-api")
 public interface JLController {
 
-    @GetMapping("/api/jl/sync_hotel")
+    @GetMapping("/api/jl/static/sync_hotel")
     String syncHotel();
 
 }
