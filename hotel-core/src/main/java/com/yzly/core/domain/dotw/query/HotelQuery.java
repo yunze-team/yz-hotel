@@ -21,4 +21,10 @@ public class HotelQuery {
     private String syncRoomPriceDate;
     private Boolean isUpdateFlag = false;
 
+    private String cityId;
+    private String countryId;
+    private String hotelId;
+    private String hotelNameCn;
+    private String hotelNameEn;
+
 }

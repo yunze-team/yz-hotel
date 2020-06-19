@@ -127,4 +127,13 @@ public class IndexController {
         return "meit_result";
     }
 
+    /**
+     * 捷旅酒店列表页面
+     * @return
+     */
+    @RequestMapping("/index/jl_hotel")
+    public String jlHotels() {
+        return "jl_hotel";
+    }
+
 }

@@ -36,6 +36,20 @@
                     </ul>
                 </li>
             <#--End-->
+            <#--捷旅-->
+                <li class="treeview">
+                    <a href="javascript:void(0)">
+                        <i class="fa fa-circle-o"></i> <span>捷旅</span>
+                    </a>
+                    <ul class="treeview-menu">
+                        <li id="jl_hotel">
+                            <a href="/index/jl_hotel">
+                                <i class="fa fa-circle-o"></i> <span>酒店管理</span>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+            <#--End-->
             <#--美团-->
                 <li class="treeview">
                     <a href="javascript:void(0)">
