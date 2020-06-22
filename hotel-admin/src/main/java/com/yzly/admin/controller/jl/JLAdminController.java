@@ -1,6 +1,7 @@
 package com.yzly.admin.controller.jl;
 
 import com.yzly.core.domain.dotw.query.HotelQuery;
+import com.yzly.core.domain.jl.JLCity;
 import com.yzly.core.domain.jl.JLHotelInfo;
 import com.yzly.core.service.jl.JLAdminService;
 import lombok.extern.apachecommons.CommonsLog;
@@ -19,7 +20,7 @@ import java.util.Map;
  **/
 @RestController
 @CommonsLog
-public class JLHotelController {
+public class JLAdminController {
 
     @Autowired
     private JLAdminService jlAdminService;
@@ -37,6 +38,21 @@ public class JLHotelController {
         Page<JLHotelInfo> ph = jlAdminService.findAllHotelByPage(page, rows, hotelQuery);
         resMap.put("total", ph.getTotalElements());
         resMap.put("rows", ph.getContent());
+        return resMap;
+    }
+
+    @GetMapping("/jl/city/list")
+    public Map<String, Object> getAllCity(int page, int rows, String countryId,
+                                          String countryCn, String cityId, String cityCn) {
+        Map<String, Object> resMap = new HashMap<>();
+        HotelQuery hotelQuery = new HotelQuery();
+        hotelQuery.setCountryId(countryId);
+        hotelQuery.setCountryCn(countryCn);
+        hotelQuery.setCityId(cityId);
+        hotelQuery.setCityCn(cityCn);
+        Page<JLCity> pc = jlAdminService.findAllCityByPage(page, rows, hotelQuery);
+        resMap.put("total", pc.getTotalElements());
+        resMap.put("rows", pc.getContent());
         return resMap;
     }
 

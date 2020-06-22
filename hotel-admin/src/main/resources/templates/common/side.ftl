@@ -47,6 +47,11 @@
                                 <i class="fa fa-circle-o"></i> <span>酒店管理</span>
                             </a>
                         </li>
+                        <li id="jl_city">
+                            <a href="/index/jl_city">
+                                <i class="fa fa-circle-o"></i> <span>城市管理</span>
+                            </a>
+                        </li>
                     </ul>
                 </li>
             <#--End-->

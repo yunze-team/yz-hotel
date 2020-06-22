@@ -27,4 +27,7 @@ public class HotelQuery {
     private String hotelNameCn;
     private String hotelNameEn;
 
+    private String cityCn;
+    private String countryCn;
+
 }

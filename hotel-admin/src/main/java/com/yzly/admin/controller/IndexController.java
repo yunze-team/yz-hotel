@@ -136,4 +136,13 @@ public class IndexController {
         return "jl_hotel";
     }
 
+    /**
+     * 捷旅城市列表页面
+     * @return
+     */
+    @RequestMapping("/index/jl_city")
+    public String jlCitys() {
+        return "jl_city";
+    }
+
 }
