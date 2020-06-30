@@ -35,6 +35,8 @@ public class JLStaticService {
     @Autowired
     private JLNightlyRateRepository jlNightlyRateRepository;
     @Autowired
+    private JLNightlyRateCacheRepository jlNightlyRateCacheRepository;
+    @Autowired
     private JLBookingRuleRepository jlBookingRuleRepository;
     @Autowired
     private JLRefundRuleRepository jlRefundRuleRepository;
@@ -149,7 +151,7 @@ public class JLStaticService {
                     JSONArray nightlyRatesArray = ratePlans.getJSONArray("nightlyRates");
                     for (int l = 0; l < nightlyRatesArray.size(); l++) {
                         JSONObject nightlyRates = nightlyRatesArray.getJSONObject(l);
-                        buildNightlyRateByJOSN(nightlyRates, jlRatePlan);
+                        buildNightlyRateCacheByJSON(nightlyRates, jlRatePlan);
                     }
                 }
             }
@@ -271,6 +273,32 @@ public class JLStaticService {
         rate.setRatePlanKeyId(jlRatePlan.getKeyId());
         rate.setRoomTypeId(jlRatePlan.getRoomTypeId());
         jlNightlyRateRepository.save(rate);
+    }
+
+    /**
+     * 按照json串内容保存nightlyRateCache实体
+     * @param nightlyRates
+     * @param jlRatePlan
+     */
+    public void buildNightlyRateCacheByJSON(JSONObject nightlyRates, JLRatePlan jlRatePlan) {
+        String date = nightlyRates.getString("date");
+        List<JLNightlyRateCache> rates = jlNightlyRateCacheRepository.findAllByRatePlanKeyIdAndDate(jlRatePlan.getKeyId(), date);
+        JLNightlyRateCache rate = new JLNightlyRateCache();
+        if (rates.size() != 0) {
+            rate = rates.get(0);
+        }
+        rate.setFormulaTypen(nightlyRates.getString("formulaType"));
+        rate.setDate(nightlyRates.getString("date"));
+        rate.setCose(nightlyRates.getDouble("cose"));
+        rate.setStatus(nightlyRates.getInteger("status"));
+        rate.setCurrentAlloment(nightlyRates.getInteger("currentAlloment"));
+        rate.setBreakfast(jlRatePlan.getBreakfast());
+        rate.setBookingRuleId(jlRatePlan.getBookingRuleId());
+        rate.setRefundRuleId(jlRatePlan.getRefundRuleId());
+        rate.setHotelId(jlRatePlan.getHotelId());
+        rate.setRatePlanKeyId(jlRatePlan.getKeyId());
+        rate.setRoomTypeId(jlRatePlan.getRoomTypeId());
+        jlNightlyRateCacheRepository.save(rate);
     }
 
 }
