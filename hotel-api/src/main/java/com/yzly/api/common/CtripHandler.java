@@ -1,12 +1,15 @@
 package com.yzly.api.common;
 
 import com.alibaba.fastjson.JSONObject;
+import com.yzly.core.domain.jl.JLCity;
 import com.yzly.core.domain.jl.JLHotelDetail;
+import com.yzly.core.repository.jl.JLCityRepository;
 import lombok.extern.apachecommons.CommonsLog;
 import org.dom4j.Document;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
 import org.joda.time.DateTime;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -29,6 +32,9 @@ public class CtripHandler {
     private String ctripUrl;
     @Value("${ctrip.partnerId}")
     private String ctripPartnerId;
+
+    @Autowired
+    private JLCityRepository jlCityRepository;
 
     /**
      * 创建携程静态通用soap请求头
@@ -75,8 +81,32 @@ public class CtripHandler {
         Element hotelInfo = hotelContent.addElement("HotelInfo ").
                 addAttribute("HotelStatus", "Active").
                 addAttribute("HotelCategory", "Hotels");
-        Element multiDesc = hotelInfo.addElement("Descriptions").
-                addElement("MultimediaDescriptions").addElement("MultimediaDescription");
+        Element textItems = hotelInfo.addElement("Descriptions").
+                addElement("MultimediaDescriptions").
+                addElement("MultimediaDescription").addElement("TextItems");
+        Element textItemCn = textItems.addElement("TextItem").
+                addAttribute("Language", "zh-CN").
+                addAttribute("Title", hotelInfoJson.getString("hotelNameCn"));
+        textItemCn.addElement("Description").addText(hotelInfoJson.getString("introduceCn"));
+        Element textItemEn = textItems.addElement("TextItem").
+                addAttribute("Language", "en-US").
+                addAttribute("Title", hotelInfoJson.getString("hotelNameEn"));
+        textItemEn.addElement("Description").addText(hotelInfoJson.getString("introduceEn"));
+        hotelInfo.addElement("Position").
+                addAttribute("Longitude", hotelInfoJson.getString("longitude")).
+                addAttribute("Latitude", hotelInfoJson.getString("latitude"));
+        Element contractInfo = hotelInfo.addElement("ContactInfos").addElement("ContactInfo");
+        Element addresses = contractInfo.addElement("Addresses").addAttribute("Visible", "true");
+        JLCity jlCity = jlCityRepository.findByCityId(hotelInfoJson.getInteger("cityId"));
+        Element addressCn = addresses.addElement("Address").addAttribute("Language", "zh-CN");
+        addressCn.addElement("CityName").addText(jlCity.getCityCn().substring(1));
+        addressCn.addElement("AddressLine").addText(hotelInfoJson.getString("addressCn"));
+        Element addressEn = addresses.addElement("Address").addAttribute("Language", "en-US");
+        addressEn.addElement("CityName").addText(jlCity.getCityEn());
+        addressEn.addElement("AddressLine").addText(hotelInfoJson.getString("addressEn"));
+        Element phones = contractInfo.addElement("Phones");
+        phones.addElement("Phone").addAttribute("PhoneNumber", hotelInfoJson.getString("phone")).
+                addAttribute("PhoneTechType", "Voice");
         return doc;
     }
 
