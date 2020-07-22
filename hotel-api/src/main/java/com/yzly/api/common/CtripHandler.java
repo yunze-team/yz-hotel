@@ -1,5 +1,6 @@
 package com.yzly.api.common;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.yzly.core.domain.jl.JLCity;
 import com.yzly.core.domain.jl.JLHotelDetail;
@@ -40,7 +41,7 @@ public class CtripHandler {
      * 创建携程静态通用soap请求头
      * @return
      */
-    public Document generateStaticBaseRequest() {
+    public Document generateStaticBaseRequest(String requestName) {
         Document doc = DocumentHelper.createDocument();
         Element soapRoot = doc.addElement("soap:Envelope");
         soapRoot.addNamespace("xsi", "http://www.w3.org/2001/XMLSchema-instance").
@@ -48,7 +49,7 @@ public class CtripHandler {
                 addNamespace("soap", "http://schemas.xmlsoap.org/soap/envelope/");
         soapRoot.addElement("soap:Header");
         Element soapBody = soapRoot.addElement("soap:Body");
-        Element otaRequest = soapBody.addElement("OTA_HotelDescriptiveContentNotifRQ",
+        Element otaRequest = soapBody.addElement(requestName,
                 "http://www.opentravel.org/OTA/2003/05");
         otaRequest.addAttribute("Target", "Production").
                 addAttribute("PrimaryLangID", "zh-CN").
@@ -69,9 +70,10 @@ public class CtripHandler {
      * @return
      */
     public Document pushHotelDetail(JLHotelDetail jlHotelDetail) {
-        Document doc = generateStaticBaseRequest();
+        String requestName = "OTA_HotelDescriptiveContentNotifRQ";
+        Document doc = generateStaticBaseRequest(requestName);
         Element soapRoot = doc.getRootElement();
-        Element otaRequest = soapRoot.element("soap:Body").element("OTA_HotelDescriptiveContentNotifRQ");
+        Element otaRequest = soapRoot.element("soap:Body").element(requestName);
         JSONObject hotelInfoJson = jlHotelDetail.getHotelInfo();
         Element hotelContents = otaRequest.addElement("HotelDescriptiveContents").
                 addAttribute("ChainName", "YUNZE").
@@ -107,6 +109,27 @@ public class CtripHandler {
         Element phones = contractInfo.addElement("Phones");
         phones.addElement("Phone").addAttribute("PhoneNumber", hotelInfoJson.getString("phone")).
                 addAttribute("PhoneTechType", "Voice");
+        return doc;
+    }
+
+    public Document pushBasicRoome(JLHotelDetail jlHotelDetail) {
+        String requestName = "OTA_HotelInvNotifRQ";
+        Document doc = generateStaticBaseRequest(requestName);
+        Element soapRoot = doc.getRootElement();
+        Element otaRequest = soapRoot.element("soap:Body").element(requestName);
+        JSONObject hotelInfoJson = jlHotelDetail.getHotelInfo();
+        Element sellableProducts = otaRequest.addElement("SellableProducts").
+                addAttribute("HotelCode", jlHotelDetail.getHotelId().toString()).
+                addAttribute("HotelName", hotelInfoJson.getString("hotelNameCn"));
+        JSONArray roomTypeList = jlHotelDetail.getRoomTypeList();
+        for (int i = 0; i < roomTypeList.size(); i++) {
+            JSONObject roomType = roomTypeList.getJSONObject(i);
+            Element sellableProduct = sellableProducts.addElement("SellableProduct").
+                    addAttribute("InvTypeCode", roomType.getInteger("roomTypeId").toString()).
+                    addAttribute("InvStatusType", "Active");
+            Element guestRoom = sellableProduct.addElement("GuestRoom");
+
+        }
         return doc;
     }
 
