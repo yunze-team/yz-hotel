@@ -112,6 +112,11 @@ public class CtripHandler {
         return doc;
     }
 
+    /**
+     * 推送携程房型明细方法
+     * @param jlHotelDetail
+     * @return
+     */
     public Document pushBasicRoome(JLHotelDetail jlHotelDetail) {
         String requestName = "OTA_HotelInvNotifRQ";
         Document doc = generateStaticBaseRequest(requestName);
@@ -122,13 +127,25 @@ public class CtripHandler {
                 addAttribute("HotelCode", jlHotelDetail.getHotelId().toString()).
                 addAttribute("HotelName", hotelInfoJson.getString("hotelNameCn"));
         JSONArray roomTypeList = jlHotelDetail.getRoomTypeList();
+        // 添加售卖产品报文
         for (int i = 0; i < roomTypeList.size(); i++) {
             JSONObject roomType = roomTypeList.getJSONObject(i);
             Element sellableProduct = sellableProducts.addElement("SellableProduct").
                     addAttribute("InvTypeCode", roomType.getInteger("roomTypeId").toString()).
                     addAttribute("InvStatusType", "Active");
+            // 添加房型数据
             Element guestRoom = sellableProduct.addElement("GuestRoom");
-
+            // 添加可住人数数据，10-adult,8-child
+            guestRoom.addElement("Occupancy").addAttribute("AgeQualifyingCode", "10").
+                    addAttribute("MinOccupancy", "1").
+                    addAttribute("MaxOccupancy", roomType.getInteger("maximize").toString());
+            guestRoom.addElement("Currency").addAttribute("Code", "CNY");
+            // 添加房型描述数据
+            Element description = guestRoom.addElement("Description");
+            description.addElement("Text").addAttribute("Language", "zh-CN").
+                    addText(roomType.getString("roomTypeCn"));
+            description.addElement("Text").addAttribute("Language", "en-US").
+                    addText(roomType.getString("roomTypeEn"));
         }
         return doc;
     }
