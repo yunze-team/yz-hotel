@@ -2,17 +2,30 @@ package com.yzly.api.common;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.yzly.api.config.meit.RestTemplateConfig;
+import com.yzly.core.domain.dotw.DotwXmlLog;
 import com.yzly.core.domain.jl.JLCity;
 import com.yzly.core.domain.jl.JLHotelDetail;
+import com.yzly.core.repository.dotw.DotwXmlLogRepository;
 import com.yzly.core.repository.jl.JLCityRepository;
 import lombok.extern.apachecommons.CommonsLog;
+import net.sf.json.xml.XMLSerializer;
+import org.apache.commons.lang.StringUtils;
 import org.dom4j.Document;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
 import org.joda.time.DateTime;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
+
+import java.util.List;
 
 
 /**
@@ -30,12 +43,14 @@ public class CtripHandler {
     @Value("${ctrip.password}")
     private String ctripPwd;
     @Value("${ctrip.static.url}")
-    private String ctripUrl;
+    private String ctripStaticUrl;
     @Value("${ctrip.partnerId}")
     private String ctripPartnerId;
 
     @Autowired
     private JLCityRepository jlCityRepository;
+    @Autowired
+    private DotwXmlLogRepository dotwXmlLogRepository;
 
     /**
      * 创建携程静态通用soap请求头
@@ -54,7 +69,7 @@ public class CtripHandler {
         otaRequest.addAttribute("Target", "Production").
                 addAttribute("PrimaryLangID", "zh-CN").
                 addAttribute("Version", "1.0").
-                addAttribute("TimeStamp", DateTime.now().toString("yyyy-MM-dd'T'HH:mm:ss.SSSXXX"));
+                addAttribute("TimeStamp", DateTime.now().toString("yyyy-MM-dd'T'HH:mm:ss'Z'"));
         Element pos = otaRequest.addElement("POS");
         Element source = pos.addElement("Source");
         Element requestorId = source.addElement("RequestorID");
@@ -73,7 +88,7 @@ public class CtripHandler {
         String requestName = "OTA_HotelDescriptiveContentNotifRQ";
         Document doc = generateStaticBaseRequest(requestName);
         Element soapRoot = doc.getRootElement();
-        Element otaRequest = soapRoot.element("soap:Body").element(requestName);
+        Element otaRequest = soapRoot.element("Body").element(requestName);
         JSONObject hotelInfoJson = jlHotelDetail.getHotelInfo();
         Element hotelContents = otaRequest.addElement("HotelDescriptiveContents").
                 addAttribute("ChainName", "YUNZE").
@@ -90,14 +105,16 @@ public class CtripHandler {
                 addAttribute("Language", "zh-CN").
                 addAttribute("Title", hotelInfoJson.getString("hotelNameCn"));
         textItemCn.addElement("Description").addText(hotelInfoJson.getString("introduceCn"));
-        Element textItemEn = textItems.addElement("TextItem").
-                addAttribute("Language", "en-US").
-                addAttribute("Title", hotelInfoJson.getString("hotelNameEn"));
-        textItemEn.addElement("Description").addText(hotelInfoJson.getString("introduceEn"));
+        if (StringUtils.isNotEmpty(hotelInfoJson.getString("introduceEn"))) {
+            Element textItemEn = textItems.addElement("TextItem").
+                    addAttribute("Language", "en-US").
+                    addAttribute("Title", hotelInfoJson.getString("hotelNameEn"));
+            textItemEn.addElement("Description").addText(hotelInfoJson.getString("introduceEn"));
+        }
         hotelInfo.addElement("Position").
                 addAttribute("Longitude", hotelInfoJson.getString("longitude")).
                 addAttribute("Latitude", hotelInfoJson.getString("latitude"));
-        Element contractInfo = hotelInfo.addElement("ContactInfos").addElement("ContactInfo");
+        Element contractInfo = hotelContent.addElement("ContactInfos").addElement("ContactInfo");
         Element addresses = contractInfo.addElement("Addresses").addAttribute("Visible", "true");
         JLCity jlCity = jlCityRepository.findByCityId(hotelInfoJson.getInteger("cityId"));
         Element addressCn = addresses.addElement("Address").addAttribute("Language", "zh-CN");
@@ -121,7 +138,7 @@ public class CtripHandler {
         String requestName = "OTA_HotelInvNotifRQ";
         Document doc = generateStaticBaseRequest(requestName);
         Element soapRoot = doc.getRootElement();
-        Element otaRequest = soapRoot.element("soap:Body").element(requestName);
+        Element otaRequest = soapRoot.element("Body").element(requestName);
         JSONObject hotelInfoJson = jlHotelDetail.getHotelInfo();
         Element sellableProducts = otaRequest.addElement("SellableProducts").
                 addAttribute("HotelCode", jlHotelDetail.getHotelId().toString()).
@@ -148,6 +165,59 @@ public class CtripHandler {
                     addText(roomType.getString("roomTypeEn"));
         }
         return doc;
+    }
+
+    /**
+     * 封装查询携程酒店同步状态报文
+     * @param hotelCodes
+     * @return
+     */
+    public Document queryHotelStatus(List<String> hotelCodes) {
+        String requestName = "OTA_HotelStatsNotifRQ";
+        Document doc = generateStaticBaseRequest(requestName);
+        Element soapRoot = doc.getRootElement();
+        Element otaRequest = soapRoot.element("Body").element(requestName);
+        Element statictics = otaRequest.addElement("Statistics");
+        for (String hotelCode : hotelCodes) {
+            statictics.addElement("Statistic").addAttribute("HotelCode", hotelCode);
+        }
+        return doc;
+    }
+
+    /**
+     * 推送酒店静态信息到携程
+     * @param doc
+     * @return
+     */
+    public String sendCtripStatic(Document doc) throws Exception {
+        String traceId = MDC.get("TRACE_ID");
+        DotwXmlLog xmlLog = new DotwXmlLog();
+        xmlLog.setTraceId(traceId);
+        xmlLog.setReqXml(doc.asXML());
+        log.info("发往ctrip的报文：" + doc.asXML());
+        xmlLog = dotwXmlLogRepository.save(xmlLog);
+        // 设置到dotw的超时时间
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.TEXT_XML);
+        HttpEntity<String> xmlEntity = new HttpEntity<>(doc.asXML(), headers);
+        RestTemplate restTemplate = new RestTemplate(RestTemplateConfig.generateHttpRequestFactory());
+        ResponseEntity<String> responseEntity = null;
+        try {
+            responseEntity = restTemplate.postForEntity(ctripStaticUrl, xmlEntity, String.class);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
+        log.info("接收ctrip的返回报文：" + responseEntity);
+        if (responseEntity != null) {
+            xmlLog.setRespXml(responseEntity.getBody());
+            XMLSerializer xmlSerializer = new XMLSerializer();
+            String resutStr = xmlSerializer.read(responseEntity.getBody()).toString();
+            xmlLog.setRespData(JSONObject.parseObject(resutStr));
+            dotwXmlLogRepository.save(xmlLog);
+            return responseEntity.getBody();
+        } else {
+            return null;
+        }
     }
 
 }

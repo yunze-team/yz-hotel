@@ -1,0 +1,83 @@
+package com.yzly.api.controller.ctrip;
+
+import com.yzly.api.common.CtripHandler;
+import com.yzly.core.domain.jl.JLHotelDetail;
+import com.yzly.core.service.jl.JLAdminService;
+import lombok.extern.apachecommons.CommonsLog;
+import org.dom4j.Document;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Arrays;
+import java.util.List;
+
+/**
+ * @author lazyb
+ * @create 2020/8/31
+ * @desc
+ **/
+@RestController
+@RequestMapping(value = "/api/ctrip/test")
+@CommonsLog
+public class CtripTestController {
+
+    @Autowired
+    private CtripHandler ctripHandler;
+    @Autowired
+    private JLAdminService jlAdminService;
+
+    /**
+     * 测试携程酒店推送接口
+     * @param hotelId
+     * @return
+     */
+    @GetMapping("/hotel")
+    @ResponseBody
+    public Object testPushHotel(int hotelId) {
+        JLHotelDetail jlHotelDetail = jlAdminService.findByHotelId(hotelId);
+        Document doc = ctripHandler.pushHotelDetail(jlHotelDetail);
+        try {
+            return ctripHandler.sendCtripStatic(doc);
+        } catch (Exception e) {
+            return e.getMessage();
+        }
+    }
+
+    /**
+     * 测试携程房型推送接口
+     * @param hotelId
+     * @return
+     */
+    @GetMapping("/room")
+    @ResponseBody
+    public Object testPushRoom(int hotelId) {
+        JLHotelDetail jlHotelDetail = jlAdminService.findByHotelId(hotelId);
+        Document doc = ctripHandler.pushBasicRoome(jlHotelDetail);
+        try {
+            return ctripHandler.sendCtripStatic(doc);
+        } catch (Exception e) {
+            return e.getMessage();
+        }
+    }
+
+    /**
+     * 测试携程查询酒店推送状态接口
+     * @param hotelIds
+     * @return
+     */
+    @GetMapping("/query_status")
+    @ResponseBody
+    public Object testQueryStatus(String hotelIds) {
+        List<String> hotelCodes = Arrays.asList(hotelIds.split(","));
+        Document doc = ctripHandler.queryHotelStatus(hotelCodes);
+        try {
+            return ctripHandler.sendCtripStatic(doc);
+        } catch (Exception e) {
+            return e.getMessage();
+        }
+    }
+
+}
