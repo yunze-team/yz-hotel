@@ -4,12 +4,10 @@ import com.yzly.api.common.CtripHandler;
 import com.yzly.core.domain.jl.JLHotelDetail;
 import com.yzly.core.service.jl.JLAdminService;
 import lombok.extern.apachecommons.CommonsLog;
-import org.dom4j.Document;
+import org.dom4j.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
 import java.util.List;
@@ -78,6 +76,17 @@ public class CtripTestController {
         } catch (Exception e) {
             return e.getMessage();
         }
+    }
+
+    @PostMapping(value = "/xml",
+            consumes = MediaType.APPLICATION_XML_VALUE,
+            produces = MediaType.APPLICATION_XML_VALUE)
+    @ResponseBody
+    public Object testXml(@RequestBody String xml) {
+        log.info(xml);
+        Document doc = DocumentHelper.createDocument();
+        doc.addElement("soap:Envelope");
+        return doc.asXML();
     }
 
 }
