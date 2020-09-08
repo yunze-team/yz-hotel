@@ -8,6 +8,9 @@ import org.dom4j.Element;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * @author lazyb
  * @create 2020/9/2
@@ -30,7 +33,8 @@ public class AuthUtil {
      * @param requestName
      * @return
      */
-    public String judgeCtripAuth(String xml, String requestName) {
+    public Map<String, Object> judgeCtripAuth(String xml, String requestName) {
+        Map<String, Object> resMap = new HashMap<>();
         Document doc;
         try {
             doc = DocumentHelper.parseText(xml);
@@ -48,9 +52,12 @@ public class AuthUtil {
         String codeContext = requestorId.element("CompanyName").attributeValue("CodeContext");
         // 判断携程的报文头是否匹配，不匹配则返回为空
         if (!ctripAuthId.equals(id) || !ctripAuthPwd.equals(pwd) || !codeContext.equals(ctripPartnerId)) {
+            log.error("ctrip request auth failed");
             return null;
         }
-        return echoToken;
+        resMap.put("echoToken", echoToken);
+        resMap.put("element", otaRequest);
+        return resMap;
     }
 
 }

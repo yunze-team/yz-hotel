@@ -1,6 +1,6 @@
 package com.yzly.api.controller.ctrip;
 
-import com.yzly.api.util.ctrip.AuthUtil;
+import com.yzly.api.service.ctrip.CtripApiService;
 import lombok.extern.apachecommons.CommonsLog;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.*;
 public class CtripController {
 
     @Autowired
-    private AuthUtil authUtil;
+    private CtripApiService ctripApiService;
 
     /**
      * 房间产品检查接口
@@ -31,8 +31,12 @@ public class CtripController {
     @ResponseBody
     public Object checkAvailability(@RequestBody String xml) {
         log.info(xml);
-        String requestName = "OTA_HotelAvailRQ";
-        String echoToken = authUtil.judgeCtripAuth(xml, requestName);
+        try {
+            return ctripApiService.executeCtripCheckApi(xml);
+
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
         return null;
     }
 
