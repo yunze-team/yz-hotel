@@ -6,6 +6,7 @@ import com.yzly.api.common.JLHandler;
 import com.yzly.api.util.ctrip.AuthUtil;
 import com.yzly.core.domain.ctrip.CtripXmlLog;
 import com.yzly.core.service.ctrip.CtripXmlLogService;
+import com.yzly.core.service.jl.JLStaticService;
 import lombok.extern.apachecommons.CommonsLog;
 import org.dom4j.Element;
 import org.slf4j.MDC;
@@ -34,6 +35,8 @@ public class CtripApiService {
     private JLHandler jlHandler;
     @Autowired
     private CtripXmlLogService ctripXmlLogService;
+    @Autowired
+    private JLStaticService jlStaticService;
 
     /**
      * 处理携程check接口请求
@@ -50,8 +53,10 @@ public class CtripApiService {
         JSONObject reqJson = ctripRespHandler.genJLQueryRateReqByCtripXml(otaRequest);
         CtripXmlLog ctripXmlLog = ctripXmlLogService.addLogByReq(traceId, requestName, echoToken, xml, reqJson);
         String res = jlHandler.queryHotelPriceByUser(reqJson, false);
-        JSONObject respJson = JSONObject.parseObject(res);
-        String resXml = ctripRespHandler.genCtripXmlByJLRespOnQueryRate(respJson, requestName);
+        JSONObject respJson = JSONObject.parseObject(res).getJSONObject("result");
+        // 保存捷旅价格数据
+        jlStaticService.syncHotelPriceByJson(respJson);
+        String resXml = ctripRespHandler.genCtripXmlByJLRespOnQueryRate(respJson, requestName, reqJson);
         ctripXmlLogService.reLogByResp(ctripXmlLog, resXml, respJson, respJson.getString("respId"));
         return resXml;
     }

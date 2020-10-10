@@ -106,4 +106,13 @@ public class JLAdminService {
         return jlHotelDetailRepository.findByHotelId(hotelId);
     }
 
+    /**
+     * 查询酒店信息
+     * @param hotelId
+     * @return
+     */
+    public JLHotelInfo findInfoByHotelId(Integer hotelId) {
+        return jlHotelInfoRepository.findByHotelId(hotelId);
+    }
+
 }
