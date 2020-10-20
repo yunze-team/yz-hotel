@@ -61,4 +61,13 @@ public class CtripApiService {
         return resXml;
     }
 
+    public String executeCtripCreateApi(String xml) throws Exception {
+        String traceId = MDC.get("TRACE_ID");
+        String requestName = "OTA_HotelResRQ";
+        Map<String, Object> reqMap = authUtil.judgeCtripAuth(xml, requestName);
+        String echoToken = reqMap.get(ECHO_TOKEN).toString();
+        Element otaRequest = (Element) reqMap.get(ELEMENT);
+
+    }
+
 }

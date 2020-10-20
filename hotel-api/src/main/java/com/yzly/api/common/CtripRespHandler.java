@@ -2,7 +2,6 @@ package com.yzly.api.common;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.yzly.core.domain.jl.JLHotelDetail;
 import com.yzly.core.domain.jl.JLHotelInfo;
 import com.yzly.core.service.EventAttrService;
 import com.yzly.core.service.jl.JLAdminService;
@@ -35,6 +34,48 @@ public class CtripRespHandler {
     private JLAdminService jlAdminService;
 
     private final static String PRICE_RATE = "CTRIP_ROOM_PRICE_RATE";
+
+    /**
+     * 按照携程的请求xml封装创建捷旅订单的请求
+     * @param otaRequest
+     * @return
+     * @throws Exception
+     */
+    public JSONObject genJLCreateOrderByCtripXml(Element otaRequest) throws Exception {
+        JSONObject req = new JSONObject();
+        Element uniqueIDEl = otaRequest.element("UniqueID");
+        String uniqueId = uniqueIDEl.attributeValue("ID");
+        String uniqueIdType = uniqueIDEl.attributeValue("Type");
+        Element hotelReservationRequest = otaRequest.element("HotelReservations").element("HotelReservation");
+        Element roomStays = hotelReservationRequest.element("RoomStays");
+        List<Element> roomStayList = roomStays.elements("RoomStay");
+        JSONArray roomGroups = new JSONArray();
+        for (Element roomStay : roomStayList) {
+            JSONObject roomGroup = new JSONObject();
+            Element roomRates = roomStay.element("RoomRates");
+            List<Element> roomRateList = roomRates.elements("RoomRate");
+            for (Element roomRate : roomRateList) {
+                String ratePlanCode = roomRate.attributeValue("RatePlanCode");
+                req.put("keyId", ratePlanCode);
+                Integer numberOfUnits = Integer.valueOf(roomRate.attributeValue("NumberOfUnits"));
+                Element rates = roomRate.element("Rates");
+                List<Element> rateList = rates.elements("Rate");
+                for (Element rate : rateList) {
+                    String effectiveDate = rate.attributeValue("EffectiveDate");
+                    String expireDate = rate.attributeValue("ExpireDate");
+                    Element base = rate.element("Base");
+                    String amountAfterTax = base.attributeValue("AmountAfterTax");
+                    String currencyCode = base.attributeValue("CurrencyCode");
+                    req.put("checkInDate", effectiveDate);
+                    req.put("checkOutDate", expireDate);
+                    req.put("totalPrice", Double.valueOf(amountAfterTax));
+                }
+            }
+            String hotelCode = roomStay.element("BasicPropertyInfo").attributeValue("HotelCode");
+            req.put("hotelId", hotelCode);
+        }
+        return req;
+    }
 
     /**
      * 按照携程的请求xml封装查询捷旅的房型费用
