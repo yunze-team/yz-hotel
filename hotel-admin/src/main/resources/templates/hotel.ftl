@@ -49,8 +49,8 @@
                     <input type="text" id="city" style="line-height:26px;border:1px solid #ccc" />
                     <span>所属地区：</span>
                     <input type="text" id="region" style="line-height:26px;border:1px solid #ccc" />
-                    <span>品牌名称：</span>
-                    <input type="text" id="brandName" style="line-height:26px;border:1px solid #ccc" />
+                    <span>酒店名称：</span>
+                    <input type="text" id="hotelName" style="line-height:26px;border:1px solid #ccc" />
                     <a href="javascript:doSearch();" class="easyui-linkbutton" data-options="iconCls:'icon-search'" style="width: 80px;">搜索</a>
                 </div>
 
@@ -74,7 +74,7 @@
             country: $('#country').val(),
             city: $('#city').val(),
             region: $('#region').val(),
-            brandName: $('#brandName').val()
+            hotelName: $('#hotelName').val()
         });
     }
 

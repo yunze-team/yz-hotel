@@ -30,7 +30,7 @@ public class EventAttr {
     @Column(length = 100)
     private String eventType;
 
-    @Column(length = 50)
+    @Column(length = 500)
     private String eventValue;
 
     @Column(nullable = false, updatable = false, name = "created_at")

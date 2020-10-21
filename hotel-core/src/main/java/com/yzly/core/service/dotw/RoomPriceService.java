@@ -2,6 +2,7 @@ package com.yzly.core.service.dotw;
 
 import com.yzly.core.domain.HotelManualSyncList;
 import com.yzly.core.domain.dotw.RoomPriceByDate;
+import com.yzly.core.domain.dotw.RoomPriceDateXml;
 import com.yzly.core.domain.dotw.RoomType;
 import com.yzly.core.domain.dotw.query.RoomPriceQuery;
 import com.yzly.core.domain.dotw.vo.RoomPriceExcelData;
@@ -12,9 +13,10 @@ import com.yzly.core.repository.dotw.RoomTypeRepository;
 import lombok.extern.apachecommons.CommonsLog;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.*;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.criteria.Predicate;
@@ -38,6 +40,8 @@ public class RoomPriceService {
     private HotelInfoRepository hotelInfoRepository;
     @Autowired
     private RoomTypeRepository roomTypeRepository;
+    @Autowired
+    private MongoTemplate mongoTemplate;
 
     /**
      * 分页查询酒店房型价格数据
@@ -65,6 +69,35 @@ public class RoomPriceService {
             Predicate[] p = new Predicate[list.size()];
             return criteriaBuilder.and(list.toArray(p));
         }, pageable);
+    }
+
+    /**
+     * 分页查询酒店房型价格数据（dotw_room_price_date_xml数据）
+     * @param page
+     * @param size
+     * @param roomPriceQuery
+     * @return
+     */
+    public Page<RoomPriceDateXml> findAllPriceByPageQuery(Integer page, Integer size, RoomPriceQuery roomPriceQuery) {
+        Sort sort = new Sort(Sort.Direction.DESC, "fromDate");
+        Pageable pageable = new PageRequest(page - 1, size, sort);
+        Query query = new Query();
+        if (StringUtils.isNotEmpty(roomPriceQuery.getHotelCode())) {
+            query.addCriteria(Criteria.where("hotelCode").is(roomPriceQuery.getHotelCode()));
+        }
+        if (StringUtils.isNotEmpty(roomPriceQuery.getRoomTypeCode())) {
+            query.addCriteria(Criteria.where("roomTypeCode").is(roomPriceQuery.getRoomTypeCode()));
+        }
+        if (StringUtils.isNotEmpty(roomPriceQuery.getFromDate())) {
+            query.addCriteria(Criteria.where("fromDate").gte(roomPriceQuery.getFromDate()));
+        }
+        if (StringUtils.isNotEmpty(roomPriceQuery.getToDate())) {
+            query.addCriteria(Criteria.where("toDate").lte(roomPriceQuery.getToDate()));
+        }
+        long total = mongoTemplate.count(query, RoomPriceDateXml.class);
+        List<RoomPriceDateXml> mlist = mongoTemplate.find(query.with(pageable), RoomPriceDateXml.class);
+        Page<RoomPriceDateXml> mpage = new PageImpl<>(mlist, pageable, total);
+        return mpage;
     }
 
     /**

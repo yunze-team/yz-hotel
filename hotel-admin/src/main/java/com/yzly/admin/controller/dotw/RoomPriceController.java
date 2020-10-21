@@ -2,6 +2,7 @@ package com.yzly.admin.controller.dotw;
 
 import com.yzly.admin.domain.ReturnT;
 import com.yzly.core.domain.dotw.RoomPriceByDate;
+import com.yzly.core.domain.dotw.RoomPriceDateXml;
 import com.yzly.core.domain.dotw.query.RoomPriceQuery;
 import com.yzly.core.domain.dotw.vo.RoomPriceExcelData;
 import com.yzly.core.service.dotw.RoomPriceService;
@@ -46,6 +47,22 @@ public class RoomPriceController {
         roomPriceQuery.setFromDate(fromDate);
         roomPriceQuery.setToDate(toDate);
         Page<RoomPriceByDate> rpage = roomPriceService.findAllByPageQuery(page, rows, roomPriceQuery);
+        resMap.put("total", rpage.getTotalElements());
+        resMap.put("rows", rpage.getContent());
+        log.info(rpage);
+        return resMap;
+    }
+
+    @GetMapping("/price/date")
+    public Map<String, Object> getAllDatePrice(int page, int rows, String hotelCode, String roomTypeCode,
+                                               String fromDate, String toDate) {
+        Map<String, Object> resMap = new HashMap<>();
+        RoomPriceQuery roomPriceQuery = new RoomPriceQuery();
+        roomPriceQuery.setHotelCode(hotelCode);
+        roomPriceQuery.setRoomTypeCode(roomTypeCode);
+        roomPriceQuery.setFromDate(fromDate);
+        roomPriceQuery.setToDate(toDate);
+        Page<RoomPriceDateXml> rpage = roomPriceService.findAllPriceByPageQuery(page, rows, roomPriceQuery);
         resMap.put("total", rpage.getTotalElements());
         resMap.put("rows", rpage.getContent());
         log.info(rpage);

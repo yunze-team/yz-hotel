@@ -33,6 +33,11 @@
                                 <i class="fa fa-circle-o"></i> <span>房型30天价格</span>
                             </a>
                         </li>
+                        <li id="page_room_price_date">
+                            <a href="/index/room_price_date">
+                                <i class="fa fa-circle-o"></i> <span>房型30天价格-1</span>
+                            </a>
+                        </li>
                     </ul>
                 </li>
             <#--End-->

@@ -185,6 +185,26 @@ public class TaskController {
     }
 
     /**
+     * 通过event_attr中配置的酒店id数据，拉取dotw的房型价格，并缓存在mongodb中
+     * @param offset
+     * @return
+     */
+    @GetMapping("/sync_price_attr")
+    public Object syncRoomPriceXmlByAttr(@RequestParam("offset") int offset) {
+        Runnable runnable = () -> {
+            try {
+                log.info("offset:" + offset);
+                taskApiService.syncDotwRoomPriceByAttr(offset);
+            } catch (Exception e) {
+                log.error(e.getMessage());
+            }
+        };
+        Thread thread = new Thread(runnable);
+        thread.start();
+        return "SUCCESS";
+    }
+
+    /**
      * 删除mongo中缓存的所有room_booking_info数据，提示查询效率
      * @return
      */

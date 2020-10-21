@@ -107,6 +107,11 @@ public class IndexController {
         return "room_price";
     }
 
+    @RequestMapping("/index/room_price_date")
+    public String roomPriceDate() {
+        return "room_price_date";
+    }
+
     @RequestMapping("/index/meit_order")
     public String meitOrder() {
         return "meit_order";

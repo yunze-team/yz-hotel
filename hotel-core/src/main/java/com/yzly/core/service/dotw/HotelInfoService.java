@@ -122,6 +122,9 @@ public class HotelInfoService {
             if (StringUtils.isNotEmpty(hotelQuery.getRegion())) {
                 list.add(criteriaBuilder.equal(root.get("region").as(String.class), hotelQuery.getRegion()));
             }
+            if (StringUtils.isNotEmpty(hotelQuery.getHotelNameEn())) {
+                list.add(criteriaBuilder.like(root.get("hotelName").as(String.class), "%" + hotelQuery.getHotelNameEn() + "%"));
+            }
             if (!hotelQuery.getIsUpdateFlag()) {
                 if (StringUtils.isNotEmpty(hotelQuery.getIsUpdate())) {
                     list.add(criteriaBuilder.or(criteriaBuilder.notEqual(root.get("isUpdate").as(String.class), hotelQuery.getIsUpdate()),

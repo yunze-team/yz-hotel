@@ -26,10 +26,10 @@ public class HotelController {
 
     @GetMapping("/hotel/list")
     public Map<String, Object> getAllHotel(int page, int rows, String country, String city,
-                                           String brandName, String region, String hotelCode) {
+                                           String region, String hotelCode, String hotelName) {
         Map<String, Object> resMap = new HashMap<>();
         HotelQuery hotelQuery = new HotelQuery();
-        hotelQuery.setBrandName(brandName);
+        hotelQuery.setHotelNameEn(hotelName);
         hotelQuery.setCity(city);
         hotelQuery.setCountry(country);
         hotelQuery.setRegion(region);
