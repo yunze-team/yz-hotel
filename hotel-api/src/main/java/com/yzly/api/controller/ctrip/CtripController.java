@@ -33,7 +33,63 @@ public class CtripController {
         log.info(xml);
         try {
             return ctripApiService.executeCtripCheckApi(xml);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
+        return null;
+    }
 
+    /**
+     * 创建订单接口
+     * @param xml
+     * @return
+     */
+    @PostMapping(value = "/create",
+            consumes = MediaType.APPLICATION_XML_VALUE,
+            produces = MediaType.APPLICATION_XML_VALUE)
+    @ResponseBody
+    public Object crteateOrder(@RequestBody String xml) {
+        log.info(xml);
+        try {
+            return ctripApiService.executeCtripCreateApi(xml);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
+        return null;
+    }
+
+    /**
+     * 取消订单接口
+     * @param xml
+     * @return
+     */
+    @PostMapping(value = "/cancel",
+            consumes = MediaType.APPLICATION_XML_VALUE,
+            produces = MediaType.APPLICATION_XML_VALUE)
+    @ResponseBody
+    public Object cancelOrder(@RequestBody String xml) {
+        log.info(xml);
+        try {
+            return ctripApiService.executeCtripCancelApi(xml);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
+        return null;
+    }
+
+    /**
+     * 查询订单接口
+     * @param xml
+     * @return
+     */
+    @PostMapping(value = "/read",
+            consumes = MediaType.APPLICATION_XML_VALUE,
+            produces = MediaType.APPLICATION_XML_VALUE)
+    @ResponseBody
+    public Object readOrder(@RequestBody String xml) {
+        log.info(xml);
+        try {
+            return ctripApiService.executeCtripReadApi(xml);
         } catch (Exception e) {
             log.error(e.getMessage());
         }

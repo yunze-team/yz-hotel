@@ -2,21 +2,29 @@ package com.yzly.api.common;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.yzly.core.domain.ctrip.CtripOrderInfo;
 import com.yzly.core.domain.jl.JLHotelInfo;
 import com.yzly.core.service.EventAttrService;
+import com.yzly.core.service.ctrip.CtripOrderService;
 import com.yzly.core.service.jl.JLAdminService;
+import com.yzly.core.util.SnowflakeIdWorker;
 import lombok.extern.apachecommons.CommonsLog;
+import net.sf.json.xml.XMLSerializer;
 import org.apache.commons.lang.StringUtils;
 import org.dom4j.Document;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 携程动态接口报文解析及封装处理类
@@ -32,8 +40,77 @@ public class CtripRespHandler {
     private EventAttrService eventAttrService;
     @Autowired
     private JLAdminService jlAdminService;
+    @Autowired
+    private CtripOrderService ctripOrderService;
 
     private final static String PRICE_RATE = "CTRIP_ROOM_PRICE_RATE";
+
+    @Value("${snowflake.workId}")
+    private long workId;
+    @Value("${snowflake.datacenterId}")
+    private long datacenterId;
+
+    /**
+     * 接收携程的查询订单请求，查询订单状态，并返回携程xml报文
+     * @param otaRequest
+     * @param requestName
+     * @param echoToken
+     * @return
+     * @throws Exception
+     */
+    public String genReadOrderXmlResp(Element otaRequest, String requestName, String echoToken) throws Exception {
+        Element readRequests = otaRequest.element("ReadRequests");
+        List<Element> readRequestList = readRequests.elements("ReadRequest");
+        List<CtripOrderInfo> clist = new ArrayList<>();
+        for (Element readRequest : readRequestList) {
+            List<Element> uniqueIDs = readRequest.elements("UniqueID");
+            Map<String, String> uniqueIDMap = new HashMap<>();
+            for (Element uniqueID : uniqueIDs) {
+                uniqueIDMap.put(uniqueID.attributeValue("Type"), uniqueID.attributeValue("ID"));
+            }
+            clist.add(ctripOrderService.findOneOrderByNumber(uniqueIDMap.get("501"), uniqueIDMap.get("502")));
+        }
+        Document doc = this.generateTokenResponse(requestName, echoToken);
+        Element otaResponse = doc.getRootElement().element("Body").element(requestName);
+        otaResponse.addElement("Success");
+        Element hotelReservations = otaResponse.addElement("HotelReservations");
+        for (CtripOrderInfo ctripOrderInfo : clist) {
+            Element hotelReservation = hotelReservations.addElement("HotelReservation").
+                    addAttribute("ResStatus", ctripOrderInfo.getStatus());
+            Element hotelReservationIDs = hotelReservation.addElement("ResGlobalInfo").addElement("HotelReservationIDs");
+            hotelReservationIDs.addElement("HotelReservationID").
+                    addAttribute("ResID_Type", "502").
+                    addAttribute("ResID_Value", ctripOrderInfo.getHotelConfirmNumber());
+            hotelReservationIDs.addElement("HotelReservationID").
+                    addAttribute("ResID_Type", "501").
+                    addAttribute("ResID_Value", ctripOrderInfo.getCtripUniqueId());
+        }
+        return doc.asXML();
+    }
+
+    /**
+     * 接收携程的取消订单请求，完成订单取消操作，并返回携程成功的xml报文
+     * @param otaRequest
+     * @return
+     * @throws Exception
+     */
+    public String genCancelXmlResp(Element otaRequest, String requestName, String echoToken) throws Exception {
+        List<Element> uniqueIds = otaRequest.elements("UniqueID");
+        Map<String, String> uniqueIdMap = new HashMap<>();
+        for (Element uniqueId : uniqueIds) {
+            uniqueIdMap.put(uniqueId.attributeValue("Type"), uniqueId.attributeValue("ID"));
+        }
+        // 取消订单
+        CtripOrderInfo ctripOrderInfo = ctripOrderService.cancelOrder(uniqueIdMap.get("502"), uniqueIdMap.get("501"));
+        Document doc = this.generateTokenResponse(requestName, echoToken);
+        Element otaResponse = doc.getRootElement().element("Body").element(requestName);
+        otaResponse.addElement("Success");
+        otaResponse.addElement("UniqueID").
+                addAttribute("ID", ctripOrderInfo.getCtripUniqueId()).addAttribute("Type", "501");
+        otaResponse.addElement("UniqueID").
+                addAttribute("ID", ctripOrderInfo.getHotelConfirmNumber()).addAttribute("Type", "502");
+        return doc.asXML();
+    }
 
     /**
      * 按照携程的请求xml封装创建捷旅订单的请求
@@ -75,6 +152,103 @@ public class CtripRespHandler {
             req.put("hotelId", hotelCode);
         }
         return req;
+    }
+
+    /**
+     * 生产携程订单
+     * @param otaRequest
+     * @return
+     * @throws Exception
+     */
+    public CtripOrderInfo createCtripOrderByXml(Element otaRequest) throws Exception {
+        Element uniqueIDEl = otaRequest.element("UniqueID");
+        String uniqueId = uniqueIDEl.attributeValue("ID");
+        CtripOrderInfo ctripOrderInfo = ctripOrderService.findOneCtripOrder(uniqueId);
+        if (ctripOrderInfo == null) {
+            ctripOrderInfo = new CtripOrderInfo();
+        }
+        ctripOrderInfo = this.genCtripOrderByXml(otaRequest, ctripOrderInfo);
+        Long logId = new SnowflakeIdWorker(workId, datacenterId).nextId();
+        return ctripOrderService.createOrder(ctripOrderInfo, String.valueOf(logId));
+    }
+
+    /**
+     * 根据携程订单，返回携程xml报文
+     * @param ctripOrderInfo
+     * @param echoToken
+     * @param requestName
+     * @return
+     */
+    public String genRespXmlByCreateOrder(CtripOrderInfo ctripOrderInfo, String echoToken, String requestName) {
+        Document doc = this.generateTokenResponse(requestName, echoToken);
+        Element otaResponse = doc.getRootElement().element("Body").element(requestName);
+        otaResponse.addElement("Success");
+        Element hotelReservations = otaResponse.addElement("HotelReservations");
+        hotelReservations.addElement("HotelReservation").addAttribute("ResStatus", "S");
+        Element hotelReservationIDs = hotelReservations.addElement("ResGlobalInfo").addElement("HotelReservationIDs");
+        hotelReservationIDs.addElement("HotelReservationID").
+                addAttribute("ResID_Value", ctripOrderInfo.getHotelConfirmNumber()).addAttribute("ResID_Type", "502");
+        hotelReservationIDs.addElement("HotelReservationID").
+                addAttribute("ResID_Value", ctripOrderInfo.getCtripUniqueId()).addAttribute("ResID_Type", "501");
+        return doc.asXML();
+    }
+
+    /**
+     * 根据携程请求xml封装携程订单信息实体
+     * @param otaRequest
+     * @return
+     */
+    public CtripOrderInfo genCtripOrderByXml(Element otaRequest, CtripOrderInfo ctripOrderInfo) {
+        Element uniqueIDEl = otaRequest.element("UniqueID");
+        String uniqueId = uniqueIDEl.attributeValue("ID");
+        String uniqueIdType = uniqueIDEl.attributeValue("Type");
+        ctripOrderInfo.setCtripUniqueId(uniqueId);
+        ctripOrderInfo.setCtripUniqueType(uniqueIdType);
+        Element hotelReservationRequest = otaRequest.element("HotelReservations").element("HotelReservation");
+        Element roomStays = hotelReservationRequest.element("RoomStays");
+        Element roomStay = roomStays.element("RoomStay");
+        String roomTypeCode = roomStay.element("RoomTypes").element("RoomType").attributeValue("RoomTypeCode");
+        ctripOrderInfo.setRoomTypeCode(roomTypeCode);
+        Element roomRate = roomStay.element("RoomRates").element("RoomRate");
+        String ratePlanCode = roomRate.attributeValue("RatePlanCode");
+        ctripOrderInfo.setRatePlanCode(ratePlanCode);
+        Integer numberOfUnits = Integer.valueOf(roomRate.attributeValue("NumberOfUnits"));
+        ctripOrderInfo.setNumberOfUnits(numberOfUnits);
+        Element rate = roomRate.element("Rates").element("Rate");
+        String effectiveDate = rate.attributeValue("EffectiveDate");
+        String expireDate = rate.attributeValue("ExpireDate");
+        ctripOrderInfo.setEffectiveDate(effectiveDate);
+        ctripOrderInfo.setExpireDate(expireDate);
+        Element base = rate.element("Base");
+        Double amountAfterTax = Double.valueOf(base.attributeValue("AmountAfterTax"));
+        String currencyCode = base.attributeValue("CurrencyCode");
+        ctripOrderInfo.setAmountAfterTax(amountAfterTax);
+        ctripOrderInfo.setCurrencyCode(currencyCode);
+        String hotelCode = roomStay.element("BasicPropertyInfo").attributeValue("HotelCode");
+        ctripOrderInfo.setHotelCode(hotelCode);
+        Element resGuests = hotelReservationRequest.element("ResGuests").element("ResGuest");
+        XMLSerializer xmlSerializer = new XMLSerializer();
+        Element customer = resGuests.element("Profiles").element("ProfileInfo").element("Profile").element("Customer");
+        String profiles = xmlSerializer.read(customer.asXML()).toString();
+        ctripOrderInfo.setPersonInfos(profiles);
+        String contactPersion = xmlSerializer.read(customer.element("ContactPerson").asXML()).toString();
+        ctripOrderInfo.setContactPerson(contactPersion);
+        Element resGloballInfo = hotelReservationRequest.element("ResGlobalInfo");
+        String guestCounts = xmlSerializer.read(resGloballInfo.element("GuestCounts").asXML()).toString();
+        ctripOrderInfo.setGuestCounts(guestCounts);
+        Element timeSpan = resGloballInfo.element("TimeSpan");
+        String timeSpanEnd = timeSpan.attributeValue("End");
+        String timeSpanStart = timeSpan.attributeValue("Start");
+        ctripOrderInfo.setTimeSpanEnd(timeSpanEnd);
+        ctripOrderInfo.setTimeSpanStart(timeSpanStart);
+        Element total = resGloballInfo.element("Total");
+        Double totalAmountAfterTax = Double.valueOf(total.attributeValue("AmountAfterTax"));
+        String totalCurrencyCode = total.attributeValue("CurrencyCode");
+        ctripOrderInfo.setTotalAmountAfterTax(totalAmountAfterTax);
+        ctripOrderInfo.setTotalCurrencyCode(totalCurrencyCode);
+        String hotelReservationIDs = xmlSerializer.read(resGloballInfo.element("HotelReservationIDs").asXML()).toString();
+        ctripOrderInfo.setHotelReservitaionIDs(hotelReservationIDs);
+        return ctripOrderInfo;
     }
 
     /**
@@ -238,6 +412,24 @@ public class CtripRespHandler {
                 addAttribute("PrimaryLangID", "en-us").
                 addAttribute("Version", "2.1").
                 addAttribute("TimeStamp", DateTime.now().toString("yyyy-MM-dd'T'HH:mm:ss'Z'"));
+        return doc;
+    }
+
+    /**
+     * 创建带token的请求返回头
+     * @param requestName
+     * @param echoToken
+     * @return
+     */
+    public Document generateTokenResponse(String requestName, String echoToken) {
+        Document doc = DocumentHelper.createDocument();
+        Element soapRoot = doc.addElement("soap:Envelope");
+        soapRoot.addNamespace("xmlns:soap", "http://schemas.xmlsoap.org/soap/envelope/");
+        soapRoot.addElement("soap:Header");
+        Element soapBody = soapRoot.addElement("soap:Body");
+        Element otaRequest = soapBody.addElement(requestName,
+                "http://www.opentravel.org/OTA/2003/05");
+        otaRequest.addAttribute("Version", "2.2").addAttribute("EchoToken", echoToken);
         return doc;
     }
 
