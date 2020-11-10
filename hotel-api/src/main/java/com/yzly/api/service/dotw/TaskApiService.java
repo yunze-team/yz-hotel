@@ -104,7 +104,7 @@ public class TaskApiService {
                     // 保存酒店同步数据
                     taskService.syncHotelPriceByDate(priceObject, fromDate, toDate);
                     // 保存房型价格同步数据
-                    taskService.syncRoomPriceByDate(priceObject, fromDate, toDate);
+                    //taskService.syncRoomPriceByDate(priceObject, fromDate, toDate);
                 } catch (Exception e) {
                     log.error(e.getMessage());
                     continue;
