@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 编辑使用 XMLSpy v2006 U (http://www.altova.com) 由 any (any) -->
+<!-- 编辑使用 XMLSpy v2006 U (http://www.altova.com) 由 any (any) -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://www.opentravel.org/OTA/2003/05" xmlns:ns="http://www.opentravel.org/OTA/2003/05/common" xmlns:ns1="http://www.opentravel.org/OTA_Common/2003/05" targetNamespace="http://www.opentravel.org/OTA/2003/05" elementFormDefault="qualified" attributeFormDefault="unqualified" version="7.000" id="OTA2013A">
+	<xs:include schemaLocation="OTA_HotelCommonTypes.xsd"/>
+	<xs:annotation>
+		<xs:documentation source="Description" xml:lang="en">ALL SCHEMA FILES IN THE OPENTRAVEL ALLIANCE SPECIFICATION ARE MADE AVAILABLE ACCORDING TO THE TERMS DEFINED BY THE OPENTRAVEL LICENSE AGREEMENT AT http://www.opentravel.org/Specifications/Default.aspx.</xs:documentation>
+	</xs:annotation>
+	<xs:attributeGroup name="OccupancyGroup">
+		<xs:annotation>
+			<xs:documentation xml:lang="en">Minimum and maximum occupancy values.</xs:documentation>
+		</xs:annotation>
+		<xs:attribute name="MaxOccupancy" type="Numeric1to99" use="required">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">酒店客房允许的最大入住人数</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+	</xs:attributeGroup>
+	<xs:element name="OTA_HotelAvailRS">
+		<xs:annotation>
+			<xs:documentation xml:lang="en">RoomStay级别可用性检查回复，用于验证指定的时间段内相关房型和价格计划是否可用。以及相关的取消制度、担保政策、总金额。</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:choice>
+					<xs:sequence>
+						<xs:element name="Success" type="SuccessType">
+							<xs:annotation>
+								<xs:documentation xml:lang="en">用于表示消息已成功处理</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="Warnings" type="WarningsType" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation xml:lang="en">用于表示处理消息过程中遇到业务级别的警告和错误，但消息结构本身是正确的。</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="RoomStays" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation xml:lang="en">入住验证信息的集合，包括客人数量，预订时间段，担保制度、取消制度等财务信息。</xs:documentation>
+							</xs:annotation>
+							<xs:complexType>
+								<xs:sequence>
+									<xs:element name="RoomStay" maxOccurs="unbounded">
+										<xs:annotation>
+											<xs:documentation xml:lang="en">详细入住验证信息</xs:documentation>
+										</xs:annotation>
+										<xs:complexType>
+											<xs:complexContent>
+												<xs:extension base="RoomStayType"/>
+											</xs:complexContent>
+										</xs:complexType>
+									</xs:element>
+								</xs:sequence>
+							</xs:complexType>
+						</xs:element>
+						<xs:element name="HotelStays" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>A collection of summarized information about the requested hotels' general availability for each day in the requested range.</xs:documentation>
+							</xs:annotation>
+							<xs:complexType>
+								<xs:sequence>
+									<xs:element name="HotelStay" maxOccurs="unbounded">
+										<xs:annotation>
+											<xs:documentation>A quick view of the requested hotels' general availability for each day in the requested range.</xs:documentation>
+										</xs:annotation>
+										<xs:complexType>
+											<xs:sequence>
+												<xs:element name="BasicPropertyInfo" minOccurs="0">
+													<xs:annotation>
+														<xs:documentation>Property Information for the Hotel Stay.</xs:documentation>
+													</xs:annotation>
+													<xs:complexType>
+														<xs:attributeGroup ref="HotelReferenceGroup"/>
+													</xs:complexType>
+												</xs:element>
+											</xs:sequence>
+										</xs:complexType>
+									</xs:element>
+								</xs:sequence>
+							</xs:complexType>
+						</xs:element>
+					</xs:sequence>
+					<xs:element name="Errors" type="ErrorsType">
+						<xs:annotation>
+							<xs:documentation xml:lang="en">用于表示在处理消息过程中遇到了一个消息结构性错误。我们把不正确的和无法处理的XML message 定义为错误</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:choice>
+			</xs:sequence>
+			<xs:attributeGroup ref="OTA_PayloadStdAttributes"/>
+		</xs:complexType>
+	</xs:element>
+</xs:schema>

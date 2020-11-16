@@ -22,9 +22,13 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 
@@ -111,9 +115,15 @@ public class CtripHandler {
                     addAttribute("Title", hotelInfoJson.getString("hotelNameEn"));
             textItemEn.addElement("Description").addText(hotelInfoJson.getString("introduceEn"));
         }
+        // 处理下经纬度位数值，符合携程标准
+        BigDecimal longitude = new BigDecimal(hotelInfoJson.getString("longitude")).setScale(6, RoundingMode.HALF_UP);
+        BigDecimal latitude = new BigDecimal(hotelInfoJson.getString("latitude")).setScale(6, RoundingMode.HALF_UP);
         hotelInfo.addElement("Position").
-                addAttribute("Longitude", hotelInfoJson.getString("longitude")).
-                addAttribute("Latitude", hotelInfoJson.getString("latitude"));
+                addAttribute("Longitude", longitude.toString()).
+                addAttribute("Latitude", latitude.toString());
+//        hotelInfo.addElement("Position").
+//                addAttribute("Longitude", "113.547036").
+//                addAttribute("Latitude", "22.099263");
         Element contractInfo = hotelContent.addElement("ContactInfos").addElement("ContactInfo");
         Element addresses = contractInfo.addElement("Addresses").addAttribute("Visible", "true");
         JLCity jlCity = jlCityRepository.findByCityId(hotelInfoJson.getInteger("cityId"));
@@ -159,10 +169,14 @@ public class CtripHandler {
             guestRoom.addElement("Currency").addAttribute("Code", "CNY");
             // 添加房型描述数据
             Element description = guestRoom.addElement("Description");
-            description.addElement("Text").addAttribute("Language", "zh-CN").
-                    addText(roomType.getString("roomTypeCn"));
-            description.addElement("Text").addAttribute("Language", "en-US").
-                    addText(roomType.getString("roomTypeEn"));
+            if (StringUtils.isNotEmpty(roomType.getString("roomTypeCn"))) {
+                description.addElement("Text").addAttribute("Language", "zh-CN").
+                        addText(roomType.getString("roomTypeCn"));
+            }
+            if (StringUtils.isNotEmpty(roomType.getString("roomTypeEn"))) {
+                description.addElement("Text").addAttribute("Language", "en-US").
+                        addText(roomType.getString("roomTypeEn"));
+            }
         }
         return doc;
     }
@@ -201,6 +215,7 @@ public class CtripHandler {
         headers.setContentType(MediaType.TEXT_XML);
         HttpEntity<String> xmlEntity = new HttpEntity<>(doc.asXML(), headers);
         RestTemplate restTemplate = new RestTemplate(RestTemplateConfig.generateHttpRequestFactory());
+        restTemplate.getMessageConverters().set(1, new StringHttpMessageConverter(StandardCharsets.UTF_8));
         ResponseEntity<String> responseEntity = null;
         try {
             responseEntity = restTemplate.postForEntity(ctripStaticUrl, xmlEntity, String.class);

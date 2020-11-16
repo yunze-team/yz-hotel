@@ -397,13 +397,15 @@ public class CtripRespHandler {
     }
 
     /**
-     * 创建携程静态通用soap请求头
+     * 创建携程静态通用soap请求返回头
      * @return
      */
     public Document generateBaseResponse(String requestName) {
         Document doc = DocumentHelper.createDocument();
         Element soapRoot = doc.addElement("soap:Envelope");
-        soapRoot.addNamespace("xmlns:soap", "http://schemas.xmlsoap.org/soap/envelope/");
+        soapRoot.addNamespace("xsi", "http://www.w3.org/2001/XMLSchema-instance").
+                addNamespace("xsd", "http://www.w3.org/2001/XMLSchema").
+                addNamespace("soap", "http://schemas.xmlsoap.org/soap/envelope/");
         soapRoot.addElement("soap:Header");
         Element soapBody = soapRoot.addElement("soap:Body");
         Element otaRequest = soapBody.addElement(requestName,
@@ -424,7 +426,9 @@ public class CtripRespHandler {
     public Document generateTokenResponse(String requestName, String echoToken) {
         Document doc = DocumentHelper.createDocument();
         Element soapRoot = doc.addElement("soap:Envelope");
-        soapRoot.addNamespace("xmlns:soap", "http://schemas.xmlsoap.org/soap/envelope/");
+        soapRoot.addNamespace("xsi", "http://www.w3.org/2001/XMLSchema-instance").
+                addNamespace("xsd", "http://www.w3.org/2001/XMLSchema").
+                addNamespace("soap", "http://schemas.xmlsoap.org/soap/envelope/");
         soapRoot.addElement("soap:Header");
         Element soapBody = soapRoot.addElement("soap:Body");
         Element otaRequest = soapBody.addElement(requestName,

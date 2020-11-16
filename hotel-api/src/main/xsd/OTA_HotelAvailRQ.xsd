@@ -1,0 +1,267 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 编辑使用 XMLSpy v2006 U (http://www.altova.com) 由 any (any) -->
+<!-- 编辑使用 XMLSpy v2006 U (http://www.altova.com) 由 any (any) -->
+<!-- 编辑使用 XMLSpy v2006 U (http://www.altova.com) 由 any (any) -->
+<!-- 编辑使用 XMLSpy v2006 U (http://www.altova.com) 由 any (any) -->
+<!-- 编辑使用 XMLSpy v2006 U (http://www.altova.com) 由 any (any) -->
+<!-- 编辑使用 XMLSpy v2006 U (http://www.altova.com) 由 any (any) -->
+<!-- 编辑使用 XMLSpy v2006 U (http://www.altova.com) 由 any (any) -->
+<!-- 编辑使用 XMLSpy v2006 U (http://www.altova.com) 由 any (any) -->
+<!-- 编辑使用 XMLSpy v2006 U (http://www.altova.com) 由 any (any) -->
+<!-- 编辑使用 XMLSpy v2006 U (http://www.altova.com) 由 any (any) -->
+<xs:schema xmlns="http://www.opentravel.org/OTA/2003/05" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:ns="http://www.opentravel.org/OTA/2003/05" xmlns:ns1="http://www.opentravel.org/OTA_Common/2003/05" targetNamespace="http://www.opentravel.org/OTA/2003/05" elementFormDefault="qualified" attributeFormDefault="unqualified" version="7.000" id="OTA2013A">
+	<xs:include schemaLocation="OTA_HotelCommonTypes.xsd"/>
+	<xs:annotation>
+		<xs:documentation source="Description" xml:lang="en">ALL SCHEMA FILES IN THE OPENTRAVEL ALLIANCE SPECIFICATION ARE MADE AVAILABLE ACCORDING TO THE TERMS DEFINED BY THE OPENTRAVEL LICENSE AGREEMENT AT http://www.opentravel.org/Specifications/Default.aspx.</xs:documentation>
+	</xs:annotation>
+	<xs:attributeGroup name="MaxResponsesGroup">
+		<xs:annotation>
+			<xs:documentation xml:lang="en">Used to specify the maximum number of responses to a request.</xs:documentation>
+		</xs:annotation>
+	</xs:attributeGroup>
+	<xs:attributeGroup name="RateRangeGroup">
+		<xs:annotation>
+			<xs:documentation xml:lang="en">A range of monetary values within which the cost of the available products are requested.</xs:documentation>
+		</xs:annotation>
+		<xs:attribute name="MinRate" type="Money" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">A decimal value that indicates the minimum monetary value to be considered in a request for an available product.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="MaxRate" type="Money" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">A decimal value that indicates the maximum monetary value to be considered in a request for an available product.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="RateTimeUnit" type="TimeUnitType" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">Used to specify the period of time to which the rates apply.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attributeGroup ref="CurrencyCodeGroup">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">Used to provide currency code and decimal places for the rate attributes.</xs:documentation>
+			</xs:annotation>
+		</xs:attributeGroup>
+	</xs:attributeGroup>
+	<xs:complexType name="AccessesType">
+		<xs:annotation>
+			<xs:documentation xml:lang="en">Element to capture creation and last update data.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="Access" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation xml:lang="en">Describes the action taken on the record.</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="AccessPerson" type="PersonNameType" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation xml:lang="en">Name of individual who originated or updated record.</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="AccessComment" type="FreeTextType" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation xml:lang="en">Free text comment added by the person accessing the profile record.</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+					<xs:attribute name="ActionType">
+						<xs:annotation>
+							<xs:documentation xml:lang="en">Type of action taken on the profile.</xs:documentation>
+						</xs:annotation>
+						<xs:simpleType>
+							<xs:restriction base="xs:NMTOKEN">
+								<xs:enumeration value="Create"/>
+								<xs:enumeration value="Read"/>
+								<xs:enumeration value="Update"/>
+								<xs:enumeration value="Delete"/>
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:attribute>
+					<xs:attribute name="ActionDateTime" type="xs:dateTime">
+						<xs:annotation>
+							<xs:documentation xml:lang="en">Month, day, year and optionally in hour, minute, second of day in ISO 8601 format of the action taken on the profile.</xs:documentation>
+						</xs:annotation>
+					</xs:attribute>
+					<xs:attributeGroup ref="ID_Group">
+						<xs:annotation>
+							<xs:documentation xml:lang="en">The identifier of the system that performed the action on the profile record.</xs:documentation>
+						</xs:annotation>
+					</xs:attributeGroup>
+				</xs:complexType>
+			</xs:element>
+		</xs:sequence>
+		<xs:attributeGroup ref="PrivacyGroup">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">Allows for control of the sharing of access data between parties.</xs:documentation>
+			</xs:annotation>
+		</xs:attributeGroup>
+		<xs:attribute name="CreateDateTime" type="xs:dateTime">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">Month, day, year and optionally hour, minute, second of day the profile originated, in ISO 8601 format.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+	</xs:complexType>
+	<xs:complexType name="AvailRequestSegmentsType">
+		<xs:annotation>
+			<xs:documentation>A collection of AvailRequestSegment. Each segment includes a collection of criteria that requests a bookable entity, which may include designated rate plans, room types, amenities or services, and the request can be used for guest rooms or other inventory items for which availability is sought. Each segment would be presumed to have a unique date range for each request.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="AvailRequestSegment">
+				<xs:annotation>
+					<xs:documentation xml:lang="en">可用性查询</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="HotelSearchCriteria">
+							<xs:annotation>
+								<xs:documentation xml:lang="en">酒店可用性查询条件</xs:documentation>
+							</xs:annotation>
+							<xs:complexType>
+								<xs:complexContent>
+									<xs:extension base="HotelSearchCriteriaType"/>
+								</xs:complexContent>
+							</xs:complexType>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="HotelSearchCriterionType">
+		<xs:annotation>
+			<xs:documentation xml:lang="en">A collection of Profile objects or Unique IDs of Profiles.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="ItemSearchCriterionType">
+				<xs:sequence>
+					<xs:element name="StayDateRange" type="DateTimeSpanType">
+						<xs:annotation>
+							<xs:documentation xml:lang="en">入住和离店日期</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="RatePlanCandidates" type="RatePlanCandidatesType">
+						<xs:annotation>
+							<xs:documentation xml:lang="en">指定价格计划列表</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="RoomStayCandidates">
+						<xs:annotation>
+							<xs:documentation xml:lang="en">指定房型列表</xs:documentation>
+						</xs:annotation>
+						<xs:complexType>
+							<xs:sequence>
+								<xs:element name="RoomStayCandidate">
+									<xs:annotation>
+										<xs:documentation xml:lang="en">Element used to identify available room products.</xs:documentation>
+									</xs:annotation>
+									<xs:complexType>
+										<xs:complexContent>
+											<xs:extension base="RoomStayCandidateType">
+												<xs:sequence>
+													<xs:element name="GuestCounts" type="GuestCountType"/>
+												</xs:sequence>
+											</xs:extension>
+										</xs:complexContent>
+									</xs:complexType>
+								</xs:element>
+							</xs:sequence>
+						</xs:complexType>
+					</xs:element>
+					<xs:element name="TPA_Extensions" type="TPA_ExtensionsType" minOccurs="0"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="HotelSearchCriteriaType">
+		<xs:annotation>
+			<xs:documentation xml:lang="en">A collection of single search criterion items.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="Criterion">
+				<xs:complexType>
+					<xs:complexContent>
+						<xs:extension base="HotelSearchCriterionType"/>
+					</xs:complexContent>
+				</xs:complexType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ItemSearchCriterionType">
+		<xs:annotation>
+			<xs:documentation xml:lang="en">Identifies the criterion for a search.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="HotelRef">
+				<xs:annotation>
+					<xs:documentation xml:lang="en">酒店信息</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:attributeGroup ref="HotelReferenceGroup">
+						<xs:annotation>
+							<xs:documentation xml:lang="en">Detailed hotel information for the search.</xs:documentation>
+						</xs:annotation>
+					</xs:attributeGroup>
+				</xs:complexType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="RatePlanCandidatesType">
+		<xs:sequence>
+			<xs:element name="RatePlanCandidate">
+				<xs:annotation>
+					<xs:documentation xml:lang="en">Element used to identify available products and rates.</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:attributeGroup ref="RatePlanGroup">
+						<xs:annotation>
+							<xs:documentation> </xs:documentation>
+						</xs:annotation>
+					</xs:attributeGroup>
+				</xs:complexType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="RoomStayCandidateType">
+		<xs:annotation>
+			<xs:documentation xml:lang="en">Used to identify available room products.</xs:documentation>
+		</xs:annotation>
+		<xs:attributeGroup ref="RoomGroup"/>
+		<xs:attribute name="Quantity" type="Numeric1to999" use="required">
+			<xs:annotation>
+				<xs:documentation>用户将要预订的房间数量</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="BookingCode" type="StringLength1to16" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">可订检查的流水号，多价格套系用。</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+	</xs:complexType>
+	<xs:element name="OTA_HotelAvailRQ">
+		<xs:annotation>
+			<xs:documentation xml:lang="en">可用性检查请求，用于验证指定的房型和价格计划是否可用。以及相关的取消制度和保证金制度</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="POS" type="POS_Type">
+					<xs:annotation>
+						<xs:documentation xml:lang="en">Point of sale object. </xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element name="AvailRequestSegments">
+					<xs:annotation>
+						<xs:documentation xml:lang="en">可用性查询跟节点</xs:documentation>
+					</xs:annotation>
+					<xs:complexType>
+						<xs:complexContent>
+							<xs:extension base="AvailRequestSegmentsType"/>
+						</xs:complexContent>
+					</xs:complexType>
+				</xs:element>
+			</xs:sequence>
+			<xs:attributeGroup ref="OTA_PayloadStdAttributes"/>
+		</xs:complexType>
+	</xs:element>
+</xs:schema>

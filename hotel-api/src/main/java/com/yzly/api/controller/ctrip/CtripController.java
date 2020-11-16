@@ -26,8 +26,8 @@ public class CtripController {
      * @return
      */
     @PostMapping(value = "/check",
-            consumes = MediaType.APPLICATION_XML_VALUE,
-            produces = MediaType.APPLICATION_XML_VALUE)
+            consumes = MediaType.TEXT_XML_VALUE,
+            produces = MediaType.TEXT_XML_VALUE)
     @ResponseBody
     public Object checkAvailability(@RequestBody String xml) {
         log.info(xml);
@@ -45,8 +45,8 @@ public class CtripController {
      * @return
      */
     @PostMapping(value = "/create",
-            consumes = MediaType.APPLICATION_XML_VALUE,
-            produces = MediaType.APPLICATION_XML_VALUE)
+            consumes = MediaType.TEXT_XML_VALUE,
+            produces = MediaType.TEXT_XML_VALUE)
     @ResponseBody
     public Object crteateOrder(@RequestBody String xml) {
         log.info(xml);
@@ -64,8 +64,8 @@ public class CtripController {
      * @return
      */
     @PostMapping(value = "/cancel",
-            consumes = MediaType.APPLICATION_XML_VALUE,
-            produces = MediaType.APPLICATION_XML_VALUE)
+            consumes = MediaType.TEXT_XML_VALUE,
+            produces = MediaType.TEXT_XML_VALUE)
     @ResponseBody
     public Object cancelOrder(@RequestBody String xml) {
         log.info(xml);
@@ -83,8 +83,8 @@ public class CtripController {
      * @return
      */
     @PostMapping(value = "/read",
-            consumes = MediaType.APPLICATION_XML_VALUE,
-            produces = MediaType.APPLICATION_XML_VALUE)
+            consumes = MediaType.TEXT_XML_VALUE,
+            produces = MediaType.TEXT_XML_VALUE)
     @ResponseBody
     public Object readOrder(@RequestBody String xml) {
         log.info(xml);

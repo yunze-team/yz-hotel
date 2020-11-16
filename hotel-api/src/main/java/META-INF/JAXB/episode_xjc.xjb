@@ -1,0 +1,275 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<bindings version="2.1" xmlns="http://java.sun.com/xml/ns/jaxb">
+  <!--
+
+此文件是由 JavaTM Architecture for XML Binding (JAXB) 引用实现 v2.3.2 生成的
+请访问 <a href="https://javaee.github.io/jaxb-v2/">https://javaee.github.io/jaxb-v2/</a> 
+在重新编译源模式时, 对此文件的所有修改都将丢失。
+生成时间: 2020.11.16 时间 04:10:49 PM CST 
+
+  -->
+  <bindings scd="x-schema::tns" xmlns:tns="http://www.opentravel.org/OTA/2003/05">
+    <schemaBindings map="false">
+      <package name="com.yzly.api.webservice"/>
+    </schemaBindings>
+    <bindings scd="tns:OTA_HotelAvailRQ">
+      <class ref="com.yzly.api.webservice.ctrip.domain.OTAHotelAvailRQ"/>
+    </bindings>
+    <bindings scd="tns:OTA_HotelAvailRS">
+      <class ref="com.yzly.api.webservice.ctrip.domain.OTAHotelAvailRS"/>
+    </bindings>
+    <bindings scd="~tns:RatePlanCandidatesType">
+      <class ref="com.yzly.api.webservice.ctrip.domain.RatePlanCandidatesType"/>
+    </bindings>
+    <bindings scd="~tns:ItemSearchCriterionType">
+      <class ref="com.yzly.api.webservice.ctrip.domain.ItemSearchCriterionType"/>
+    </bindings>
+    <bindings scd="~tns:HotelSearchCriteriaType">
+      <class ref="com.yzly.api.webservice.ctrip.domain.HotelSearchCriteriaType"/>
+    </bindings>
+    <bindings scd="~tns:HotelSearchCriterionType">
+      <class ref="com.yzly.api.webservice.ctrip.domain.HotelSearchCriterionType"/>
+    </bindings>
+    <bindings scd="~tns:AvailRequestSegmentsType">
+      <class ref="com.yzly.api.webservice.ctrip.domain.AvailRequestSegmentsType"/>
+    </bindings>
+    <bindings scd="~tns:AccessesType">
+      <class ref="com.yzly.api.webservice.ctrip.domain.AccessesType"/>
+    </bindings>
+    <bindings scd="~tns:HotelResModifyType">
+      <class ref="com.yzly.api.webservice.ctrip.domain.HotelResModifyType"/>
+    </bindings>
+    <bindings scd="~tns:ResCommonDetailType">
+      <class ref="com.yzly.api.webservice.ctrip.domain.ResCommonDetailType"/>
+    </bindings>
+    <bindings scd="~tns:HotelResModifiesType">
+      <class ref="com.yzly.api.webservice.ctrip.domain.HotelResModifiesType"/>
+    </bindings>
+    <bindings scd="~tns:TransportInfoType">
+      <class ref="com.yzly.api.webservice.ctrip.domain.TransportInfoType"/>
+    </bindings>
+    <bindings scd="~tns:SpecialRequestType">
+      <class ref="com.yzly.api.webservice.ctrip.domain.SpecialRequestType"/>
+    </bindings>
+    <bindings scd="~tns:ParagraphType">
+      <class ref="com.yzly.api.webservice.ctrip.domain.ParagraphType"/>
+    </bindings>
+    <bindings scd="~tns:RoomStaysType">
+      <class ref="com.yzly.api.webservice.ctrip.domain.RoomStaysType"/>
+    </bindings>
+    <bindings scd="~tns:RoomStayType">
+      <class ref="com.yzly.api.webservice.ctrip.domain.RoomStayType"/>
+    </bindings>
+    <bindings scd="~tns:RoomRateType">
+      <class ref="com.yzly.api.webservice.ctrip.domain.RoomRateType"/>
+    </bindings>
+    <bindings scd="~tns:RatePlanType">
+      <class ref="com.yzly.api.webservice.ctrip.domain.RatePlanType"/>
+    </bindings>
+    <bindings scd="~tns:RevenueCategoryType">
+      <class ref="com.yzly.api.webservice.ctrip.domain.RevenueCategoryType"/>
+    </bindings>
+    <bindings scd="~tns:PaymentFormType">
+      <class ref="com.yzly.api.webservice.ctrip.domain.PaymentFormType"/>
+    </bindings>
+    <bindings scd="~tns:MembershipType">
+      <class ref="com.yzly.api.webservice.ctrip.domain.MembershipType"/>
+    </bindings>
+    <bindings scd="~tns:HotelReservationsType">
+      <class ref="com.yzly.api.webservice.ctrip.domain.HotelReservationsType"/>
+    </bindings>
+    <bindings scd="~tns:HotelReservationType">
+      <class ref="com.yzly.api.webservice.ctrip.domain.HotelReservationType"/>
+    </bindings>
+    <bindings scd="~tns:HotelReservationIDsType">
+      <class ref="com.yzly.api.webservice.ctrip.domain.HotelReservationIDsType"/>
+    </bindings>
+    <bindings scd="~tns:RequiredPaymentsType">
+      <class ref="com.yzly.api.webservice.ctrip.domain.RequiredPaymentsType"/>
+    </bindings>
+    <bindings scd="~tns:RateType">
+      <class ref="com.yzly.api.webservice.ctrip.domain.RateType"/>
+    </bindings>
+    <bindings scd="~tns:AmountType">
+      <class ref="com.yzly.api.webservice.ctrip.domain.AmountType"/>
+    </bindings>
+    <bindings scd="~tns:GuaranteeType">
+      <class ref="com.yzly.api.webservice.ctrip.domain.GuaranteeType"/>
+    </bindings>
+    <bindings scd="~tns:CancelPenaltyType">
+      <class ref="com.yzly.api.webservice.ctrip.domain.CancelPenaltyType"/>
+    </bindings>
+    <bindings scd="~tns:GuestCountType">
+      <class ref="com.yzly.api.webservice.ctrip.domain.GuestCountType"/>
+    </bindings>
+    <bindings scd="~tns:TextDescriptionType">
+      <class ref="com.yzly.api.webservice.ctrip.domain.TextDescriptionType"/>
+    </bindings>
+    <bindings scd="~tns:ProfilesType">
+      <class ref="com.yzly.api.webservice.ctrip.domain.ProfilesType"/>
+    </bindings>
+    <bindings scd="~tns:ContactPersonType">
+      <class ref="com.yzly.api.webservice.ctrip.domain.ContactPersonType"/>
+    </bindings>
+    <bindings scd="~tns:SourceType">
+      <class ref="com.yzly.api.webservice.ctrip.domain.SourceType"/>
+    </bindings>
+    <bindings scd="~tns:POS_Type">
+      <class ref="com.yzly.api.webservice.ctrip.domain.POSType"/>
+    </bindings>
+    <bindings scd="~tns:SuccessType">
+      <class ref="com.yzly.api.webservice.ctrip.domain.SuccessType"/>
+    </bindings>
+    <bindings scd="~tns:WarningsType">
+      <class ref="com.yzly.api.webservice.ctrip.domain.WarningsType"/>
+    </bindings>
+    <bindings scd="~tns:ErrorsType">
+      <class ref="com.yzly.api.webservice.ctrip.domain.ErrorsType"/>
+    </bindings>
+    <bindings scd="~tns:UniqueID_Type">
+      <class ref="com.yzly.api.webservice.ctrip.domain.UniqueIDType"/>
+    </bindings>
+    <bindings scd="~tns:CompanyNameType">
+      <class ref="com.yzly.api.webservice.ctrip.domain.CompanyNameType"/>
+    </bindings>
+    <bindings scd="~tns:EmailType">
+      <class ref="com.yzly.api.webservice.ctrip.domain.EmailType"/>
+    </bindings>
+    <bindings scd="~tns:CustomerType">
+      <class ref="com.yzly.api.webservice.ctrip.domain.CustomerType"/>
+    </bindings>
+    <bindings scd="~tns:ProfileType">
+      <class ref="com.yzly.api.webservice.ctrip.domain.ProfileType"/>
+    </bindings>
+    <bindings scd="~tns:FreeTextType">
+      <class ref="com.yzly.api.webservice.ctrip.domain.FreeTextType"/>
+    </bindings>
+    <bindings scd="~tns:TaxesType">
+      <class ref="com.yzly.api.webservice.ctrip.domain.TaxesType"/>
+    </bindings>
+    <bindings scd="~tns:TaxType">
+      <class ref="com.yzly.api.webservice.ctrip.domain.TaxType"/>
+    </bindings>
+    <bindings scd="~tns:TotalType">
+      <class ref="com.yzly.api.webservice.ctrip.domain.TotalType"/>
+    </bindings>
+    <bindings scd="~tns:FormattedTextTextType">
+      <class ref="com.yzly.api.webservice.ctrip.domain.FormattedTextTextType"/>
+    </bindings>
+    <bindings scd="~tns:BasicPropertyInfoType">
+      <class ref="com.yzly.api.webservice.ctrip.domain.BasicPropertyInfoType"/>
+    </bindings>
+    <bindings scd="~tns:ErrorType">
+      <class ref="com.yzly.api.webservice.ctrip.domain.ErrorType"/>
+    </bindings>
+    <bindings scd="~tns:WarningType">
+      <class ref="com.yzly.api.webservice.ctrip.domain.WarningType"/>
+    </bindings>
+    <bindings scd="~tns:PersonNameType">
+      <class ref="com.yzly.api.webservice.ctrip.domain.PersonNameType"/>
+    </bindings>
+    <bindings scd="~tns:DateTimeSpanType">
+      <class ref="com.yzly.api.webservice.ctrip.domain.DateTimeSpanType"/>
+    </bindings>
+    <bindings scd="~tns:TPA_ExtensionsType">
+      <class ref="com.yzly.api.webservice.ctrip.domain.TPAExtensionsType"/>
+    </bindings>
+    <bindings scd="~tns:AmountPercentType">
+      <class ref="com.yzly.api.webservice.ctrip.domain.AmountPercentType"/>
+    </bindings>
+    <bindings scd="~tns:CancelPenaltiesType">
+      <class ref="com.yzly.api.webservice.ctrip.domain.CancelPenaltiesType"/>
+    </bindings>
+    <bindings scd="~tns:FeeType">
+      <class ref="com.yzly.api.webservice.ctrip.domain.FeeType"/>
+    </bindings>
+    <bindings scd="~tns:FeesType">
+      <class ref="com.yzly.api.webservice.ctrip.domain.FeesType"/>
+    </bindings>
+    <bindings scd="~tns:DiscountType">
+      <class ref="com.yzly.api.webservice.ctrip.domain.DiscountType"/>
+    </bindings>
+    <bindings scd="~tns:RoomTypeType">
+      <class ref="com.yzly.api.webservice.ctrip.domain.RoomTypeType"/>
+    </bindings>
+    <bindings scd="~tns:RoomAmenityPrefType">
+      <class ref="com.yzly.api.webservice.ctrip.domain.RoomAmenityPrefType"/>
+    </bindings>
+    <bindings scd="~tns:HotelResRequestType">
+      <class ref="com.yzly.api.webservice.ctrip.domain.HotelResRequestType"/>
+    </bindings>
+    <bindings scd="~tns:PaymentCardType">
+      <class ref="com.yzly.api.webservice.ctrip.domain.PaymentCardType"/>
+    </bindings>
+    <bindings scd="~tns:ResGuestType">
+      <class ref="com.yzly.api.webservice.ctrip.domain.ResGuestType"/>
+    </bindings>
+    <bindings scd="~tns:ResGuestsType">
+      <class ref="com.yzly.api.webservice.ctrip.domain.ResGuestsType"/>
+    </bindings>
+    <bindings scd="~tns:RevenueCategoriesType">
+      <class ref="com.yzly.api.webservice.ctrip.domain.RevenueCategoriesType"/>
+    </bindings>
+    <bindings scd="~tns:RevenueDetailsType">
+      <class ref="com.yzly.api.webservice.ctrip.domain.RevenueDetailsType"/>
+    </bindings>
+    <bindings scd="~tns:RevenueDetailType">
+      <class ref="com.yzly.api.webservice.ctrip.domain.RevenueDetailType"/>
+    </bindings>
+    <bindings scd="~tns:ResGlobalInfoType">
+      <class ref="com.yzly.api.webservice.ctrip.domain.ResGlobalInfoType"/>
+    </bindings>
+    <bindings scd="~tns:ResGuestRPHsType">
+      <class ref="com.yzly.api.webservice.ctrip.domain.ResGuestRPHsType"/>
+    </bindings>
+    <bindings scd="~tns:StayInfosType">
+      <class ref="com.yzly.api.webservice.ctrip.domain.StayInfosType"/>
+    </bindings>
+    <bindings scd="~tns:StayInfoType">
+      <class ref="com.yzly.api.webservice.ctrip.domain.StayInfoType"/>
+    </bindings>
+    <bindings scd="~tns:FolioIDsType">
+      <class ref="com.yzly.api.webservice.ctrip.domain.FolioIDsType"/>
+    </bindings>
+    <bindings scd="~tns:AcceptedPaymentsType">
+      <class ref="com.yzly.api.webservice.ctrip.domain.AcceptedPaymentsType"/>
+    </bindings>
+    <bindings scd="~tns:InvoiceContactTypeTelephone">
+      <class ref="com.yzly.api.webservice.ctrip.domain.InvoiceContactTypeTelephone"/>
+    </bindings>
+    <bindings scd="~tns:AddressType">
+      <class ref="com.yzly.api.webservice.ctrip.domain.AddressType"/>
+    </bindings>
+    <bindings scd="~tns:AddressInfoType">
+      <class ref="com.yzly.api.webservice.ctrip.domain.AddressInfoType"/>
+    </bindings>
+    <bindings scd="~tns:InvoiceContactType">
+      <class ref="com.yzly.api.webservice.ctrip.domain.InvoiceContactType"/>
+    </bindings>
+    <bindings scd="~tns:HotelResModifyRequestType">
+      <class ref="com.yzly.api.webservice.ctrip.domain.HotelResModifyRequestType"/>
+    </bindings>
+    <bindings scd="~tns:RoomStayCandidateType">
+      <class ref="com.yzly.api.webservice.ctrip.domain.RoomStayCandidateType"/>
+    </bindings>
+    <bindings scd="~tns:TimeUnitType">
+      <typesafeEnumClass ref="com.yzly.api.webservice.ctrip.domain.TimeUnitType"/>
+    </bindings>
+    <bindings scd="~tns:AmountDeterminationType">
+      <typesafeEnumClass ref="com.yzly.api.webservice.ctrip.domain.AmountDeterminationType"/>
+    </bindings>
+    <bindings scd="~tns:PricingType">
+      <typesafeEnumClass ref="com.yzly.api.webservice.ctrip.domain.PricingType"/>
+    </bindings>
+    <bindings scd="~tns:TransactionActionType">
+      <typesafeEnumClass ref="com.yzly.api.webservice.ctrip.domain.TransactionActionType"/>
+    </bindings>
+    <bindings scd="~tns:PMS_ResStatusType">
+      <typesafeEnumClass ref="com.yzly.api.webservice.ctrip.domain.PMSResStatusType"/>
+    </bindings>
+    <bindings scd="~tns:TransactionStatusType">
+      <typesafeEnumClass ref="com.yzly.api.webservice.ctrip.domain.TransactionStatusType"/>
+    </bindings>
+  </bindings>
+</bindings>
+

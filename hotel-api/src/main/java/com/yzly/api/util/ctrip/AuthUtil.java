@@ -27,6 +27,8 @@ public class AuthUtil {
     @Value("${ctrip.partnerId}")
     private String ctripPartnerId;
 
+    private static final String ELEMENT = "otaRequest";
+
     /**
      * 判断识别携程送来的报文头，并返回echotoken
      * @param xml
@@ -56,7 +58,7 @@ public class AuthUtil {
             return null;
         }
         resMap.put("echoToken", echoToken);
-        resMap.put("element", otaRequest);
+        resMap.put(ELEMENT, otaRequest);
         return resMap;
     }
 

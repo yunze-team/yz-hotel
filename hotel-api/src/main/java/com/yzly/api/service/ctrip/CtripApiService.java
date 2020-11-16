@@ -48,6 +48,7 @@ public class CtripApiService {
     public String executeCtripCheckApi(String xml) throws Exception {
         String traceId = MDC.get("TRACE_ID");
         String requestName = "OTA_HotelAvailRQ";
+        String responseName = "OTA_HotelAvailRS";
         Map<String, Object> reqMap = authUtil.judgeCtripAuth(xml, requestName);
         String echoToken = reqMap.get(ECHO_TOKEN).toString();
         Element otaRequest = (Element) reqMap.get(ELEMENT);
@@ -57,7 +58,7 @@ public class CtripApiService {
         JSONObject respJson = JSONObject.parseObject(res).getJSONObject("result");
         // 保存捷旅价格数据
         jlStaticService.syncHotelPriceByJson(respJson);
-        String resXml = ctripRespHandler.genCtripXmlByJLRespOnQueryRate(respJson, requestName, reqJson);
+        String resXml = ctripRespHandler.genCtripXmlByJLRespOnQueryRate(respJson, responseName, reqJson);
         log.info(resXml);
         ctripXmlLogService.reLogByResp(ctripXmlLog, resXml, respJson, respJson.getString("respId"));
         return resXml;
@@ -72,6 +73,7 @@ public class CtripApiService {
     public String executeCtripCreateApi(String xml) throws Exception {
         String traceId = MDC.get("TRACE_ID");
         String requestName = "OTA_HotelResRQ";
+        String responseName = "OTA_HotelResRS";
         Map<String, Object> reqMap = authUtil.judgeCtripAuth(xml, requestName);
         String echoToken = reqMap.get(ECHO_TOKEN).toString();
         Element otaRequest = (Element) reqMap.get(ELEMENT);
@@ -93,6 +95,7 @@ public class CtripApiService {
     public String executeCtripCancelApi(String xml) throws Exception {
         String traceId = MDC.get("TRACE_ID");
         String requestName = "OTA_CancelRQ";
+        String responseName = "OTA_CancelRS";
         Map<String, Object> reqMap = authUtil.judgeCtripAuth(xml, requestName);
         String echoToken = reqMap.get(ECHO_TOKEN).toString();
         Element otaRequest = (Element) reqMap.get(ELEMENT);
@@ -113,6 +116,7 @@ public class CtripApiService {
     public String executeCtripReadApi(String xml) throws Exception {
         String traceId = MDC.get("TRACE_ID");
         String requestName = "OTA_ReadRQ";
+        String responseName = "OTA_ReadRS";
         Map<String, Object> reqMap = authUtil.judgeCtripAuth(xml, requestName);
         String echoToken = reqMap.get(ECHO_TOKEN).toString();
         Element otaRequest = (Element) reqMap.get(ELEMENT);
