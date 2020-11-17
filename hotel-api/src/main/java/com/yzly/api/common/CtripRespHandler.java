@@ -6,6 +6,7 @@ import com.yzly.core.domain.ctrip.CtripOrderInfo;
 import com.yzly.core.domain.jl.JLHotelInfo;
 import com.yzly.core.service.EventAttrService;
 import com.yzly.core.service.ctrip.CtripOrderService;
+import com.yzly.core.service.ctrip.CtripService;
 import com.yzly.core.service.jl.JLAdminService;
 import com.yzly.core.util.SnowflakeIdWorker;
 import lombok.extern.apachecommons.CommonsLog;
@@ -42,6 +43,8 @@ public class CtripRespHandler {
     private JLAdminService jlAdminService;
     @Autowired
     private CtripOrderService ctripOrderService;
+    @Autowired
+    private CtripService ctripService;
 
     private final static String PRICE_RATE = "CTRIP_ROOM_PRICE_RATE";
 
@@ -272,6 +275,10 @@ public class CtripRespHandler {
         JSONArray roomGroups = new JSONArray();
         List<Element> roomStayCandidateList = roomStayCandidates.elements("RoomStayCandidate");
         for (Element roomStayCandidate : roomStayCandidateList) {
+            if (StringUtils.isNotEmpty(roomStayCandidate.attributeValue("RoomTypeCode"))) {
+                String roomCode = roomStayCandidate.attributeValue("RoomTypeCode");
+                req.put("roomTypeCode", roomCode);
+            }
             List<Element> guestCounts = roomStayCandidate.element("GuestCounts").elements("GuestCount");
             for (Element guestCount : guestCounts) {
                 JSONObject roomGroup = new JSONObject();
@@ -300,8 +307,8 @@ public class CtripRespHandler {
      * @param resp
      * @return
      */
-    public String genCtripXmlByJLRespOnQueryRate(JSONObject resp, String requestName, JSONObject req) {
-        Document doc = generateBaseResponse(requestName);
+    public String genCtripXmlByJLRespOnQueryRate(JSONObject resp, String requestName, JSONObject req, String echoToken) {
+        Document doc = this.generateDefaultResponse(requestName, echoToken);
         Element otaResponse = doc.getRootElement().element("Body").element(requestName);
         otaResponse.addElement("Success");
         JSONArray hotelRatePlanList = resp.getJSONArray("hotelRatePlanList");
@@ -314,6 +321,11 @@ public class CtripRespHandler {
             JSONArray rooms = hotelRatePlan.getJSONArray("rooms");
             for (int j = 0; j < rooms.size(); j++) {
                 JSONObject room = rooms.getJSONObject(j);
+                if (StringUtils.isNotEmpty(req.getString("roomTypeCode"))) {
+                    if (!room.getString("roomTypeId").equals(req.getString("roomTypeCode"))) {
+                        continue;
+                    }
+                }
                 Element roomStay = roomStays.addElement("RoomStay");
                 Element roomType = roomStay.addElement("RoomTypes").addElement("RoomType");
                 roomType.addAttribute("RoomTypeCode", room.getString("roomTypeId"));
@@ -334,12 +346,12 @@ public class CtripRespHandler {
                     Integer breakfast = ratePlan.getInteger("breakfast");
                     Element mealsIncluded = ratePlanEl.addElement("MealsIncluded");
                     if (breakfast == 0) {
-                        mealsIncluded.addAttribute("Breakfast", "False");
+                        mealsIncluded.addAttribute("Breakfast", "false");
                     } else {
-                        mealsIncluded.addAttribute("Breakfast", "True");
+                        mealsIncluded.addAttribute("Breakfast", "true");
                     }
-                    mealsIncluded.addAttribute("Lunch", "False").
-                            addAttribute("Dinner", "False").addAttribute("NumberOfMeal", breakfast.toString());
+                    mealsIncluded.addAttribute("Lunch", "false").
+                            addAttribute("Dinner", "false").addAttribute("NumberOfMeal", breakfast.toString());
                     // 封装价格参数
                     Element roomRate = roomRates.addElement("RoomRate").
                             addAttribute("RoomTypeCode", room.getString("roomTypeId")).
@@ -410,9 +422,31 @@ public class CtripRespHandler {
         Element soapBody = soapRoot.addElement("soap:Body");
         Element otaRequest = soapBody.addElement(requestName,
                 "http://www.opentravel.org/OTA/2003/05");
-        otaRequest.addAttribute("Target", "Production").
-                addAttribute("PrimaryLangID", "en-us").
+        otaRequest.addAttribute("PrimaryLangID", "en-us").
                 addAttribute("Version", "2.1").
+                addAttribute("TimeStamp", DateTime.now().toString("yyyy-MM-dd'T'HH:mm:ss'Z'"));
+        return doc;
+    }
+
+    /**
+     * 创建携程动态通用soap返回头
+     * @param responseName
+     * @param echoToken
+     * @return
+     */
+    public Document generateDefaultResponse(String responseName, String echoToken) {
+        Document doc = DocumentHelper.createDocument();
+        Element soapRoot = doc.addElement("soap:Envelope");
+        soapRoot.addNamespace("xsi", "http://www.w3.org/2001/XMLSchema-instance").
+                addNamespace("xsd", "http://www.w3.org/2001/XMLSchema").
+                addNamespace("soap", "http://schemas.xmlsoap.org/soap/envelope/");
+        soapRoot.addElement("soap:Header");
+        Element soapBody = soapRoot.addElement("soap:Body");
+        Element otaRequest = soapBody.addElement(responseName,
+                "http://www.opentravel.org/OTA/2003/05");
+        otaRequest.addAttribute("PrimaryLangID", "zh-cn").
+                addAttribute("Version", "2.1").
+                addAttribute("EchoToken", echoToken).
                 addAttribute("TimeStamp", DateTime.now().toString("yyyy-MM-dd'T'HH:mm:ss'Z'"));
         return doc;
     }

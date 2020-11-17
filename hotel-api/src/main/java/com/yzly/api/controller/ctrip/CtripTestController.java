@@ -1,6 +1,7 @@
 package com.yzly.api.controller.ctrip;
 
 import com.yzly.api.common.CtripHandler;
+import com.yzly.api.service.ctrip.CtripApiService;
 import com.yzly.core.domain.jl.JLHotelDetail;
 import com.yzly.core.service.jl.JLAdminService;
 import lombok.extern.apachecommons.CommonsLog;
@@ -26,6 +27,8 @@ public class CtripTestController {
     private CtripHandler ctripHandler;
     @Autowired
     private JLAdminService jlAdminService;
+    @Autowired
+    private CtripApiService ctripApiService;
 
     /**
      * 测试携程酒店推送接口
@@ -72,7 +75,8 @@ public class CtripTestController {
         List<String> hotelCodes = Arrays.asList(hotelIds.split(","));
         Document doc = ctripHandler.queryHotelStatus(hotelCodes);
         try {
-            return ctripHandler.sendCtripStatic(doc);
+            String xml = ctripHandler.sendCtripStatic(doc);
+            return ctripApiService.executeCtripHotelQuery(xml);
         } catch (Exception e) {
             return e.getMessage();
         }
