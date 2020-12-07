@@ -187,8 +187,8 @@ public class CtripRespHandler {
         Element otaResponse = doc.getRootElement().element("Body").element(requestName);
         otaResponse.addElement("Success");
         Element hotelReservations = otaResponse.addElement("HotelReservations");
-        hotelReservations.addElement("HotelReservation").addAttribute("ResStatus", "S");
-        Element hotelReservationIDs = hotelReservations.addElement("ResGlobalInfo").addElement("HotelReservationIDs");
+        Element hotelReservation = hotelReservations.addElement("HotelReservation").addAttribute("ResStatus", "S");
+        Element hotelReservationIDs = hotelReservation.addElement("ResGlobalInfo").addElement("HotelReservationIDs");
         hotelReservationIDs.addElement("HotelReservationID").
                 addAttribute("ResID_Value", ctripOrderInfo.getHotelConfirmNumber()).addAttribute("ResID_Type", "502");
         hotelReservationIDs.addElement("HotelReservationID").
