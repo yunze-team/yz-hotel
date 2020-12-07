@@ -44,7 +44,7 @@ public class CtripController {
      * @param xml
      * @return
      */
-    @PostMapping(value = "/create",
+    @PostMapping(value = "/order_new",
             consumes = MediaType.TEXT_XML_VALUE,
             produces = MediaType.TEXT_XML_VALUE)
     @ResponseBody
