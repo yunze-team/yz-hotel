@@ -63,7 +63,7 @@ public class CtripController {
      * @param xml
      * @return
      */
-    @PostMapping(value = "/cancel",
+    @PostMapping(value = "/order_cancel",
             consumes = MediaType.TEXT_XML_VALUE,
             produces = MediaType.TEXT_XML_VALUE)
     @ResponseBody
