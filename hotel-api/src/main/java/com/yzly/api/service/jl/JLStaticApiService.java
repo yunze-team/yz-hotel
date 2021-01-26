@@ -92,4 +92,16 @@ public class JLStaticApiService {
         return null;
     }
 
+    /**
+     * 同步酒店房型明细，并入库
+     * @param jlHotelDetail
+     */
+    public void syncJLRoomType(JLHotelDetail jlHotelDetail) {
+        try {
+            jlStaticService.syncRoomTypeList(jlHotelDetail.getRoomTypeList(), jlHotelDetail.getHotelId());
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
+    }
+
 }

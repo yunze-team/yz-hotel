@@ -150,4 +150,9 @@ public class IndexController {
         return "jl_city";
     }
 
+    @RequestMapping("/index/jl_room")
+    public String jlRoom() {
+        return "jl_room";
+    }
+
 }

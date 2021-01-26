@@ -3,7 +3,9 @@ package com.yzly.api.controller.dotw;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.yzly.api.service.dotw.MeitApiService;
+import com.yzly.api.service.jl.JLStaticApiService;
 import com.yzly.api.util.meit.MeitResultUtil;
+import com.yzly.core.domain.jl.JLHotelDetail;
 import com.yzly.core.domain.meit.dto.MeitResult;
 import com.yzly.core.enums.meit.ResultEnum;
 import lombok.extern.apachecommons.CommonsLog;
@@ -23,6 +25,8 @@ public class AdminController {
 
     @Autowired
     private MeitApiService meitApiService;
+    @Autowired
+    private JLStaticApiService jlStaticApiService;
 
     private MeitResult baseRequestTrans(String json) {
         JSONObject req = JSON.parseObject(json);
@@ -84,6 +88,22 @@ public class AdminController {
     @PostMapping("/cancel_order")
     public Object cancelMeitOrder(String orderId) {
         return meitApiService.cancelOrderJudge(orderId);
+    }
+
+    /**
+     * 同步捷旅酒店明细，并同步房型明细，并入库
+     * @param hotelId
+     */
+    @PostMapping("/sync_jl_room_type")
+    public void syncJLRoomType(Integer hotelId) {
+        Runnable runnable = () -> {
+            // 同步酒店明细
+            JLHotelDetail jlHotelDetail = jlStaticApiService.syncJLHotelDetail(hotelId);
+            // 入库房型明细
+            jlStaticApiService.syncJLRoomType(jlHotelDetail);
+        };
+        Thread thread = new Thread(runnable);
+        thread.start();
     }
 
 }

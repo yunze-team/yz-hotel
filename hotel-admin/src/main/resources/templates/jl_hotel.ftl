@@ -51,6 +51,7 @@
                     <span>酒店英文名称：</span>
                     <input type="text" id="nameEn" style="line-height:26px;border:1px solid #ccc" />
                     <a href="javascript:doSearch();" class="easyui-linkbutton" data-options="iconCls:'icon-search'" style="width: 80px;">搜索</a>
+                    <a href="javascript:manual();" class="easyui-linkbutton" data-options="iconCls:'icon-ok'" style="width: 160px;">同步酒店房型</a>
                 </div>
 
 
@@ -75,6 +76,26 @@
             nameCn: $('#nameCn').val(),
             nameEn: $('#nameEn').val()
         });
+    }
+
+    function manual() {
+        var row = $('#hotelTable').datagrid('getSelected');
+        if (row) {
+            var hotel_id = row.hotelId;
+            $.post(
+                "/jl/room/sync",
+                {hotelId: hotel_id},
+                function(result) {
+                    if (result.code == '200') {
+                        $.messager.alert('成功', result.msg);
+                    } else {
+                        $.messager.alert('失败', result.msg);
+                    }
+                }
+            );
+        } else {
+            $.messager.alert('提示', '请选择一行操作！');
+        }
     }
 
 </script>

@@ -36,7 +36,7 @@ public class JLController {
         log.info("checkInDate:" + req.getString("checkInDate"));
         log.info("checkOutDate:" + req.getString("checkOutDate"));
         log.info("roomGroups:" + req.get("roomGroups"));
-        return jlHandler.queryHotelPriceByUser(req, false);
+        return jlHandler.queryHotelPriceByUser(req, true);
     }
 
     /**

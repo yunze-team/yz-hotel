@@ -40,6 +40,8 @@ public class JLStaticService {
     private JLBookingRuleRepository jlBookingRuleRepository;
     @Autowired
     private JLRefundRuleRepository jlRefundRuleRepository;
+    @Autowired
+    private JLRoomTypeRepository jlRoomTypeRepository;
 
     private static final String JL_CITY_PAGE = "JL_CITY_PAGE";
     private static final String JL_HOTEL_PAGE = "JL_HOTEL_PAGE";
@@ -299,6 +301,30 @@ public class JLStaticService {
         rate.setRatePlanKeyId(jlRatePlan.getKeyId());
         rate.setRoomTypeId(jlRatePlan.getRoomTypeId());
         jlNightlyRateCacheRepository.save(rate);
+    }
+
+    /**
+     * 根据roomTypeList的json存入数据
+     * @param roomTypeListArray
+     * @param hotelId
+     */
+    public void syncRoomTypeList(JSONArray roomTypeListArray, Integer hotelId) throws Exception {
+        if (roomTypeListArray.size() == 0) {
+            throw new Exception("roomtype array is empty");
+        }
+        for (int i = 0; i < roomTypeListArray.size(); i++) {
+            JSONObject roomTypeJson = roomTypeListArray.getJSONObject(i);
+            JLRoomType jlRoomType = new JLRoomType(hotelId, roomTypeJson.getString("roomTypeEn"), roomTypeJson.getString("roomTypeCn"),
+                    roomTypeJson.getInteger("basisroomId"), roomTypeJson.getString("roomTypeId"), roomTypeJson.getInteger("maximize"),
+                    roomTypeJson.getInteger("extraBedtState"), roomTypeJson.getString("roomRemark"), roomTypeJson.getString("bedWidth"),
+                    roomTypeJson.getString("bedName"), roomTypeJson.getString("basisroomCn"), roomTypeJson.getString("floorDistribute"),
+                    roomTypeJson.getString("facilities"), roomTypeJson.getString("bedType"), roomTypeJson.getInteger("bedCount"));
+            JLRoomType roomType = jlRoomTypeRepository.findByRoomTypeId(jlRoomType.getRoomTypeId());
+            if (roomType != null) {
+                continue;
+            }
+            jlRoomTypeRepository.save(jlRoomType);
+        }
     }
 
 }

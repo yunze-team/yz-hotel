@@ -28,4 +28,11 @@ public interface AdminControllerInter {
     @PostMapping("/api/admin/cancel_order")
     Object cancelMeitOrder(@RequestParam(name = "orderId") String orderId);
 
+    /**
+     * 同步捷旅房型明细
+     * @param hotelId
+     */
+    @PostMapping("/api/admin/sync_jl_room_type")
+    void syncJLRoomType(@RequestParam(name = "hotelId") Integer hotelId);
+
 }

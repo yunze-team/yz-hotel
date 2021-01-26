@@ -4,9 +4,11 @@ import com.yzly.core.domain.dotw.query.HotelQuery;
 import com.yzly.core.domain.jl.JLCity;
 import com.yzly.core.domain.jl.JLHotelDetail;
 import com.yzly.core.domain.jl.JLHotelInfo;
+import com.yzly.core.domain.jl.JLRoomType;
 import com.yzly.core.repository.jl.JLCityRepository;
 import com.yzly.core.repository.jl.JLHotelDetailRepository;
 import com.yzly.core.repository.jl.JLHotelInfoRepository;
+import com.yzly.core.repository.jl.JLRoomTypeRepository;
 import lombok.extern.apachecommons.CommonsLog;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +37,8 @@ public class JLAdminService {
     private JLCityRepository jlCityRepository;
     @Autowired
     private JLHotelDetailRepository jlHotelDetailRepository;
+    @Autowired
+    private JLRoomTypeRepository jlRoomTypeRepository;
 
     /**
      * 分页查询捷旅酒店列表信息
@@ -64,6 +68,26 @@ public class JLAdminService {
             }
             Predicate[] p = new Predicate[list.size()];
             log.info("jl hotel page query: " + p);
+            return criteriaBuilder.and(list.toArray(p));
+        }, pageable);
+    }
+
+    /**
+     * 分页查询捷旅酒店房型明细
+     * @param page
+     * @param size
+     * @param hotelQuery
+     * @return
+     */
+    public Page<JLRoomType> findAllRoomTypeByPage(Integer page, Integer size, HotelQuery hotelQuery) {
+        Pageable pageable = new PageRequest(page - 1, size);
+        return jlRoomTypeRepository.findAll((root, criteriaQuery, criteriaBuilder) -> {
+            List<Predicate> list = new ArrayList<>();
+            if (StringUtils.isNotEmpty(hotelQuery.getHotelId())) {
+                list.add(criteriaBuilder.equal(root.get("hotelId").as(String.class), hotelQuery.getHotelId()));
+            }
+            Predicate[] p = new Predicate[list.size()];
+            log.info("jl room type page query: " + p);
             return criteriaBuilder.and(list.toArray(p));
         }, pageable);
     }
