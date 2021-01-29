@@ -15,6 +15,7 @@
         <module>hotel-job-admin</module>
         <module>hotel-job-core</module>
         <module>hotel-job-executor</module>
+        <module>hotel-spider</module>
     </modules>
 
     <properties>

@@ -44,6 +44,29 @@
                     <a href="javascript:doSearch();" class="easyui-linkbutton" data-options="iconCls:'icon-search'" style="width: 80px;">搜索</a>
                 </div>
 
+                <div id="view-dlg" class="easyui-dialog" style="width: 600px; padding: 10px 20px;" closed="true" buttons="#view-dlg-buttons">
+                    <form id="view-fm" method="post">
+                        <input type="hidden" name="id" />
+                        <input type="hidden" name="orderStatus" id="order_status">
+                        <table cellpadding="5">
+                            <tr><td width="30%">订单编号：</td><td><input type="text" name="orderId" class="easyui-textbox" readonly /></td></tr>
+                            <tr><td>酒店编号：</td><td><input type="text" name="hotelId" class="easyui-textbox" readonly /></td></tr>
+                            <tr><td>房型编号：</td><td><input type="text" name="roomId" class="easyui-textbox" readonly></td></tr>
+                            <tr><td>费率编号：</td><td><input type="text" name="rateBaseId" class="easyui-textbox" readonly /></td></tr>
+                            <tr><td>下单价格（分）：</td><td><input type="text" name="totalPrice" class="easyui-textbox" readonly></td></tr>
+                            <tr><td>房间确认号：</td><td><input type="text" name="confirmationNumbers" class="easyui-textbox" readonly></td></tr>
+                            <tr><td>成人数量：</td><td><input type="text" name="numberOfAdults" class="easyui-textbox" readonly></td></tr>
+                            <tr><td>入住日期：</td><td><input type="text" name="checkin" class="easyui-textbox" readonly></td></tr>
+                            <tr><td>离店日期：</td><td><input type="text" name="checkout" class="easyui-textbox" readonly></td></tr>
+                            <tr><td>客人信息：</td><td><input type="text" name="guestInfo" class="easyui-textbox" data-options="multiline:true" style="width: 300px; height: 100px;" readonly /></td></tr>
+                            <tr><td>DOTW关联房型房价唯一编号：</td><td><input type="text" name="ratePlanCode" class="easyui-textbox" style="width: 250px;" readonly /></td></tr>
+                        </table>
+                    </form>
+                </div>
+                <div id="view-dlg-buttons">
+                    <a href="javascript:void(0);" class="easyui-linkbutton" iconCls="icon-cancel" onclick="$('#view-dlg').dialog('close');">关闭</a>
+                </div>
+
 
             </div>
 
